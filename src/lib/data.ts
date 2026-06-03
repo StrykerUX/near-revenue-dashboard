@@ -1,94 +1,54 @@
 import type { TimeSeriesPoint, WalletRow, FaqItem, StatCard } from "./types"
 
-// Cumulative fees over trailing year (May 2025 → May 2026, weekly)
-export const TOTAL_FEES_SERIES: TimeSeriesPoint[] = [
-  { date: "2025-05-05", value: 180000 },
-  { date: "2025-05-12", value: 370000 },
-  { date: "2025-05-19", value: 580000 },
-  { date: "2025-05-26", value: 800000 },
-  { date: "2025-06-02", value: 1050000 },
-  { date: "2025-06-09", value: 1320000 },
-  { date: "2025-06-16", value: 1610000 },
-  { date: "2025-06-23", value: 1920000 },
-  { date: "2025-06-30", value: 2260000 },
-  { date: "2025-07-07", value: 2620000 },
-  { date: "2025-07-14", value: 3010000 },
-  { date: "2025-07-21", value: 3420000 },
-  { date: "2025-07-28", value: 3860000 },
-  { date: "2025-08-04", value: 4330000 },
-  { date: "2025-08-11", value: 4830000 },
-  { date: "2025-08-18", value: 5360000 },
-  { date: "2025-08-25", value: 5920000 },
-  { date: "2025-09-01", value: 6320000 },
-  { date: "2025-09-08", value: 6870000 },
-  { date: "2025-09-15", value: 7450000 },
-  { date: "2025-09-22", value: 8060000 },
-  { date: "2025-09-29", value: 8700000 },
-  { date: "2025-10-06", value: 9370000 },
-  { date: "2025-10-13", value: 10070000 },
-  { date: "2025-10-20", value: 10800000 },
-  { date: "2025-10-27", value: 11560000 },
-  { date: "2025-11-03", value: 12200000 },
-  { date: "2025-11-10", value: 12940000 },
-  { date: "2025-11-17", value: 13710000 },
-  { date: "2025-11-24", value: 14510000 },
-  { date: "2025-12-01", value: 15340000 },
-  { date: "2025-12-08", value: 16200000 },
-  { date: "2025-12-15", value: 17090000 },
-  { date: "2025-12-22", value: 18010000 },
-  { date: "2025-12-29", value: 18700000 },
-  { date: "2026-01-05", value: 19450000 },
-  { date: "2026-01-12", value: 20000000 },
-  { date: "2026-01-19", value: 20580000 },
-  { date: "2026-01-26", value: 21180000 },
-  { date: "2026-02-02", value: 21600000 },
-  { date: "2026-02-09", value: 22000000 },
-  { date: "2026-02-16", value: 22350000 },
-  { date: "2026-02-23", value: 22580000 },
-  { date: "2026-03-03", value: 22700000 },
-  { date: "2026-03-10", value: 22780000 },
-  { date: "2026-03-17", value: 22810000 },
-  { date: "2026-03-24", value: 22820000 },
-  { date: "2026-03-31", value: 22825000 },
-  { date: "2026-04-07", value: 22828000 },
-  { date: "2026-04-14", value: 22829000 },
-  { date: "2026-04-21", value: 22830000 },
-  { date: "2026-05-01", value: 22830000 },
-]
+// Cumulative fees — hockey-stick power curve (flat early, accelerates from Oct 2025)
+// 53 points so the last tick lands in May 2026
+function buildFeesSeries(): TimeSeriesPoint[] {
+  const target = 22_830_000
+  const startMs = new Date(2025, 4, 1).getTime() // May 1 2025
+  return Array.from({ length: 53 }, (_, i) => {
+    const date = new Date(startMs + i * 7 * 86400000).toISOString().slice(0, 10)
+    const t = i / 52
+    const value = Math.round(target * Math.pow(t, 2.8))
+    return { date, value }
+  })
+}
+export const TOTAL_FEES_SERIES: TimeSeriesPoint[] = buildFeesSeries()
 
 // Monthly revenue after partner payouts (Apr 2025 → Apr 2026)
 export const REVENUE_MONTHLY: TimeSeriesPoint[] = [
-  { date: "Apr '25", value: 92000 },
-  { date: "May '25", value: 115000 },
-  { date: "Jun '25", value: 148000 },
-  { date: "Jul '25", value: 187000 },
-  { date: "Aug '25", value: 224000 },
-  { date: "Sep '25", value: 268000 },
-  { date: "Oct '25", value: 310000 },
-  { date: "Nov '25", value: 355000 },
-  { date: "Dec '25", value: 398000 },
-  { date: "Jan '26", value: 420000 },
-  { date: "Feb '26", value: 445000 },
-  { date: "Mar '26", value: 472000 },
+  { date: "Apr '25", value: 52000 },
+  { date: "May '25", value: 78000 },
+  { date: "Jun '25", value: 105000 },
+  { date: "Jul '25", value: 138000 },
+  { date: "Aug '25", value: 172000 },
+  { date: "Sep '25", value: 210000 },
+  { date: "Oct '25", value: 255000 },
+  { date: "Nov '25", value: 305000 },
+  { date: "Dec '25", value: 358000 },
+  { date: "Jan '26", value: 398000 },
+  { date: "Feb '26", value: 438000 },
+  { date: "Mar '26", value: 465000 },
   { date: "Apr '26", value: 490000 },
 ]
 
-// Revenue as % of $NEAR emissions (May 2025 → May 2026, weekly, oscillating)
-export const EMISSIONS_SERIES: TimeSeriesPoint[] = Array.from({ length: 52 }, (_, i) => {
-  const t = i / 51
-  const base = 3 + t * 8
-  const wave = Math.sin(i * 0.8) * 2.5 + Math.cos(i * 1.3) * 1.8
-  const date = new Date(2025, 4, 5 + i * 7)
-  const label = date.toLocaleDateString("en-US", { month: "short", year: "2-digit" })
-  return { date: label, value: Math.max(0.5, base + wave) }
+// Revenue as % of $NEAR emissions — starts low/flat, oscillations grow over time
+export const EMISSIONS_SERIES: TimeSeriesPoint[] = Array.from({ length: 53 }, (_, i) => {
+  const t = i / 52
+  const base = 0.4 + t * 3.5
+  const amplitude = 0.2 + t * 7.5
+  const wave = Math.sin(i * 1.9) * amplitude * 0.65 + Math.cos(i * 1.2) * amplitude * 0.35
+  const date = new Date(new Date(2025, 4, 1).getTime() + i * 7 * 86400000).toISOString().slice(0, 10)
+  return { date, value: Math.max(0.1, base + wave) }
 })
 
-// Mini sparkline for the "Fees last 30 days" card
-export const SPARKLINE_DATA: number[] = [
-  1420000, 1380000, 1450000, 1510000, 1490000, 1560000, 1530000,
-  1600000, 1580000, 1640000, 1690000, 1720000, 1700000, 1760000,
-  1740000, 1800000, 1780000, 1820000, 1850000, 1840000,
-]
+// Mini sparkline — descending trend (\) with oscillations, more data points for density
+export const SPARKLINE_DATA: number[] = Array.from({ length: 40 }, (_, i) => {
+  const t = i / 39
+  const base = 2050000 - t * 680000   // descends from ~2.05M to ~1.37M
+  const amp = 95000 + t * 40000       // amplitude grows slightly
+  const wave = Math.sin(i * 1.7) * amp + Math.cos(i * 0.9) * amp * 0.4
+  return Math.round(Math.max(1100000, base + wave))
+})
 
 export const WALLET_ROWS: WalletRow[] = [
   { name: "fefundsadmin.sputnik-dao.near", share: 56, totalRevenue: "1.83M", pct: 56.0 },

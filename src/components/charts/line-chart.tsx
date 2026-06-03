@@ -27,8 +27,31 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
   )
 }
 
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr)
+  return d.toLocaleDateString("en-US", { month: "short" })
+}
+
+function getBimonthlyTicks(data: TimeSeriesPoint[]): string[] {
+  const targets = [4, 6, 8, 10, 0, 2, 4]
+  const seen = new Set<number>()
+  const ticks: string[] = []
+  for (const d of data) {
+    const m = new Date(d.date).getMonth()
+    if (targets.includes(m) && !seen.has(m)) {
+      seen.add(m)
+      ticks.push(d.date)
+    }
+  }
+  const last = data[data.length - 1]
+  if (new Date(last.date).getMonth() === 4 && !ticks.includes(last.date)) {
+    ticks.push(last.date)
+  }
+  return ticks
+}
+
 export function EmissionsLineChart({ data }: EmissionsLineChartProps) {
-  const ticks = data.filter((_, i) => i % 8 === 0).map((d) => d.date)
+  const ticks = getBimonthlyTicks(data)
 
   return (
     <ResponsiveContainer width="100%" height={240}>
@@ -37,17 +60,19 @@ export function EmissionsLineChart({ data }: EmissionsLineChartProps) {
         <XAxis
           dataKey="date"
           ticks={ticks}
+          tickFormatter={formatDate}
           tick={{ fill: "var(--near-subtle)", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
         />
         <YAxis
-          tickFormatter={(v) => `${v.toFixed(1)}%`}
+          ticks={[0, 5, 10, 15, 20]}
+          tickFormatter={(v) => v === 0 ? "0.0%" : `${v}.0%`}
           tick={{ fill: "var(--near-subtle)", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
           width={48}
-          domain={[0, 22]}
+          domain={[0, 20]}
         />
         <Tooltip content={<CustomTooltip />} cursor={{ stroke: "var(--near-border)" }} />
         <Line
@@ -57,7 +82,9 @@ export function EmissionsLineChart({ data }: EmissionsLineChartProps) {
           strokeWidth={1.5}
           dot={false}
           activeDot={{ r: 3, fill: "var(--near-green)", stroke: "var(--near-card)", strokeWidth: 2 }}
-          isAnimationActive={false}
+          isAnimationActive={true}
+          animationDuration={1000}
+          animationEasing="ease-out"
         />
       </LineChart>
     </ResponsiveContainer>

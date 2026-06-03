@@ -27,7 +27,7 @@ export function Accordion({ items, defaultOpenId }: AccordionProps) {
               <span className={cn("flex-1 text-base font-medium", isOpen ? "text-near-text" : "text-near-text/80 group-hover:text-near-text transition-colors")}>
                 {item.question}
               </span>
-              <span className="shrink-0 text-near-muted">
+              <span className={cn("shrink-0", isOpen ? "text-near-green" : "text-near-muted")}>
                 {isOpen ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
               </span>
             </button>

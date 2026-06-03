@@ -1,7 +1,30 @@
+"use client"
+
+import { useEffect, useRef, useState } from "react"
 import { Card } from "@/components/ui/card"
+import { AnimatedNumber } from "@/components/ui/animated-number"
 import { WALLET_ROWS } from "@/lib/data"
 
 export function WalletTable() {
+  const [animated, setAnimated] = useState(false)
+  const tbodyRef = useRef<HTMLTableSectionElement>(null)
+
+  useEffect(() => {
+    const el = tbodyRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          observer.disconnect()
+          setAnimated(true)
+        }
+      },
+      { threshold: 0.2 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <Card padding="none" className="overflow-hidden">
       <div className="p-6 pb-4">
@@ -29,8 +52,8 @@ export function WalletTable() {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-near-border">
-            {WALLET_ROWS.map((row) => (
+          <tbody ref={tbodyRef} className="divide-y divide-near-border">
+            {WALLET_ROWS.map((row, i) => (
               <tr key={row.name} className="hover:bg-near-card-hover transition-colors">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
@@ -42,15 +65,29 @@ export function WalletTable() {
                   <div className="w-32 h-1.5 rounded-full bg-near-border overflow-hidden">
                     <div
                       className="h-full rounded-full bg-near-green"
-                      style={{ width: `${row.share}%` }}
+                      style={{
+                        width: animated ? `${row.share}%` : "0%",
+                        transition: `width 1s ease-out ${i * 0.15}s`,
+                      }}
                     />
                   </div>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <span className="text-near-text font-medium">{row.totalRevenue}</span>
+                  <AnimatedNumber
+                    value={row.totalRevenue + ""}
+                    duration={1.4}
+                    delay={i * 0.1}
+                    className="text-near-text font-medium"
+                  />
                   <span className="text-near-subtle text-xs ml-1">NEAR</span>
                 </td>
-                <td className="px-6 py-4 text-right text-near-muted">{row.pct.toFixed(1)}%</td>
+                <td className="px-6 py-4 text-right text-near-muted">
+                  <AnimatedNumber
+                    value={row.pct.toFixed(1) + "%"}
+                    duration={1.4}
+                    delay={i * 0.1}
+                  />
+                </td>
               </tr>
             ))}
           </tbody>

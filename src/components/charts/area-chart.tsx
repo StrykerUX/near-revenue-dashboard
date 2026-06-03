@@ -7,6 +7,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  ReferenceDot,
   ResponsiveContainer,
   type TooltipProps,
 } from "recharts"
@@ -16,9 +17,14 @@ interface FeesAreaChartProps {
   data: TimeSeriesPoint[]
 }
 
+const Y_TICKS = [0, 6_300_000, 12_500_000, 18_800_000, 25_000_000]
+
 function formatY(v: number): string {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`
-  if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`
+  if (v === 0) return "0"
+  if (v >= 1_000_000) {
+    const n = v / 1_000_000
+    return `${n % 1 === 0 ? n.toFixed(0) : n}M`
+  }
   return String(v)
 }
 
@@ -37,34 +43,56 @@ function CustomTooltip({ active, payload }: TooltipProps<number, string>) {
   )
 }
 
+// Pick the first data point whose month is in the bimonthly set: May, Jul, Sep, Nov, Jan, Mar, May
+function getBimonthlyTicks(data: TimeSeriesPoint[]): string[] {
+  const targets = [4, 6, 8, 10, 0, 2, 4] // month indices (0=Jan)
+  const seen = new Set<number>()
+  const ticks: string[] = []
+  for (const d of data) {
+    const m = new Date(d.date).getMonth()
+    if (targets.includes(m) && !seen.has(m)) {
+      seen.add(m)
+      ticks.push(d.date)
+    }
+  }
+  // Ensure last "May" is the actual last data point if it falls in May
+  const last = data[data.length - 1]
+  if (new Date(last.date).getMonth() === 4 && !ticks.includes(last.date)) {
+    ticks.push(last.date)
+  }
+  return ticks
+}
+
 export function FeesAreaChart({ data }: FeesAreaChartProps) {
-  // Show one label per ~2 months to avoid crowding
-  const ticks = data.filter((_, i) => i % 8 === 0).map((d) => d.date)
+  const xTicks = getBimonthlyTicks(data)
+  const last = data[data.length - 1]
 
   return (
     <ResponsiveContainer width="100%" height={280}>
-      <AreaChart data={data} margin={{ top: 10, right: 0, left: 10, bottom: 0 }}>
+      <AreaChart data={data} margin={{ top: 16, right: 16, left: 10, bottom: 0 }}>
         <defs>
           <linearGradient id="feesGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--near-green)" stopOpacity={0.25} />
-            <stop offset="100%" stopColor="var(--near-green)" stopOpacity={0} />
+            <stop offset="0%" stopColor="var(--near-green)" stopOpacity={0.35} />
+            <stop offset="100%" stopColor="var(--near-green)" stopOpacity={0.02} />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--near-border)" vertical={false} />
         <XAxis
           dataKey="date"
-          ticks={ticks}
+          ticks={xTicks}
           tickFormatter={formatDate}
           tick={{ fill: "var(--near-subtle)", fontSize: 12 }}
           axisLine={false}
           tickLine={false}
         />
         <YAxis
+          ticks={Y_TICKS}
           tickFormatter={formatY}
           tick={{ fill: "var(--near-subtle)", fontSize: 12 }}
           axisLine={false}
           tickLine={false}
           width={52}
+          domain={[0, 25_000_000]}
         />
         <Tooltip content={<CustomTooltip />} cursor={{ stroke: "var(--near-border)" }} />
         <Area
@@ -74,9 +102,21 @@ export function FeesAreaChart({ data }: FeesAreaChartProps) {
           strokeWidth={2}
           fill="url(#feesGradient)"
           dot={false}
-          isAnimationActive={false}
+          isAnimationActive={true}
+          animationDuration={1200}
+          animationEasing="ease-out"
           activeDot={{ r: 4, fill: "var(--near-green)", stroke: "var(--near-card)", strokeWidth: 2 }}
         />
+        {last && (
+          <ReferenceDot
+            x={last.date}
+            y={last.value}
+            r={5}
+            fill="var(--near-green)"
+            stroke="var(--near-card)"
+            strokeWidth={2}
+          />
+        )}
       </AreaChart>
     </ResponsiveContainer>
   )

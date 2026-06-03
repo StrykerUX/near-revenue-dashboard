@@ -2,6 +2,7 @@ import { Gauge } from "@/components/charts/gauge"
 import { Sparkline } from "@/components/charts/sparkline"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { AnimatedNumber } from "@/components/ui/animated-number"
 import { GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA } from "@/lib/data"
 
 export function Hero() {
@@ -19,12 +20,12 @@ export function Hero() {
             <em className="not-italic text-near-green font-medium">revenue</em>, in real time.
           </p>
           <div className="flex items-baseline gap-4 flex-wrap">
-            <span
+            <AnimatedNumber
+              value={TOTAL_FEES_DISPLAY}
+              duration={2}
               className="text-near-text font-bold leading-none"
               style={{ fontSize: "clamp(3rem, 7vw, 5.5rem)" }}
-            >
-              {TOTAL_FEES_DISPLAY}
-            </span>
+            />
             <span
               className="text-near-green font-bold leading-none"
               style={{ fontSize: "clamp(2rem, 5vw, 4rem)" }}
@@ -41,7 +42,7 @@ export function Hero() {
 
         <div>
           <Badge variant="red">
-            <span>▼ {FEES_CHANGE}%</span>
+            <span>▼ <AnimatedNumber value={FEES_CHANGE} duration={1.2} />%</span>
             <span className="text-near-red/60">·</span>
             <span>rev 30d</span>
           </Badge>
@@ -61,11 +62,20 @@ export function Hero() {
 
           <div>
             <p className="text-xs text-near-subtle mb-2">Fees · last 30 days</p>
-            <div className="flex items-baseline gap-2 mb-3">
-              <span className="text-2xl font-bold text-near-text">{FEES_LAST_30D}</span>
-              <span className="text-sm text-near-muted font-medium">NEAR</span>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-baseline gap-2">
+                <AnimatedNumber
+                  value={FEES_LAST_30D}
+                  duration={1.5}
+                  delay={0.3}
+                  className="text-2xl font-bold text-near-text"
+                />
+                <span className="text-sm text-near-muted font-medium">NEAR</span>
+              </div>
+              <div className="flex-1 min-w-0 max-w-[140px]">
+                <Sparkline data={SPARKLINE_DATA} />
+              </div>
             </div>
-            <Sparkline data={SPARKLINE_DATA} />
           </div>
         </div>
       </div>
