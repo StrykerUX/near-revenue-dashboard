@@ -1,4 +1,5 @@
 import type { TimeSeriesPoint, WalletRow, FaqItem, StatCard } from "./types"
+import type { SwapDataPoint } from "@/components/charts/stacked-bar-chart"
 
 // Cumulative fees — hockey-stick power curve (flat early, accelerates from Oct 2025)
 // 53 points so the last tick lands in May 2026
@@ -58,8 +59,10 @@ export const WALLET_ROWS: WalletRow[] = [
 
 export const STATS: StatCard[] = [
   { label: "Revenue · all-time", value: "3.27M", unit: "NEAR", sub: "Captured by NEAR" },
-  { label: "Revenue · YTD", value: "1.92M", unit: "NEAR", sub: "Captured this year" },
-  { label: "Revenue · 30D", value: "351.8K", unit: "NEAR", sub: "Captured in last 30 days" },
+  { label: "Intent Volume · all-time", value: "$19.3B", unit: "Dollars", sub: "Captured on NEAR Intents" },
+  { label: "Confidential TVL · Now", value: "$15.8M", unit: "Dollars", sub: "NEAR Intents Current Confidential TVL" },
+  { label: "Unique Users · 30D", value: "555,000", unit: "", sub: "Unique Users on NEAR Intents" },
+  { label: "Stablecoin Liquidity Depth · Now", value: "$1M", unit: "Dollars", sub: "Max Swap size on NEAR Intents" },
 ]
 
 export const FAQ_ITEMS: FaqItem[] = [
@@ -99,6 +102,38 @@ export const FAQ_ITEMS: FaqItem[] = [
     answer:
       "You can learn more about NEAR's tokenomics at near.org/tokenomics or in the official NEAR whitepaper. The NEAR Foundation publishes quarterly treasury reports with detailed breakdowns.",
   },
+]
+
+export const CONFIDENTIAL_TVL: TimeSeriesPoint[] = [
+  { date: "Apr '25", value: 8000 },
+  { date: "May '25", value: 95000 },
+  { date: "Jun '25", value: 120000 },
+  { date: "Jul '25", value: 148000 },
+  { date: "Aug '25", value: 178000 },
+  { date: "Sep '25", value: 215000 },
+  { date: "Oct '25", value: 258000 },
+  { date: "Nov '25", value: 370000 },
+  { date: "Dec '25", value: 355000 },
+  { date: "Jan '26", value: 390000 },
+  { date: "Feb '26", value: 420000 },
+  { date: "Mar '26", value: 375000 },
+  { date: "Apr '26", value: 290000 },
+]
+
+export const SWAP_BREAKDOWN: SwapDataPoint[] = [
+  { date: "Apr '25", confidential: 5000, normal: 0 },
+  { date: "May '25", confidential: 80000, normal: 25000 },
+  { date: "Jun '25", confidential: 105000, normal: 30000 },
+  { date: "Jul '25", confidential: 128000, normal: 35000 },
+  { date: "Aug '25", confidential: 145000, normal: 45000 },
+  { date: "Sep '25", confidential: 175000, normal: 50000 },
+  { date: "Oct '25", confidential: 210000, normal: 60000 },
+  { date: "Nov '25", confidential: 245000, normal: 80000 },
+  { date: "Dec '25", confidential: 260000, normal: 95000 },
+  { date: "Jan '26", confidential: 270000, normal: 100000 },
+  { date: "Feb '26", confidential: 255000, normal: 105000 },
+  { date: "Mar '26", confidential: 240000, normal: 95000 },
+  { date: "Apr '26", confidential: 200000, normal: 90000 },
 ]
 
 export const GAUGE_VALUE = 14.3

@@ -4,12 +4,16 @@ import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import { cn } from "@/lib/utils"
 
-function parseValue(raw: string): { num: number; suffix: string; decimals: number } {
+function parseValue(raw: string): { num: number; prefix: string; suffix: string; decimals: number } {
   const s = raw.trim()
-  if (s.endsWith("%")) return { num: parseFloat(s), suffix: "%", decimals: 1 }
-  if (s.endsWith("M")) return { num: parseFloat(s), suffix: "M", decimals: 2 }
-  if (s.endsWith("K")) return { num: parseFloat(s), suffix: "K", decimals: 1 }
-  return { num: parseFloat(s), suffix: "", decimals: 1 }
+  const prefix = s.startsWith("$") ? "$" : ""
+  const body = s.replace(/^\$/, "").replace(/,/g, "")
+  if (body.endsWith("%")) return { num: parseFloat(body), prefix, suffix: "%", decimals: 1 }
+  if (body.endsWith("B")) return { num: parseFloat(body), prefix, suffix: "B", decimals: 2 }
+  if (body.endsWith("M")) return { num: parseFloat(body), prefix, suffix: "M", decimals: 2 }
+  if (body.endsWith("K")) return { num: parseFloat(body), prefix, suffix: "K", decimals: 1 }
+  const num = parseFloat(body)
+  return { num: isNaN(num) ? 0 : num, prefix, suffix: "", decimals: 0 }
 }
 
 interface AnimatedNumberProps {
@@ -33,7 +37,7 @@ export function AnimatedNumber({
     const el = ref.current
     if (!el) return
 
-    const { num, suffix, decimals } = parseValue(value)
+    const { num, prefix, suffix, decimals } = parseValue(value)
     const obj = { v: 0 }
 
     const runAnimation = () => {
@@ -43,7 +47,7 @@ export function AnimatedNumber({
         delay,
         ease: "power2.out",
         onUpdate() {
-          el.textContent = obj.v.toFixed(decimals) + suffix
+          el.textContent = prefix + obj.v.toFixed(decimals) + suffix
         },
         onComplete() {
           el.textContent = value

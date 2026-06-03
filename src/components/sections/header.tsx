@@ -1,17 +1,6 @@
 function NearLogo() {
   return (
-    <div className="w-8 h-8 rounded-lg bg-near-green flex items-center justify-center shrink-0">
-      <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" aria-hidden>
-        {/* NEAR "N" mark: left bar, diagonal from top-left to bottom-right, right bar */}
-        <path
-          d="M6 18V6l12 12V6"
-          stroke="#0B0D0D"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </div>
+    <img src="/images/NEAR.png" alt="NEAR" className="w-8 h-8 shrink-0" />
   )
 }
 

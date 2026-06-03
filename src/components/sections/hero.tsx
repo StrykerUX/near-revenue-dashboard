@@ -7,9 +7,14 @@ import { GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_
 
 export function Hero() {
   return (
-    <section className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+    <section
+      className="relative grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 rounded-2xl overflow-hidden px-10 py-12"
+      style={{ backgroundImage: "url('/images/background-1.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}
+    >
+      <div className="absolute -inset-px pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(11,13,13,0.3), rgba(11,13,13,1) 90%)" }} />
+      <div className="absolute -inset-px pointer-events-none" style={{ background: "linear-gradient(225deg, rgba(11,13,13,0.2), rgba(11,13,13,1))" }} />
       {/* Left: headline + big number */}
-      <div className="lg:col-span-3 flex flex-col justify-center gap-5">
+      <div className="relative z-10 lg:col-span-3 flex flex-col justify-center gap-5">
         <div className="flex items-center gap-2">
           <span className="text-near-muted text-xs font-medium tracking-widest uppercase">+ Total fees generated</span>
         </div>
@@ -50,7 +55,7 @@ export function Hero() {
       </div>
 
       {/* Right: capture rate card */}
-      <div className="lg:col-span-2">
+      <div className="relative z-10 lg:col-span-2">
         <div className="rounded-2xl border border-near-border bg-near-card p-6 flex flex-col gap-4">
           <Gauge value={GAUGE_VALUE} />
 
