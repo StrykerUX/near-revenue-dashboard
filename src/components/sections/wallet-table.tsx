@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { AnimatedNumber } from "@/components/ui/animated-number"
-import { WALLET_ROWS } from "@/lib/data"
+import type { WalletRow } from "@/lib/types"
 
-export function WalletTable() {
+export function WalletTable({ rows }: { rows: WalletRow[] }) {
   const [animated, setAnimated] = useState(false)
   const tbodyRef = useRef<HTMLTableSectionElement>(null)
 
@@ -53,7 +53,7 @@ export function WalletTable() {
             </tr>
           </thead>
           <tbody ref={tbodyRef} className="divide-y divide-near-border">
-            {WALLET_ROWS.map((row, i) => (
+            {rows.map((row, i) => (
               <tr key={row.name} className="hover:bg-near-card-hover transition-colors">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">

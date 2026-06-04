@@ -3,10 +3,10 @@
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { AnimatedNumber } from "@/components/ui/animated-number"
-import { STATS } from "@/lib/data"
+import type { StatCard } from "@/lib/types"
 
-function StatCard({ stat, index, isSelected, onClick }: {
-  stat: typeof STATS[number]
+function StatCardItem({ stat, index, isSelected, onClick }: {
+  stat: StatCard
   index: number
   isSelected: boolean
   onClick: () => void
@@ -51,17 +51,17 @@ function StatCard({ stat, index, isSelected, onClick }: {
   )
 }
 
-export function StatsGrid() {
+export function StatsGrid({ stats }: { stats: StatCard[] }) {
   const [selected, setSelected] = useState(0)
 
-  const topRow = STATS.slice(0, 3)
-  const bottomRow = STATS.slice(3)
+  const topRow = stats.slice(0, 3)
+  const bottomRow = stats.slice(3)
 
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {topRow.map((stat, i) => (
-          <StatCard
+          <StatCardItem
             key={stat.label}
             stat={stat}
             index={i}
@@ -73,7 +73,7 @@ export function StatsGrid() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="hidden md:block" />
         {bottomRow.map((stat, i) => (
-          <StatCard
+          <StatCardItem
             key={stat.label}
             stat={stat}
             index={i + 3}

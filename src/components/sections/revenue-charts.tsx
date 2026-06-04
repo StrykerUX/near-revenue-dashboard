@@ -6,9 +6,10 @@ import { Dropdown } from "@/components/ui/dropdown"
 import { RevenueBarChart } from "@/components/charts/bar-chart"
 import { EmissionsLineChart } from "@/components/charts/line-chart"
 import { SwapBreakdownChart } from "@/components/charts/stacked-bar-chart"
-import { REVENUE_MONTHLY, EMISSIONS_SERIES, CONFIDENTIAL_TVL, SWAP_BREAKDOWN } from "@/lib/data"
+import { EMISSIONS_SERIES, CONFIDENTIAL_TVL, SWAP_BREAKDOWN } from "@/lib/data"
+import type { TimeSeriesPoint } from "@/lib/types"
 
-export function RevenueCharts() {
+export function RevenueCharts({ revenueSeries }: { revenueSeries: TimeSeriesPoint[] }) {
   const [tvlTimeframe, setTvlTimeframe] = useState("Monthly")
   const [swapTimeframe, setSwapTimeframe] = useState("Daily")
   const [revenueTimeframe, setRevenueTimeframe] = useState("Monthly")
@@ -64,7 +65,7 @@ export function RevenueCharts() {
           <Dropdown value={revenueTimeframe} onChange={setRevenueTimeframe} options={["Monthly", "Weekly"]} />
         </div>
         <div className="px-2 pb-4">
-          <RevenueBarChart data={REVENUE_MONTHLY} />
+          <RevenueBarChart data={revenueSeries} />
         </div>
       </Card>
 

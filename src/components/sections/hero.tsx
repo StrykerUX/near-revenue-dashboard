@@ -3,9 +3,26 @@ import { Sparkline } from "@/components/charts/sparkline"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { AnimatedNumber } from "@/components/ui/animated-number"
-import { GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA } from "@/lib/data"
 
-export function Hero() {
+interface HeroProps {
+  totalFeesDisplay: string
+  feesLast30d: string
+  gaugeValue: number
+  /** Signed percentage change in revenue (last 30 days). Positive = up. */
+  feesChange: number
+  sparklineData: number[]
+}
+
+export function Hero({
+  totalFeesDisplay,
+  feesLast30d,
+  gaugeValue,
+  feesChange,
+  sparklineData,
+}: HeroProps) {
+  const isUp = feesChange >= 0
+  const changeLabel = Math.abs(feesChange).toFixed(1)
+
   return (
     <section
       className="relative grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 rounded-2xl overflow-hidden px-10 py-12"
@@ -26,7 +43,7 @@ export function Hero() {
           </p>
           <div className="flex items-baseline gap-4 flex-wrap">
             <AnimatedNumber
-              value={TOTAL_FEES_DISPLAY}
+              value={totalFeesDisplay}
               duration={2}
               className="text-near-text font-bold leading-none"
               style={{ fontSize: "clamp(3rem, 7vw, 5.5rem)" }}
@@ -35,7 +52,7 @@ export function Hero() {
               className="text-near-green font-bold leading-none"
               style={{ fontSize: "clamp(2rem, 5vw, 4rem)" }}
             >
-              NEAR
+              USD
             </span>
           </div>
         </div>
@@ -46,9 +63,9 @@ export function Hero() {
         </p>
 
         <div>
-          <Badge variant="red">
-            <span>▼ <AnimatedNumber value={FEES_CHANGE} duration={1.2} />%</span>
-            <span className="text-near-red/60">·</span>
+          <Badge variant={isUp ? "green" : "red"}>
+            <span>{isUp ? "▲" : "▼"} <AnimatedNumber value={changeLabel} duration={1.2} />%</span>
+            <span className={isUp ? "text-near-green/60" : "text-near-red/60"}>·</span>
             <span>rev 30d</span>
           </Badge>
         </div>
@@ -57,7 +74,7 @@ export function Hero() {
       {/* Right: capture rate card */}
       <div className="relative z-10 lg:col-span-2">
         <div className="rounded-2xl border border-near-border bg-near-card p-6 flex flex-col gap-4">
-          <Gauge value={GAUGE_VALUE} />
+          <Gauge value={gaugeValue} />
 
           <p className="text-xs text-near-muted text-center leading-relaxed">
             Share of total fees captured as protocol revenue.
@@ -70,7 +87,7 @@ export function Hero() {
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-baseline gap-2">
                 <AnimatedNumber
-                  value={FEES_LAST_30D}
+                  value={feesLast30d}
                   duration={1.5}
                   delay={0.3}
                   className="text-2xl font-bold text-near-text"
@@ -78,7 +95,7 @@ export function Hero() {
                 <span className="text-sm text-near-muted font-medium">NEAR</span>
               </div>
               <div className="flex-1 min-w-0 max-w-[140px]">
-                <Sparkline data={SPARKLINE_DATA} />
+                <Sparkline data={sparklineData} />
               </div>
             </div>
           </div>

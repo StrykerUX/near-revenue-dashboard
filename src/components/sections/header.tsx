@@ -4,7 +4,7 @@ function NearLogo() {
   )
 }
 
-export function Header() {
+export function Header({ updatedAt }: { updatedAt: string }) {
   return (
     <header className="flex items-center justify-between px-6 py-4 border-b border-near-border">
       <div className="flex items-center gap-3">
@@ -16,7 +16,7 @@ export function Header() {
       </div>
       <div className="flex items-center gap-2">
         <span className="w-2 h-2 rounded-full bg-near-green" />
-        <span className="text-xs text-near-muted">Updated · May 27, 2026</span>
+        <span className="text-xs text-near-muted">Updated · {updatedAt}</span>
       </div>
     </header>
   )
