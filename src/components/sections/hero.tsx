@@ -57,7 +57,7 @@ export function Hero({
           </div>
         </div>
 
-        <p className="text-near-muted text-sm leading-relaxed max-w-lg">
+        <p className="text-near-muted text-sm leading-relaxed max-w-lg text-balance">
           Gross fees generated across NEAR Protocol and NEAR Intents, all-time — the economic activity
           NEAR settles from every swap routed through NEAR Intents.
         </p>
