@@ -45,11 +45,11 @@ export function Hero({
             <AnimatedNumber
               value={totalFeesDisplay}
               duration={2}
-              className="text-near-text font-bold leading-none"
+              className="text-near-text font-light leading-none"
               style={{ fontSize: "clamp(3rem, 7vw, 5.5rem)" }}
             />
             <span
-              className="text-near-green font-bold leading-none"
+              className="text-near-green font-light leading-none"
               style={{ fontSize: "clamp(2rem, 5vw, 4rem)" }}
             >
               USD
