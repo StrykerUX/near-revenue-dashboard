@@ -8,53 +8,63 @@ import { Faq } from "@/components/sections/faq"
 import { Footer } from "@/components/sections/footer"
 import { fetchDashboardData } from "@/lib/api"
 import { formatUSD, formatNear, formatMonthLabel, formatUpdatedAt } from "@/lib/utils"
-import { STATS } from "@/lib/data"
+import { STATS, REVENUE_MONTHLY, WALLET_ROWS, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA } from "@/lib/data"
 import type { StatCard, TimeSeriesPoint, WalletRow } from "@/lib/types"
 
 export default async function Page() {
-  const { snapshot, revenueSeries, walletBreakdown } = await fetchDashboardData()
+  // ── Fallback values (static data) ─────────────────────────────────────────
+  let totalFeesDisplay = TOTAL_FEES_DISPLAY
+  let feesLast30d = FEES_LAST_30D
+  let gaugeValue = GAUGE_VALUE
+  let feesChange = parseFloat(FEES_CHANGE)
+  let sparklineData: number[] = SPARKLINE_DATA
+  let stats: StatCard[] = STATS
+  let revenueChartSeries: TimeSeriesPoint[] = REVENUE_MONTHLY
+  let walletRows: WalletRow[] = WALLET_ROWS
+  let updatedAt = "—"
 
-  const snap = snapshot.data
+  try {
+    const { snapshot, revenueSeries, walletBreakdown } = await fetchDashboardData()
+    const snap = snapshot.data
 
-  // ── Hero data ──────────────────────────────────────────────────────────────
-  const totalFeesDisplay = formatUSD(snap.total_fees.fees_usd_all_time)
-  const feesLast30d = formatNear(snap.total_fees.fees_near_d30)
-  const gaugeValue = parseFloat((snap.capture_rate.capture_rate_d30 * 100).toFixed(1))
-  const feesChange =
-    snap.revenue.revenue_usd_d30_prior > 0
-      ? ((snap.revenue.revenue_usd_d30_current - snap.revenue.revenue_usd_d30_prior) /
-          snap.revenue.revenue_usd_d30_prior) *
-        100
-      : 0
-  const sparklineData = revenueSeries.map((p) => Math.round(p.revenue_usd))
+    totalFeesDisplay = formatUSD(snap.total_fees.fees_usd_all_time)
+    feesLast30d = formatNear(snap.total_fees.fees_near_d30)
+    gaugeValue = parseFloat((snap.capture_rate.capture_rate_d30 * 100).toFixed(1))
+    feesChange =
+      snap.revenue.revenue_usd_d30_prior > 0
+        ? ((snap.revenue.revenue_usd_d30_current - snap.revenue.revenue_usd_d30_prior) /
+            snap.revenue.revenue_usd_d30_prior) *
+          100
+        : 0
 
-  // ── Stats ──────────────────────────────────────────────────────────────────
-  const stats: StatCard[] = [
-    {
-      label: "Revenue · all-time",
-      value: formatUSD(snap.revenue.revenue_usd_all_time),
-      unit: "USD",
-      sub: "Captured by NEAR",
-    },
-    ...STATS.slice(1),
-  ]
+    sparklineData = revenueSeries.map((p) => Math.round(p.revenue_usd))
 
-  // ── Revenue chart series ───────────────────────────────────────────────────
-  const revenueChartSeries: TimeSeriesPoint[] = revenueSeries.map((p) => ({
-    date: formatMonthLabel(p.period_month),
-    value: Math.round(p.revenue_usd),
-  }))
+    stats = [
+      {
+        label: "Revenue · all-time",
+        value: formatUSD(snap.revenue.revenue_usd_all_time),
+        unit: "USD",
+        sub: "Captured by NEAR",
+      },
+      ...STATS.slice(1),
+    ]
 
-  // ── Wallet rows ────────────────────────────────────────────────────────────
-  const walletRows: WalletRow[] = walletBreakdown.map((item) => ({
-    name: item.wallet,
-    share: parseFloat((item.share_all_time * 100).toFixed(1)),
-    totalRevenue: formatNear(item.inflow_near_all_time),
-    pct: parseFloat((item.share_all_time * 100).toFixed(1)),
-  }))
+    revenueChartSeries = revenueSeries.map((p) => ({
+      date: formatMonthLabel(p.period_month),
+      value: Math.round(p.revenue_usd),
+    }))
 
-  // ── Header timestamp ───────────────────────────────────────────────────────
-  const updatedAt = formatUpdatedAt(snapshot.updated_at)
+    walletRows = walletBreakdown.map((item) => ({
+      name: item.wallet,
+      share: parseFloat((item.share_all_time * 100).toFixed(1)),
+      totalRevenue: formatNear(item.inflow_near_all_time),
+      pct: parseFloat((item.share_all_time * 100).toFixed(1)),
+    }))
+
+    updatedAt = formatUpdatedAt(snapshot.updated_at)
+  } catch {
+    // API unavailable — render with static fallback data
+  }
 
   return (
     <main className="min-h-screen bg-near-bg">
