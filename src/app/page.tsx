@@ -6,7 +6,7 @@ import { RevenueCharts } from "@/components/sections/revenue-charts"
 import { WalletTable } from "@/components/sections/wallet-table"
 import { Faq } from "@/components/sections/faq"
 import { Footer } from "@/components/sections/footer"
-import { fetchDashboardData } from "@/lib/api"
+import { fetchDashboardData, type BuybackData } from "@/lib/api"
 import { formatUSD, formatNear, formatMonthLabel, formatUpdatedAt, aggregateEmissionsByMonth, computeRevenueVsEmissions } from "@/lib/utils"
 import { STATS, REVENUE_MONTHLY, WALLET_ROWS, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES } from "@/lib/data"
 import type { StatCard, TimeSeriesPoint, WalletRow } from "@/lib/types"
@@ -24,9 +24,11 @@ export default async function Page() {
   let updatedAt = "—"
   let emissionsMonthly: TimeSeriesPoint[] = EMISSIONS_SERIES
   let emissionsDaily: TimeSeriesPoint[] = EMISSIONS_SERIES
+  let buyback: BuybackData | null = null
 
   try {
-    const { snapshot, revenueSeries, walletBreakdown, emissionsDaily: emissionsDailyRaw } = await fetchDashboardData()
+    const { snapshot, revenueSeries, walletBreakdown, emissionsDaily: emissionsDailyRaw, buyback: buybackData } = await fetchDashboardData()
+    buyback = buybackData
     const snap = snapshot.data
 
     totalFeesDisplay = formatUSD(snap.total_fees.fees_usd_all_time)
@@ -92,7 +94,7 @@ export default async function Page() {
           emissionsMonthly={emissionsMonthly}
           emissionsDaily={emissionsDaily}
         />
-        <WalletTable rows={walletRows} />
+        <WalletTable rows={walletRows} buyback={buyback} />
         <Faq />
       </div>
       <Footer />

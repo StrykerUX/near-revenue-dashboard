@@ -91,6 +91,20 @@ export interface RevenueSeriesPoint {
   is_stale: number
 }
 
+// ─── Buyback types ───────────────────────────────────────────────────────────
+
+export interface BuybackData {
+  buyback_near_all_time: number
+  buyback_near_ytd: number
+  buyback_near_d30: number
+  buyback_near_d7: number
+  pct_of_revenue_all_time: number
+  pct_of_revenue_ytd: number
+  pct_of_revenue_d30: number
+  pct_of_revenue_d7: number
+  is_stale: number
+}
+
 // ─── Emissions types ──────────────────────────────────────────────────────────
 
 export interface EmissionsSeriesPoint {
@@ -152,6 +166,10 @@ export function fetchWalletBreakdown() {
   return apiFetch<WalletBreakdownItem[]>("/v1/wallets/breakdown")
 }
 
+export function fetchBuyback() {
+  return apiFetch<BuybackData>("/v1/wallets/buyback")
+}
+
 export function fetchEmissionsSeries() {
   const to = new Date().toISOString().slice(0, 10)
   return apiFetch<EmissionsSeriesPoint[]>("/v1/series/emissions", {
@@ -167,19 +185,22 @@ export interface DashboardData {
   revenueSeries: RevenueSeriesPoint[]
   walletBreakdown: WalletBreakdownItem[]
   emissionsDaily: EmissionsSeriesPoint[]
+  buyback: BuybackData
 }
 
 export async function fetchDashboardData(): Promise<DashboardData> {
-  const [snapshot, revenueEnv, walletEnv, emissionsEnv] = await Promise.all([
+  const [snapshot, revenueEnv, walletEnv, emissionsEnv, buybackEnv] = await Promise.all([
     fetchSnapshot(),
     fetchRevenueSeries(),
     fetchWalletBreakdown(),
     fetchEmissionsSeries(),
+    fetchBuyback(),
   ])
   return {
     snapshot,
     revenueSeries: revenueEnv.data,
     walletBreakdown: walletEnv.data,
     emissionsDaily: emissionsEnv.data,
+    buyback: buybackEnv.data,
   }
 }

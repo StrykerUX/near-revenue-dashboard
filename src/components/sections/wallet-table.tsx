@@ -4,8 +4,15 @@ import { useEffect, useRef, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { AnimatedNumber } from "@/components/ui/animated-number"
 import type { WalletRow } from "@/lib/types"
+import type { BuybackData } from "@/lib/api"
+import { formatNear } from "@/lib/utils"
 
-export function WalletTable({ rows }: { rows: WalletRow[] }) {
+interface WalletTableProps {
+  rows: WalletRow[]
+  buyback: BuybackData | null
+}
+
+export function WalletTable({ rows, buyback }: WalletTableProps) {
   const [animated, setAnimated] = useState(false)
   const tbodyRef = useRef<HTMLTableSectionElement>(null)
 
@@ -26,13 +33,36 @@ export function WalletTable({ rows }: { rows: WalletRow[] }) {
   }, [])
 
   return (
-    <Card padding="none" className="overflow-hidden">
+    <Card padding="none" className="overflow-hidden ring-2 ring-blue-500/70">
       <div className="p-6 pb-4">
         <h2 className="text-base font-semibold text-near-text mb-1">Revenue wallet breakdown</h2>
         <p className="text-xs text-near-muted">
           All-time revenue distributed across NEAR&apos;s on-chain revenue wallets.
         </p>
       </div>
+
+      {buyback && (
+        <div className="mx-6 mb-4 rounded-xl border border-near-border bg-near-card px-4 py-3 flex items-center justify-between gap-4">
+          <p className="text-xs text-near-muted">
+            In the last 30 days,{" "}
+            <span className="text-near-green font-medium">
+              {(buyback.pct_of_revenue_d30 * 100).toFixed(1)}% of revenue
+            </span>{" "}
+            went to buybacks
+          </p>
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="text-right">
+              <p className="text-xs text-near-subtle">30d</p>
+              <p className="text-sm font-medium text-near-text">{formatNear(buyback.buyback_near_d30)} NEAR</p>
+            </div>
+            <div className="w-px h-8 bg-near-border" />
+            <div className="text-right">
+              <p className="text-xs text-near-subtle">All-time</p>
+              <p className="text-sm font-medium text-near-text">{formatNear(buyback.buyback_near_all_time)} NEAR</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
