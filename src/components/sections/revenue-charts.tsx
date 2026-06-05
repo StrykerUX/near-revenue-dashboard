@@ -24,7 +24,7 @@ export function RevenueCharts({ revenueSeries, emissionsMonthly, emissionsDaily 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Confidential TVL */}
-      <Card padding="none" className="overflow-hidden ring-2 ring-red-500/70">
+      <Card padding="none" className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-red-500/70" : ""}`}>
         <div className="p-6 pb-2 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-base font-semibold text-near-text mb-1">Confidential TVL</h2>
@@ -38,7 +38,7 @@ export function RevenueCharts({ revenueSeries, emissionsMonthly, emissionsDaily 
       </Card>
 
       {/* NEAR Intent Swap Breakdown */}
-      <Card padding="none" className="overflow-hidden ring-2 ring-red-500/70">
+      <Card padding="none" className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-red-500/70" : ""}`}>
         <div className="p-6 pb-2 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-base font-semibold text-near-text mb-1">NEAR Intent Swap Breakdown</h2>
@@ -62,7 +62,7 @@ export function RevenueCharts({ revenueSeries, emissionsMonthly, emissionsDaily 
       </Card>
 
       {/* Revenue over time */}
-      <Card padding="none" className="overflow-hidden ring-2 ring-blue-500/70">
+      <Card padding="none" className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-blue-500/70" : ""}`}>
         <div className="p-6 pb-2 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-base font-semibold text-near-text mb-1">Revenue over time</h2>
@@ -76,7 +76,7 @@ export function RevenueCharts({ revenueSeries, emissionsMonthly, emissionsDaily 
       </Card>
 
       {/* Revenue vs emissions */}
-      <Card padding="none" className="overflow-hidden ring-2 ring-blue-500/70">
+      <Card padding="none" className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-blue-500/70" : ""}`}>
         <div className="p-6 pb-2 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-base font-semibold text-near-text mb-1">Revenue vs emissions</h2>

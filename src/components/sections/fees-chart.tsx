@@ -4,7 +4,7 @@ import { TOTAL_FEES_SERIES } from "@/lib/data"
 
 export function FeesChart() {
   return (
-    <Card padding="none" className="overflow-hidden">
+    <Card padding="none" className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-red-500/70" : ""}`}>
       <div className="p-6 pb-2">
         <div className="flex items-center gap-2 mb-1">
           <h2 className="text-base font-semibold text-near-text">Total fees generated</h2>

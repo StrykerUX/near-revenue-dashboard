@@ -16,7 +16,7 @@ export function Header({ updatedAt }: { updatedAt: string }) {
       </div>
       <div className="flex items-center gap-2">
         <span className="w-2 h-2 rounded-full bg-near-green" />
-        <span className="text-xs text-near-muted">Updated · {updatedAt}</span>
+        <span className={`text-xs text-near-muted${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-blue-500/70 rounded px-1" : ""}`}>Updated · {updatedAt}</span>
       </div>
     </header>
   )
