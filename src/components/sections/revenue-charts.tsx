@@ -84,7 +84,7 @@ export function RevenueCharts({ revenueSeries, emissionsMonthly, emissionsDaily 
               Comparison of protocol revenue relative to token issuance.
             </p>
           </div>
-          <Dropdown value={emissionsMode} onChange={setEmissionsMode} options={["Monthly", "Daily"]} />
+          {/* Daily view hidden until daily revenue data is available */}
         </div>
         <div className="px-6 pb-2">
           <div className="flex items-center gap-2 text-xs text-near-muted">
