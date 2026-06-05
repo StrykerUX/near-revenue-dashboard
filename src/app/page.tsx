@@ -7,8 +7,8 @@ import { WalletTable } from "@/components/sections/wallet-table"
 import { Faq } from "@/components/sections/faq"
 import { Footer } from "@/components/sections/footer"
 import { fetchDashboardData } from "@/lib/api"
-import { formatUSD, formatNear, formatMonthLabel, formatUpdatedAt } from "@/lib/utils"
-import { STATS, REVENUE_MONTHLY, WALLET_ROWS, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA } from "@/lib/data"
+import { formatUSD, formatNear, formatMonthLabel, formatUpdatedAt, aggregateEmissionsByMonth, computeRevenueVsEmissions } from "@/lib/utils"
+import { STATS, REVENUE_MONTHLY, WALLET_ROWS, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES } from "@/lib/data"
 import type { StatCard, TimeSeriesPoint, WalletRow } from "@/lib/types"
 
 export default async function Page() {
@@ -22,9 +22,11 @@ export default async function Page() {
   let revenueChartSeries: TimeSeriesPoint[] = REVENUE_MONTHLY
   let walletRows: WalletRow[] = WALLET_ROWS
   let updatedAt = "—"
+  let emissionsMonthly: TimeSeriesPoint[] = EMISSIONS_SERIES
+  let emissionsDaily: TimeSeriesPoint[] = EMISSIONS_SERIES
 
   try {
-    const { snapshot, revenueSeries, walletBreakdown } = await fetchDashboardData()
+    const { snapshot, revenueSeries, walletBreakdown, emissionsDaily: emissionsDailyRaw } = await fetchDashboardData()
     const snap = snapshot.data
 
     totalFeesDisplay = formatUSD(snap.total_fees.fees_usd_all_time)
@@ -62,6 +64,12 @@ export default async function Page() {
     }))
 
     updatedAt = formatUpdatedAt(snapshot.updated_at)
+
+    const monthlyEmissionsMap = aggregateEmissionsByMonth(emissionsDailyRaw)
+    emissionsMonthly = computeRevenueVsEmissions(revenueSeries, monthlyEmissionsMap)
+    emissionsDaily = emissionsDailyRaw
+      .slice(-90)
+      .map((p) => ({ date: p.date_at, value: Math.round(p.emissions_near) }))
   } catch {
     // API unavailable — render with static fallback data
   }
@@ -79,7 +87,11 @@ export default async function Page() {
         />
         <StatsGrid stats={stats} />
         <FeesChart />
-        <RevenueCharts revenueSeries={revenueChartSeries} />
+        <RevenueCharts
+          revenueSeries={revenueChartSeries}
+          emissionsMonthly={emissionsMonthly}
+          emissionsDaily={emissionsDaily}
+        />
         <WalletTable rows={walletRows} />
         <Faq />
       </div>

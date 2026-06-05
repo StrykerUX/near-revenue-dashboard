@@ -6,14 +6,20 @@ import { Dropdown } from "@/components/ui/dropdown"
 import { RevenueBarChart } from "@/components/charts/bar-chart"
 import { EmissionsLineChart } from "@/components/charts/line-chart"
 import { SwapBreakdownChart } from "@/components/charts/stacked-bar-chart"
-import { EMISSIONS_SERIES, CONFIDENTIAL_TVL, SWAP_BREAKDOWN } from "@/lib/data"
+import { CONFIDENTIAL_TVL, SWAP_BREAKDOWN } from "@/lib/data"
 import type { TimeSeriesPoint } from "@/lib/types"
 
-export function RevenueCharts({ revenueSeries }: { revenueSeries: TimeSeriesPoint[] }) {
+interface RevenueChartsProps {
+  revenueSeries: TimeSeriesPoint[]
+  emissionsMonthly: TimeSeriesPoint[]
+  emissionsDaily: TimeSeriesPoint[]
+}
+
+export function RevenueCharts({ revenueSeries, emissionsMonthly, emissionsDaily }: RevenueChartsProps) {
   const [tvlTimeframe, setTvlTimeframe] = useState("Monthly")
   const [swapTimeframe, setSwapTimeframe] = useState("Daily")
   const [revenueTimeframe, setRevenueTimeframe] = useState("Monthly")
-  const [emissionsMode, setEmissionsMode] = useState("Absolute")
+  const [emissionsMode, setEmissionsMode] = useState("Monthly")
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -78,7 +84,7 @@ export function RevenueCharts({ revenueSeries }: { revenueSeries: TimeSeriesPoin
               Comparison of protocol revenue relative to token issuance.
             </p>
           </div>
-          <Dropdown value={emissionsMode} onChange={setEmissionsMode} options={["Absolute", "Percent"]} />
+          <Dropdown value={emissionsMode} onChange={setEmissionsMode} options={["Monthly", "Daily"]} />
         </div>
         <div className="px-6 pb-2">
           <div className="flex items-center gap-2 text-xs text-near-muted">
@@ -87,7 +93,10 @@ export function RevenueCharts({ revenueSeries }: { revenueSeries: TimeSeriesPoin
           </div>
         </div>
         <div className="px-2 pb-4">
-          <EmissionsLineChart data={EMISSIONS_SERIES} />
+          <EmissionsLineChart
+            data={emissionsMode === "Monthly" ? emissionsMonthly : emissionsDaily}
+            mode={emissionsMode === "Monthly" ? "monthly" : "daily"}
+          />
         </div>
       </Card>
     </div>

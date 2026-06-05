@@ -11,28 +11,47 @@ import {
   type TooltipProps,
 } from "recharts"
 import type { TimeSeriesPoint } from "@/lib/types"
+import { formatNear } from "@/lib/utils"
 
 interface EmissionsLineChartProps {
   data: TimeSeriesPoint[]
+  mode?: "monthly" | "daily"
 }
 
-function CustomTooltip({ active, payload, label }: TooltipProps<number, string>) {
+function MonthlyTooltip({ active, payload, label }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null
   const val = payload[0].value ?? 0
   return (
     <div className="bg-near-card border border-near-border rounded-lg px-3 py-2 text-sm">
       <p className="text-near-subtle text-xs mb-1">{label}</p>
-      <span className="text-near-green font-medium">{val.toFixed(1)}%</span>
+      <span className="text-near-green font-medium">{val.toFixed(2)}%</span>
     </div>
   )
 }
 
-function formatDate(dateStr: string): string {
+function DailyTooltip({ active, payload, label }: TooltipProps<number, string>) {
+  if (!active || !payload?.length) return null
+  const val = payload[0].value ?? 0
+  return (
+    <div className="bg-near-card border border-near-border rounded-lg px-3 py-2 text-sm">
+      <p className="text-near-subtle text-xs mb-1">{label}</p>
+      <span className="text-near-green font-medium">{formatNear(val)} NEAR</span>
+    </div>
+  )
+}
+
+function formatMonthTick(dateStr: string): string {
   const d = new Date(dateStr)
   return d.toLocaleDateString("en-US", { month: "short" })
 }
 
+function formatDayTick(dateStr: string): string {
+  const d = new Date(dateStr)
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+}
+
 function getBimonthlyTicks(data: TimeSeriesPoint[]): string[] {
+  if (data.length === 0) return []
   const targets = [4, 6, 8, 10, 0, 2, 4]
   const seen = new Set<number>()
   const ticks: string[] = []
@@ -43,15 +62,19 @@ function getBimonthlyTicks(data: TimeSeriesPoint[]): string[] {
       ticks.push(d.date)
     }
   }
-  const last = data[data.length - 1]
-  if (new Date(last.date).getMonth() === 4 && !ticks.includes(last.date)) {
-    ticks.push(last.date)
-  }
   return ticks
 }
 
-export function EmissionsLineChart({ data }: EmissionsLineChartProps) {
-  const ticks = getBimonthlyTicks(data)
+function getMonthlyTicks(data: TimeSeriesPoint[]): string[] {
+  if (data.length === 0) return []
+  return data.map((p) => p.date)
+}
+
+export function EmissionsLineChart({ data, mode = "monthly" }: EmissionsLineChartProps) {
+  if (data.length === 0) return null
+
+  const isDaily = mode === "daily"
+  const ticks = isDaily ? getBimonthlyTicks(data) : getMonthlyTicks(data)
 
   return (
     <ResponsiveContainer width="100%" height={240}>
@@ -60,21 +83,23 @@ export function EmissionsLineChart({ data }: EmissionsLineChartProps) {
         <XAxis
           dataKey="date"
           ticks={ticks}
-          tickFormatter={formatDate}
+          tickFormatter={isDaily ? formatDayTick : formatMonthTick}
           tick={{ fill: "var(--near-subtle)", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
         />
         <YAxis
-          ticks={[0, 5, 10, 15, 20]}
-          tickFormatter={(v) => v === 0 ? "0.0%" : `${v}.0%`}
+          tickFormatter={isDaily ? (v) => formatNear(v) : (v) => `${v.toFixed(1)}%`}
           tick={{ fill: "var(--near-subtle)", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
-          width={48}
-          domain={[0, 20]}
+          width={isDaily ? 56 : 48}
+          domain={[0, "auto"]}
         />
-        <Tooltip content={<CustomTooltip />} cursor={{ stroke: "var(--near-border)" }} />
+        <Tooltip
+          content={isDaily ? <DailyTooltip /> : <MonthlyTooltip />}
+          cursor={{ stroke: "var(--near-border)" }}
+        />
         <Line
           type="monotone"
           dataKey="value"

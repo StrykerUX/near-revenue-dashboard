@@ -1,5 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import type { EmissionsSeriesPoint, RevenueSeriesPoint } from "./api"
+import type { TimeSeriesPoint } from "./types"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -34,4 +36,37 @@ export function formatUpdatedAt(isoDateTime: string): string {
     day: "2-digit",
     year: "numeric",
   })
+}
+
+/** Sum daily emissions_near by month key "YYYY-MM". */
+export function aggregateEmissionsByMonth(
+  points: EmissionsSeriesPoint[]
+): Record<string, number> {
+  const result: Record<string, number> = {}
+  for (const p of points) {
+    const key = p.date_at.slice(0, 7) // "2025-08"
+    result[key] = (result[key] ?? 0) + p.emissions_near
+  }
+  return result
+}
+
+/**
+ * Compute revenue_near / monthly_emissions * 100 for each month present in both series.
+ * Returns TimeSeriesPoint[] with value = ratio %.
+ */
+export function computeRevenueVsEmissions(
+  revenueSeries: RevenueSeriesPoint[],
+  monthlyEmissions: Record<string, number>
+): TimeSeriesPoint[] {
+  return revenueSeries
+    .map((p) => {
+      const key = p.period_month.slice(0, 7)
+      const emissions = monthlyEmissions[key]
+      if (!emissions || emissions === 0) return null
+      return {
+        date: p.period_month,
+        value: parseFloat(((p.revenue_near / emissions) * 100).toFixed(2)),
+      }
+    })
+    .filter((p): p is TimeSeriesPoint => p !== null && p.value > 0)
 }

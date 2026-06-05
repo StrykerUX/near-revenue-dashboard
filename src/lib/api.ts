@@ -91,6 +91,17 @@ export interface RevenueSeriesPoint {
   is_stale: number
 }
 
+// ─── Emissions types ──────────────────────────────────────────────────────────
+
+export interface EmissionsSeriesPoint {
+  date_at: string
+  emissions_near: number
+  total_supply_near: number
+  cumulative_emissions_near: number
+  source_used: string
+  is_stale: number
+}
+
 // ─── Wallet types ─────────────────────────────────────────────────────────────
 
 export interface WalletBreakdownItem {
@@ -141,23 +152,34 @@ export function fetchWalletBreakdown() {
   return apiFetch<WalletBreakdownItem[]>("/v1/wallets/breakdown")
 }
 
+export function fetchEmissionsSeries() {
+  const to = new Date().toISOString().slice(0, 10)
+  return apiFetch<EmissionsSeriesPoint[]>("/v1/series/emissions", {
+    from: "2025-01-01",
+    to,
+  })
+}
+
 // ─── Composite dashboard fetch ────────────────────────────────────────────────
 
 export interface DashboardData {
   snapshot: Envelope<SnapshotData>
   revenueSeries: RevenueSeriesPoint[]
   walletBreakdown: WalletBreakdownItem[]
+  emissionsDaily: EmissionsSeriesPoint[]
 }
 
 export async function fetchDashboardData(): Promise<DashboardData> {
-  const [snapshot, revenueEnv, walletEnv] = await Promise.all([
+  const [snapshot, revenueEnv, walletEnv, emissionsEnv] = await Promise.all([
     fetchSnapshot(),
     fetchRevenueSeries(),
     fetchWalletBreakdown(),
+    fetchEmissionsSeries(),
   ])
   return {
     snapshot,
     revenueSeries: revenueEnv.data,
     walletBreakdown: walletEnv.data,
+    emissionsDaily: emissionsEnv.data,
   }
 }
