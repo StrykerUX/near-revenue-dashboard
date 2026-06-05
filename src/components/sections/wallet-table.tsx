@@ -37,7 +37,7 @@ export function WalletTable({ rows, buyback }: WalletTableProps) {
       <div className="p-6 pb-4">
         <h2 className="text-base font-semibold text-near-text mb-1">Revenue wallet breakdown</h2>
         <p className="text-xs text-near-muted">
-          All-time revenue distributed across NEAR&apos;s on-chain revenue wallets.
+          All-time revenue distributed across NEAR&apos;s onchain revenue wallets.
         </p>
       </div>
 

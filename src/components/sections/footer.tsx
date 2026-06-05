@@ -11,7 +11,7 @@ export function Footer() {
         <div className="max-w-md">
           <p className="text-xs text-near-subtle leading-relaxed">
             <strong className="text-near-muted font-medium">Data sources.</strong>{" "}
-            Pulled directly from on-chain sources, including the NEAR Intents smart contract, and
+            Pulled directly from onchain sources, including the NEAR Intents smart contract, and
             updated in real time as transactions are recorded. All fees are denominated in $NEAR.
             Figures shown are illustrative.
           </p>

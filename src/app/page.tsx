@@ -8,7 +8,7 @@ import { Faq } from "@/components/sections/faq"
 import { Footer } from "@/components/sections/footer"
 import { fetchDashboardData, type BuybackData } from "@/lib/api"
 import { formatUSD, formatNear, formatMonthLabel, formatUpdatedAt, aggregateEmissionsByMonth, computeRevenueVsEmissions } from "@/lib/utils"
-import { STATS, REVENUE_MONTHLY, WALLET_ROWS, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES } from "@/lib/data"
+import { STATS, REVENUE_MONTHLY, WALLET_ROWS, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES, TOTAL_FEES_SERIES } from "@/lib/data"
 import type { StatCard, TimeSeriesPoint, WalletRow } from "@/lib/types"
 
 export default async function Page() {
@@ -25,9 +25,10 @@ export default async function Page() {
   let emissionsMonthly: TimeSeriesPoint[] = EMISSIONS_SERIES
   let emissionsDaily: TimeSeriesPoint[] = EMISSIONS_SERIES
   let buyback: BuybackData | null = null
+  let totalFeesSeries: TimeSeriesPoint[] = TOTAL_FEES_SERIES
 
   try {
-    const { snapshot, revenueSeries, walletBreakdown, emissionsDaily: emissionsDailyRaw, buyback: buybackData } = await fetchDashboardData()
+    const { snapshot, revenueSeries, walletBreakdown, emissionsDaily: emissionsDailyRaw, buyback: buybackData, totalFeesSeries: totalFeesRaw } = await fetchDashboardData()
     buyback = buybackData
     const snap = snapshot.data
 
@@ -72,6 +73,14 @@ export default async function Page() {
     emissionsDaily = emissionsDailyRaw
       .slice(-90)
       .map((p) => ({ date: p.date_at, value: Math.round(p.emissions_near) }))
+
+    const validFees = totalFeesRaw.filter((p) => p.cumulative_fees_near > 0)
+    if (validFees.length > 0) {
+      totalFeesSeries = validFees.map((p) => ({
+        date: p.date_at,
+        value: Math.round(p.cumulative_fees_near),
+      }))
+    }
   } catch {
     // API unavailable — render with static fallback data
   }
@@ -88,7 +97,7 @@ export default async function Page() {
           sparklineData={sparklineData}
         />
         <StatsGrid stats={stats} />
-        <FeesChart />
+        <FeesChart data={totalFeesSeries} />
         <RevenueCharts
           revenueSeries={revenueChartSeries}
           emissionsMonthly={emissionsMonthly}

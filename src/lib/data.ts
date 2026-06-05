@@ -88,13 +88,13 @@ export const FAQ_ITEMS: FaqItem[] = [
     id: "04",
     question: "What about NEAR Protocol base fees?",
     answer:
-      "NEAR Protocol base fees are transaction fees paid by users for on-chain activity. A portion of these fees is burned and a portion is allocated as protocol revenue, depending on the transaction type.",
+      "NEAR Protocol base fees are transaction fees paid by users for onchain activity. A portion of these fees is burned and a portion is allocated as protocol revenue, depending on the transaction type.",
   },
   {
     id: "05",
     question: "Where does the data come from?",
     answer:
-      "Data is pulled directly from on-chain sources, including the NEAR Intents smart contract, and updated in real time as transactions are recorded. All fees are denominated in $NEAR. Figures shown are illustrative.",
+      "Data is pulled directly from onchain sources, including the NEAR Intents smart contract, and updated in real time as transactions are recorded. All fees are denominated in $NEAR. Figures shown are illustrative.",
   },
   {
     id: "06",

@@ -1,10 +1,14 @@
 import { Card } from "@/components/ui/card"
 import { FeesAreaChart } from "@/components/charts/area-chart"
-import { TOTAL_FEES_SERIES } from "@/lib/data"
+import type { TimeSeriesPoint } from "@/lib/types"
 
-export function FeesChart() {
+interface FeesChartProps {
+  data: TimeSeriesPoint[]
+}
+
+export function FeesChart({ data }: FeesChartProps) {
   return (
-    <Card padding="none" className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-red-500/70" : ""}`}>
+    <Card padding="none" className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-blue-500/70" : ""}`}>
       <div className="p-6 pb-2">
         <div className="flex items-center gap-2 mb-1">
           <h2 className="text-base font-semibold text-near-text">Total fees generated</h2>
@@ -15,7 +19,7 @@ export function FeesChart() {
         </p>
       </div>
       <div className="px-2 pb-4">
-        <FeesAreaChart data={TOTAL_FEES_SERIES} />
+        <FeesAreaChart data={data} />
       </div>
     </Card>
   )

@@ -17,14 +17,19 @@ interface FeesAreaChartProps {
   data: TimeSeriesPoint[]
 }
 
-const Y_TICKS = [0, 6_300_000, 12_500_000, 18_800_000, 25_000_000]
+function buildYTicks(max: number): number[] {
+  const ceil = Math.ceil(max * 1.15)
+  const step = Math.ceil(ceil / 4 / 100_000) * 100_000
+  return [0, step, step * 2, step * 3, step * 4]
+}
 
 function formatY(v: number): string {
   if (v === 0) return "0"
   if (v >= 1_000_000) {
     const n = v / 1_000_000
-    return `${n % 1 === 0 ? n.toFixed(0) : n}M`
+    return `${n % 1 === 0 ? n.toFixed(0) : n.toFixed(1)}M`
   }
+  if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`
   return String(v)
 }
 
@@ -66,6 +71,9 @@ function getBimonthlyTicks(data: TimeSeriesPoint[]): string[] {
 export function FeesAreaChart({ data }: FeesAreaChartProps) {
   const xTicks = getBimonthlyTicks(data)
   const last = data[data.length - 1]
+  const maxVal = data.reduce((m, p) => Math.max(m, p.value), 0)
+  const yTicks = buildYTicks(maxVal)
+  const yDomain: [number, number] = [0, yTicks[yTicks.length - 1]]
 
   return (
     <ResponsiveContainer width="100%" height={280}>
@@ -86,13 +94,13 @@ export function FeesAreaChart({ data }: FeesAreaChartProps) {
           tickLine={false}
         />
         <YAxis
-          ticks={Y_TICKS}
+          ticks={yTicks}
           tickFormatter={formatY}
           tick={{ fill: "var(--near-subtle)", fontSize: 12 }}
           axisLine={false}
           tickLine={false}
           width={52}
-          domain={[0, 25_000_000]}
+          domain={yDomain}
         />
         <Tooltip content={<CustomTooltip />} cursor={{ stroke: "var(--near-border)" }} />
         <Area

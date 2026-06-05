@@ -105,6 +105,16 @@ export interface BuybackData {
   is_stale: number
 }
 
+// ─── Total Fees series types ──────────────────────────────────────────────────
+
+export interface TotalFeesSeriesPoint {
+  date_at: string
+  total_fees_near: number
+  cumulative_fees_near: number
+  fees_usd: number
+  cumulative_fees_usd: number
+}
+
 // ─── Emissions types ──────────────────────────────────────────────────────────
 
 export interface EmissionsSeriesPoint {
@@ -178,6 +188,15 @@ export function fetchEmissionsSeries() {
   })
 }
 
+export function fetchTotalFeesSeries() {
+  const to = new Date().toISOString().slice(0, 10)
+  return apiFetch<TotalFeesSeriesPoint[]>("/v1/series/total-fees", {
+    from: "2025-01-01",
+    to,
+    grain: "day",
+  })
+}
+
 // ─── Composite dashboard fetch ────────────────────────────────────────────────
 
 export interface DashboardData {
@@ -186,15 +205,17 @@ export interface DashboardData {
   walletBreakdown: WalletBreakdownItem[]
   emissionsDaily: EmissionsSeriesPoint[]
   buyback: BuybackData
+  totalFeesSeries: TotalFeesSeriesPoint[]
 }
 
 export async function fetchDashboardData(): Promise<DashboardData> {
-  const [snapshot, revenueEnv, walletEnv, emissionsEnv, buybackEnv] = await Promise.all([
+  const [snapshot, revenueEnv, walletEnv, emissionsEnv, buybackEnv, totalFeesEnv] = await Promise.all([
     fetchSnapshot(),
     fetchRevenueSeries(),
     fetchWalletBreakdown(),
     fetchEmissionsSeries(),
     fetchBuyback(),
+    fetchTotalFeesSeries(),
   ])
   return {
     snapshot,
@@ -202,5 +223,6 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     walletBreakdown: walletEnv.data,
     emissionsDaily: emissionsEnv.data,
     buyback: buybackEnv.data,
+    totalFeesSeries: totalFeesEnv.data,
   }
 }
