@@ -37,12 +37,11 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
 }
 
 export function RevenueBarChart({ data }: RevenueBarChartProps) {
-  // Show every other bar label: Apr, Jun, Aug, Oct, Dec, Feb, Apr
-  const xTicks = data.filter((_, i) => i % 2 === 0).map((d) => d.date)
+  const xTicks = data.map((d) => d.date)
 
   return (
     <ResponsiveContainer width="100%" height={240}>
-      <BarChart data={data} margin={{ top: 10, right: 0, left: 10, bottom: 0 }} barCategoryGap="28%">
+      <BarChart data={data} margin={{ top: 10, right: 44, left: 10, bottom: 0 }} barCategoryGap="28%">
         <CartesianGrid strokeDasharray="3 3" stroke="var(--near-border)" vertical={false} />
         <XAxis
           dataKey="date"
@@ -53,6 +52,17 @@ export function RevenueBarChart({ data }: RevenueBarChartProps) {
           tickLine={false}
         />
         <YAxis
+          ticks={Y_TICKS}
+          tickFormatter={formatY}
+          tick={{ fill: "var(--near-subtle)", fontSize: 11 }}
+          axisLine={false}
+          tickLine={false}
+          width={44}
+          domain={[0, 500_000]}
+        />
+        <YAxis
+          yAxisId="right"
+          orientation="right"
           ticks={Y_TICKS}
           tickFormatter={formatY}
           tick={{ fill: "var(--near-subtle)", fontSize: 11 }}

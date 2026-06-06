@@ -7,6 +7,7 @@ import { AnimatedNumber } from "@/components/ui/animated-number"
 interface HeroProps {
   totalFeesDisplay: string
   feesLast30d: string
+  feesLast30dUsd: string
   gaugeValue: number
   /** Signed percentage change in revenue (last 30 days). Positive = up. */
   feesChange: number
@@ -16,6 +17,7 @@ interface HeroProps {
 export function Hero({
   totalFeesDisplay,
   feesLast30d,
+  feesLast30dUsd,
   gaugeValue,
   feesChange,
   sparklineData,
@@ -85,14 +87,19 @@ export function Hero({
           <div>
             <p className="text-xs text-near-subtle mb-2">Fees · last 30 days</p>
             <div className="flex items-center justify-between gap-3">
-              <div className="flex items-baseline gap-2">
-                <AnimatedNumber
-                  value={feesLast30d}
-                  duration={1.5}
-                  delay={0.3}
-                  className="text-2xl font-bold text-near-text"
-                />
-                <span className="text-sm text-near-muted font-medium">NEAR</span>
+              <div>
+                <div className="flex items-baseline gap-2">
+                  <AnimatedNumber
+                    value={feesLast30d}
+                    duration={1.5}
+                    delay={0.3}
+                    className="text-2xl font-bold text-near-text"
+                  />
+                  <span className="text-sm text-near-muted font-medium">NEAR</span>
+                </div>
+                {feesLast30dUsd && (
+                  <p className="text-xs text-near-green/70 mt-0.5">≈ {feesLast30dUsd} USD</p>
+                )}
               </div>
               <div className="flex-1 min-w-0 max-w-[140px]">
                 <Sparkline data={sparklineData} />

@@ -49,7 +49,7 @@ export function SwapBreakdownChart({ data }: StackedBarChartProps) {
 
   return (
     <ResponsiveContainer width="100%" height={240}>
-      <BarChart data={data} margin={{ top: 10, right: 0, left: 10, bottom: 0 }} barCategoryGap="28%">
+      <BarChart data={data} margin={{ top: 10, right: 44, left: 10, bottom: 0 }} barCategoryGap="28%">
         <CartesianGrid strokeDasharray="3 3" stroke="var(--near-border)" vertical={false} />
         <XAxis
           dataKey="date"
@@ -60,6 +60,17 @@ export function SwapBreakdownChart({ data }: StackedBarChartProps) {
           tickLine={false}
         />
         <YAxis
+          ticks={Y_TICKS}
+          tickFormatter={formatY}
+          tick={{ fill: "var(--near-subtle)", fontSize: 11 }}
+          axisLine={false}
+          tickLine={false}
+          width={44}
+          domain={[0, 500_000]}
+        />
+        <YAxis
+          yAxisId="right"
+          orientation="right"
           ticks={Y_TICKS}
           tickFormatter={formatY}
           tick={{ fill: "var(--near-subtle)", fontSize: 11 }}

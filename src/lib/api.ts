@@ -57,7 +57,7 @@ interface SnapshotCaptureRate {
   is_stale: number
 }
 
-interface SnapshotCaptureSplit {
+export interface SnapshotCaptureSplit {
   pp_fe_all_time: number
   pp_fe_ytd: number
   pp_fe_d30: number
@@ -139,6 +139,37 @@ export interface WalletBreakdownItem {
   is_stale: number
 }
 
+// ─── Analytics types ──────────────────────────────────────────────────────────
+
+export interface PricePoint {
+  date_at: string
+  near_price_usd: number
+  source_used: string
+  is_stale: number
+}
+
+export interface ConfidentialTvlPoint {
+  date_at: string
+  tvl_usd: number
+  source_used: string
+  is_stale: number
+}
+
+export interface RevenueStreamItem {
+  stream: string
+  revenue_usd_all_time: number
+  revenue_usd_ytd: number
+  revenue_usd_d30: number
+  revenue_usd_d7: number
+  revenue_usd_h24: number
+  revenue_near_all_time: number
+  revenue_near_ytd: number
+  revenue_near_d30: number
+  revenue_near_d7: number
+  revenue_near_h24: number
+  is_stale: number
+}
+
 // ─── Fetch helpers ────────────────────────────────────────────────────────────
 
 async function apiFetch<T>(
@@ -195,6 +226,53 @@ export function fetchTotalFeesSeries() {
     to,
     grain: "day",
   })
+}
+
+export function fetchPriceSeries() {
+  const to = new Date().toISOString().slice(0, 10)
+  const from = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+  return apiFetch<PricePoint[]>("/v1/series/price", { from, to, grain: "day" })
+}
+
+export function fetchConfidentialTvlSeries() {
+  const to = new Date().toISOString().slice(0, 10)
+  return apiFetch<ConfidentialTvlPoint[]>("/v1/series/confidential-tvl", {
+    from: "2026-01-01",
+    to,
+    grain: "day",
+  })
+}
+
+export function fetchRevenueByStream() {
+  return apiFetch<RevenueStreamItem[]>("/v1/metrics/revenue-by-stream")
+}
+
+export function fetchCaptureSplit() {
+  return apiFetch<SnapshotCaptureSplit>("/v1/metrics/capture-split")
+}
+
+// ─── Analytics composite fetch ────────────────────────────────────────────────
+
+export interface AnalyticsData {
+  priceSeries: PricePoint[]
+  tvlSeries: ConfidentialTvlPoint[]
+  revenueStreams: RevenueStreamItem[]
+  captureSplit: SnapshotCaptureSplit
+}
+
+export async function fetchAnalyticsData(): Promise<AnalyticsData> {
+  const [priceEnv, tvlEnv, streamsEnv, splitEnv] = await Promise.all([
+    fetchPriceSeries(),
+    fetchConfidentialTvlSeries(),
+    fetchRevenueByStream(),
+    fetchCaptureSplit(),
+  ])
+  return {
+    priceSeries: priceEnv.data,
+    tvlSeries: tvlEnv.data,
+    revenueStreams: streamsEnv.data,
+    captureSplit: splitEnv.data,
+  }
 }
 
 // ─── Composite dashboard fetch ────────────────────────────────────────────────

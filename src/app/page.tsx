@@ -15,17 +15,19 @@ export default async function Page() {
   // ── Fallback values (static data) ─────────────────────────────────────────
   let totalFeesDisplay = TOTAL_FEES_DISPLAY
   let feesLast30d = FEES_LAST_30D
+  let feesLast30dUsd = ""
   let gaugeValue = GAUGE_VALUE
   let feesChange = parseFloat(FEES_CHANGE)
   let sparklineData: number[] = SPARKLINE_DATA
-  let stats: StatCard[] = STATS
+  let stats: StatCard[] = STATS.slice(1)
   let revenueChartSeries: TimeSeriesPoint[] = REVENUE_MONTHLY
   let walletRows: WalletRow[] = WALLET_ROWS
   let updatedAt = "—"
   let emissionsMonthly: TimeSeriesPoint[] = EMISSIONS_SERIES
   let emissionsDaily: TimeSeriesPoint[] = EMISSIONS_SERIES
   let buyback: BuybackData | null = null
-  let totalFeesSeries: TimeSeriesPoint[] = TOTAL_FEES_SERIES
+  let totalFeesSeriesNear: TimeSeriesPoint[] = TOTAL_FEES_SERIES
+  let totalFeesSeriesUsd: TimeSeriesPoint[] = TOTAL_FEES_SERIES
 
   try {
     const { snapshot, revenueSeries, walletBreakdown, emissionsDaily: emissionsDailyRaw, buyback: buybackData, totalFeesSeries: totalFeesRaw } = await fetchDashboardData()
@@ -34,6 +36,7 @@ export default async function Page() {
 
     totalFeesDisplay = formatUSD(snap.total_fees.fees_usd_all_time)
     feesLast30d = formatNear(snap.total_fees.fees_near_d30)
+    feesLast30dUsd = formatUSD(snap.total_fees.fees_usd_d30)
     gaugeValue = parseFloat((snap.capture_rate.capture_rate_d30 * 100).toFixed(1))
     feesChange =
       snap.revenue.revenue_usd_d30_prior > 0
@@ -44,15 +47,7 @@ export default async function Page() {
 
     sparklineData = revenueSeries.map((p) => Math.round(p.revenue_usd))
 
-    stats = [
-      {
-        label: "Revenue · all-time",
-        value: formatUSD(snap.revenue.revenue_usd_all_time),
-        unit: "USD",
-        sub: "Captured by NEAR",
-      },
-      ...STATS.slice(1),
-    ]
+    stats = STATS.slice(1)
 
     revenueChartSeries = revenueSeries.map((p) => ({
       date: formatMonthLabel(p.period_month),
@@ -74,11 +69,19 @@ export default async function Page() {
       .slice(-90)
       .map((p) => ({ date: p.date_at, value: Math.round(p.emissions_near) }))
 
-    const validFees = totalFeesRaw.filter((p) => p.cumulative_fees_near > 0)
-    if (validFees.length > 0) {
-      totalFeesSeries = validFees.map((p) => ({
+    const validFeesNear = totalFeesRaw.filter((p) => p.cumulative_fees_near > 0)
+    if (validFeesNear.length > 0) {
+      totalFeesSeriesNear = validFeesNear.map((p) => ({
         date: p.date_at,
         value: Math.round(p.cumulative_fees_near),
+      }))
+    }
+
+    const validFeesUsd = totalFeesRaw.filter((p) => p.cumulative_fees_usd > 0)
+    if (validFeesUsd.length > 0) {
+      totalFeesSeriesUsd = validFeesUsd.map((p) => ({
+        date: p.date_at,
+        value: Math.round(p.cumulative_fees_usd),
       }))
     }
   } catch {
@@ -87,23 +90,24 @@ export default async function Page() {
 
   return (
     <main className="min-h-screen bg-near-bg">
-      <Header updatedAt={updatedAt} />
+      <Header updatedAt={updatedAt}  />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
         <Hero
           totalFeesDisplay={totalFeesDisplay}
           feesLast30d={feesLast30d}
+          feesLast30dUsd={feesLast30dUsd}
           gaugeValue={gaugeValue}
           feesChange={feesChange}
           sparklineData={sparklineData}
         />
         <StatsGrid stats={stats} />
-        <FeesChart data={totalFeesSeries} />
+        <FeesChart dataNear={totalFeesSeriesNear} dataUsd={totalFeesSeriesUsd} />
         <RevenueCharts
           revenueSeries={revenueChartSeries}
           emissionsMonthly={emissionsMonthly}
           emissionsDaily={emissionsDaily}
         />
-        <WalletTable rows={walletRows} buyback={buyback} />
+
         <Faq />
       </div>
       <Footer />

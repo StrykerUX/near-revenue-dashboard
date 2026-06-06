@@ -18,7 +18,7 @@ interface RevenueChartsProps {
 export function RevenueCharts({ revenueSeries, emissionsMonthly, emissionsDaily }: RevenueChartsProps) {
   const [tvlTimeframe, setTvlTimeframe] = useState("Monthly")
   const [swapTimeframe, setSwapTimeframe] = useState("Daily")
-  const [revenueTimeframe, setRevenueTimeframe] = useState("Monthly")
+
   const [emissionsMode, setEmissionsMode] = useState("Monthly")
 
   return (
@@ -63,12 +63,9 @@ export function RevenueCharts({ revenueSeries, emissionsMonthly, emissionsDaily 
 
       {/* Revenue over time */}
       <Card padding="none" className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-blue-500/70" : ""}`}>
-        <div className="p-6 pb-2 flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-base font-semibold text-near-text mb-1">Revenue over time</h2>
-            <p className="text-xs text-near-muted">Monthly revenue after partner payouts.</p>
-          </div>
-          <Dropdown value={revenueTimeframe} onChange={setRevenueTimeframe} options={["Monthly"]} />
+        <div className="p-6 pb-2">
+          <h2 className="text-base font-semibold text-near-text mb-1">Monthly Revenue</h2>
+          <p className="text-xs text-near-muted">Monthly revenue after partner payouts.</p>
         </div>
         <div className="px-2 pb-4">
           <RevenueBarChart data={revenueSeries} />

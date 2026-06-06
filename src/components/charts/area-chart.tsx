@@ -15,6 +15,7 @@ import type { TimeSeriesPoint } from "@/lib/types"
 
 interface FeesAreaChartProps {
   data: TimeSeriesPoint[]
+  denomination?: "near" | "usd"
 }
 
 function buildYTicks(max: number): number[] {
@@ -23,14 +24,15 @@ function buildYTicks(max: number): number[] {
   return [0, step, step * 2, step * 3, step * 4]
 }
 
-function formatY(v: number): string {
+function formatY(v: number, denomination: "near" | "usd" = "near"): string {
   if (v === 0) return "0"
+  const prefix = denomination === "usd" ? "$" : ""
   if (v >= 1_000_000) {
     const n = v / 1_000_000
-    return `${n % 1 === 0 ? n.toFixed(0) : n.toFixed(1)}M`
+    return `${prefix}${n % 1 === 0 ? n.toFixed(0) : n.toFixed(1)}M`
   }
-  if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`
-  return String(v)
+  if (v >= 1_000) return `${prefix}${(v / 1_000).toFixed(0)}K`
+  return `${prefix}${v}`
 }
 
 function formatDate(dateStr: string): string {
@@ -38,12 +40,13 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString("en-US", { month: "short" })
 }
 
-function CustomTooltip({ active, payload }: TooltipProps<number, string>) {
+function CustomTooltip({ active, payload, denomination }: TooltipProps<number, string> & { denomination?: "near" | "usd" }) {
   if (!active || !payload?.length) return null
   const val = payload[0].value ?? 0
+  const label = denomination === "usd" ? formatY(val, "usd") : `${formatY(val, "near")} NEAR`
   return (
     <div className="bg-near-card border border-near-border rounded-lg px-3 py-2 text-sm">
-      <span className="text-near-green font-medium">{formatY(val)} NEAR</span>
+      <span className="text-near-green font-medium">{label}</span>
     </div>
   )
 }
@@ -68,7 +71,7 @@ function getBimonthlyTicks(data: TimeSeriesPoint[]): string[] {
   return ticks
 }
 
-export function FeesAreaChart({ data }: FeesAreaChartProps) {
+export function FeesAreaChart({ data, denomination = "near" }: FeesAreaChartProps) {
   const xTicks = getBimonthlyTicks(data)
   const last = data[data.length - 1]
   const maxVal = data.reduce((m, p) => Math.max(m, p.value), 0)
@@ -77,7 +80,7 @@ export function FeesAreaChart({ data }: FeesAreaChartProps) {
 
   return (
     <ResponsiveContainer width="100%" height={280}>
-      <AreaChart data={data} margin={{ top: 16, right: 16, left: 10, bottom: 0 }}>
+      <AreaChart data={data} margin={{ top: 16, right: 52, left: 10, bottom: 0 }}>
         <defs>
           <linearGradient id="feesGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="var(--near-green)" stopOpacity={0.35} />
@@ -95,14 +98,25 @@ export function FeesAreaChart({ data }: FeesAreaChartProps) {
         />
         <YAxis
           ticks={yTicks}
-          tickFormatter={formatY}
+          tickFormatter={(v) => formatY(v, denomination)}
           tick={{ fill: "var(--near-subtle)", fontSize: 12 }}
           axisLine={false}
           tickLine={false}
           width={52}
           domain={yDomain}
         />
-        <Tooltip content={<CustomTooltip />} cursor={{ stroke: "var(--near-border)" }} />
+        <YAxis
+          yAxisId="right"
+          orientation="right"
+          ticks={yTicks}
+          tickFormatter={(v) => formatY(v, denomination)}
+          tick={{ fill: "var(--near-subtle)", fontSize: 12 }}
+          axisLine={false}
+          tickLine={false}
+          width={52}
+          domain={yDomain}
+        />
+        <Tooltip content={<CustomTooltip denomination={denomination} />} cursor={{ stroke: "var(--near-border)" }} />
         <Area
           type="monotone"
           dataKey="value"

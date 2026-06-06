@@ -70,15 +70,26 @@ function getMonthlyTicks(data: TimeSeriesPoint[]): string[] {
   return data.map((p) => p.date)
 }
 
+function buildLineTicks(data: TimeSeriesPoint[]): number[] {
+  const max = data.reduce((m, p) => Math.max(m, p.value), 0)
+  const ceil = Math.ceil(max * 1.15)
+  const step = Math.ceil(ceil / 4 / 10) * 10
+  return [0, step, step * 2, step * 3, step * 4]
+}
+
 export function EmissionsLineChart({ data, mode = "monthly" }: EmissionsLineChartProps) {
   if (data.length === 0) return null
 
   const isDaily = mode === "daily"
   const ticks = isDaily ? getBimonthlyTicks(data) : getMonthlyTicks(data)
+  const yTicks = buildLineTicks(data)
+  const yMax = yTicks[yTicks.length - 1]
+  const yFmt = isDaily ? (v: number) => formatNear(v) : (v: number) => `${v.toFixed(1)}%`
+  const axisWidth = isDaily ? 56 : 48
 
   return (
     <ResponsiveContainer width="100%" height={240}>
-      <LineChart data={data} margin={{ top: 10, right: 0, left: 10, bottom: 0 }}>
+      <LineChart data={data} margin={{ top: 10, right: axisWidth, left: 10, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--near-border)" vertical={false} />
         <XAxis
           dataKey="date"
@@ -89,12 +100,24 @@ export function EmissionsLineChart({ data, mode = "monthly" }: EmissionsLineChar
           tickLine={false}
         />
         <YAxis
-          tickFormatter={isDaily ? (v) => formatNear(v) : (v) => `${v.toFixed(1)}%`}
+          ticks={yTicks}
+          tickFormatter={yFmt}
           tick={{ fill: "var(--near-subtle)", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
-          width={isDaily ? 56 : 48}
-          domain={[0, "auto"]}
+          width={axisWidth}
+          domain={[0, yMax]}
+        />
+        <YAxis
+          yAxisId="right"
+          orientation="right"
+          ticks={yTicks}
+          tickFormatter={yFmt}
+          tick={{ fill: "var(--near-subtle)", fontSize: 11 }}
+          axisLine={false}
+          tickLine={false}
+          width={axisWidth}
+          domain={[0, yMax]}
         />
         <Tooltip
           content={isDaily ? <DailyTooltip /> : <MonthlyTooltip />}

@@ -1,25 +1,35 @@
+"use client"
+
+import { useState } from "react"
 import { Card } from "@/components/ui/card"
+import { Dropdown } from "@/components/ui/dropdown"
 import { FeesAreaChart } from "@/components/charts/area-chart"
 import type { TimeSeriesPoint } from "@/lib/types"
 
 interface FeesChartProps {
-  data: TimeSeriesPoint[]
+  dataNear: TimeSeriesPoint[]
+  dataUsd: TimeSeriesPoint[]
 }
 
-export function FeesChart({ data }: FeesChartProps) {
+export function FeesChart({ dataNear, dataUsd }: FeesChartProps) {
+  const [denomination, setDenomination] = useState<"NEAR" | "USD">("NEAR")
+
   return (
     <Card padding="none" className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-blue-500/70" : ""}`}>
-      <div className="p-6 pb-2">
-        <div className="flex items-center gap-2 mb-1">
-          <h2 className="text-base font-semibold text-near-text">Total fees generated</h2>
-          <span className="text-near-muted text-sm">(NEAR)</span>
+      <div className="p-6 pb-2 flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-base font-semibold text-near-text mb-1">Total fees generated</h2>
+          <p className="text-xs text-near-muted">
+            Cumulative gross fees across NEAR Protocol and NEAR Intents over the trailing year.
+          </p>
         </div>
-        <p className="text-xs text-near-muted">
-          Cumulative gross fees across NEAR Protocol and NEAR Intents over the trailing year.
-        </p>
+        <Dropdown value={denomination} onChange={(v) => setDenomination(v as "NEAR" | "USD")} options={["NEAR", "USD"]} />
       </div>
       <div className="px-2 pb-4">
-        <FeesAreaChart data={data} />
+        <FeesAreaChart
+          data={denomination === "NEAR" ? dataNear : dataUsd}
+          denomination={denomination === "USD" ? "usd" : "near"}
+        />
       </div>
     </Card>
   )

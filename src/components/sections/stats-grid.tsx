@@ -19,7 +19,7 @@ function StatCardItem({ stat, index, isSelected, onClick }: {
         isSelected
           ? "border-near-green/30"
           : "border-near-border hover:border-near-border/60 bg-near-card",
-        process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" && (index === 0 ? "ring-2 ring-blue-500/70" : "ring-2 ring-red-500/70")
+        process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" && "ring-2 ring-red-500/70"
       )}
       style={
         isSelected
@@ -55,34 +55,17 @@ function StatCardItem({ stat, index, isSelected, onClick }: {
 export function StatsGrid({ stats }: { stats: StatCard[] }) {
   const [selected, setSelected] = useState(0)
 
-  const topRow = stats.slice(0, 3)
-  const bottomRow = stats.slice(3)
-
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {topRow.map((stat, i) => (
-          <StatCardItem
-            key={stat.label}
-            stat={stat}
-            index={i}
-            isSelected={i === selected}
-            onClick={() => setSelected(i)}
-          />
-        ))}
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="hidden md:block" />
-        {bottomRow.map((stat, i) => (
-          <StatCardItem
-            key={stat.label}
-            stat={stat}
-            index={i + 3}
-            isSelected={i + 3 === selected}
-            onClick={() => setSelected(i + 3)}
-          />
-        ))}
-      </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {stats.map((stat, i) => (
+        <StatCardItem
+          key={stat.label}
+          stat={stat}
+          index={i}
+          isSelected={i === selected}
+          onClick={() => setSelected(i)}
+        />
+      ))}
     </div>
   )
 }
