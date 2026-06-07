@@ -3,11 +3,13 @@ import { Hero } from "@/components/sections/hero"
 import { StatsGrid } from "@/components/sections/stats-grid"
 import { FeesChart } from "@/components/sections/fees-chart"
 import { CumulativeFeesSection, type CumulativeFeesPoint } from "@/components/sections/cumulative-fees-section"
+import { UniqueUsersSection } from "@/components/sections/unique-users-section"
+import { IntentVolumeSection } from "@/components/sections/intent-volume-section"
 import { RevenueCharts } from "@/components/sections/revenue-charts"
 import { WalletTable } from "@/components/sections/wallet-table"
 import { Faq } from "@/components/sections/faq"
 import { Footer } from "@/components/sections/footer"
-import { fetchDashboardData, type BuybackData } from "@/lib/api"
+import { fetchDashboardData, type BuybackData, type IntentVolumePoint } from "@/lib/api"
 import { formatUSD, formatNear, formatMonthLabel, formatDayLabel, formatUpdatedAt, aggregateEmissionsByMonth, computeRevenueVsEmissions } from "@/lib/utils"
 import { STATS, REVENUE_MONTHLY, WALLET_ROWS, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES, TOTAL_FEES_SERIES } from "@/lib/data"
 import type { StatCard, TimeSeriesPoint, WalletRow } from "@/lib/types"
@@ -16,7 +18,7 @@ export default async function Page() {
   // ── Fallback values (static data) ─────────────────────────────────────────
   let totalFeesDisplay = TOTAL_FEES_DISPLAY
   let feesLast30d = FEES_LAST_30D
-  let feesLast30dUsd = ""
+  let feesLast30dUsd = "$2.83M"
   let gaugeValue = GAUGE_VALUE
   let feesChange = parseFloat(FEES_CHANGE)
   let sparklineData: number[] = SPARKLINE_DATA
@@ -30,9 +32,13 @@ export default async function Page() {
   let totalFeesSeriesNear: TimeSeriesPoint[] = TOTAL_FEES_SERIES
   let totalFeesSeriesUsd: TimeSeriesPoint[] = TOTAL_FEES_SERIES
   let cumulativeFeesData: CumulativeFeesPoint[] = []
+  let intentVolumeChart: IntentVolumePoint[] = []
+  let uniqueUsersD1 = 0
+  let uniqueUsersD7 = 0
+  let uniqueUsersD30 = 0
 
   try {
-    const { snapshot, revenueSeries, walletBreakdown, emissionsDaily: emissionsDailyRaw, buyback: buybackData, totalFeesSeries: totalFeesRaw, intentVolumeSeries } = await fetchDashboardData()
+    const { snapshot, revenueSeries, walletBreakdown, emissionsDaily: emissionsDailyRaw, buyback: buybackData, totalFeesSeries: totalFeesRaw, intentVolumeSeries, uniqueUsers, confidentialTvlUsd } = await fetchDashboardData()
     buyback = buybackData
     const snap = snapshot.data
 
@@ -49,7 +55,25 @@ export default async function Page() {
 
     sparklineData = revenueSeries.map((p) => Math.round(p.revenue_usd))
 
-    stats = STATS.slice(1)
+    const intentVolumeTotal = intentVolumeSeries.length > 0
+      ? intentVolumeSeries[intentVolumeSeries.length - 1].cumulative_volume_usd
+      : 0
+
+    stats = [
+      {
+        ...STATS[1],
+        value: intentVolumeTotal > 0 ? formatUSD(intentVolumeTotal) : STATS[1].value,
+      },
+      {
+        ...STATS[2],
+        value: confidentialTvlUsd > 0 ? formatUSD(confidentialTvlUsd) : STATS[2].value,
+      },
+      {
+        ...STATS[3],
+        value: uniqueUsers ? formatNear(uniqueUsers.d30) : STATS[3].value,
+      },
+      STATS[4],
+    ]
 
     revenueChartSeries = revenueSeries.map((p) => ({
       date: formatMonthLabel(p.period_month),
@@ -85,6 +109,16 @@ export default async function Page() {
         date: p.date_at,
         value: Math.round(p.cumulative_fees_usd),
       }))
+    }
+
+    // Intent volume — passed raw to the standalone chart
+    intentVolumeChart = intentVolumeSeries
+
+    // Unique users
+    if (uniqueUsers) {
+      uniqueUsersD1  = uniqueUsers.d1
+      uniqueUsersD7  = uniqueUsers.d7
+      uniqueUsersD30 = uniqueUsers.d30
     }
 
     // Cumulative Fees section — real daily fees split by fee type, cumulative line,
@@ -123,8 +157,12 @@ export default async function Page() {
           sparklineData={sparklineData}
         />
         <StatsGrid stats={stats} />
+        {(uniqueUsersD1 > 0 || uniqueUsersD7 > 0 || uniqueUsersD30 > 0) && (
+          <UniqueUsersSection d1={uniqueUsersD1} d7={uniqueUsersD7} d30={uniqueUsersD30} />
+        )}
         <FeesChart dataNear={totalFeesSeriesNear} dataUsd={totalFeesSeriesUsd} />
         <CumulativeFeesSection data={cumulativeFeesData} />
+        <IntentVolumeSection data={intentVolumeChart} />
         <RevenueCharts
           revenueSeries={revenueChartSeries}
           emissionsMonthly={emissionsMonthly}

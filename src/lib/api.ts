@@ -127,6 +127,15 @@ export interface IntentVolumePoint {
   is_stale: number
 }
 
+// ─── Unique Users types ───────────────────────────────────────────────────────
+
+export interface UniqueUsersData {
+  d1: number
+  d7: number
+  d30: number
+  snapshot_date: string
+}
+
 // ─── Emissions types ──────────────────────────────────────────────────────────
 
 export interface EmissionsSeriesPoint {
@@ -249,6 +258,10 @@ export function fetchIntentVolumeSeries() {
   })
 }
 
+export function fetchUniqueUsers() {
+  return apiFetch<UniqueUsersData>("/v1/metrics/unique-users")
+}
+
 export function fetchPriceSeries() {
   const to = new Date().toISOString().slice(0, 10)
   const from = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
@@ -262,6 +275,13 @@ export function fetchConfidentialTvlSeries() {
     to,
     grain: "day",
   })
+}
+
+// Lightweight fetch — just the last 3 days to get the current TVL scalar for the stat card.
+export function fetchConfidentialTvlLatest() {
+  const to = new Date().toISOString().slice(0, 10)
+  const from = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+  return apiFetch<ConfidentialTvlPoint[]>("/v1/series/confidential-tvl", { from, to, grain: "day" })
 }
 
 export function fetchRevenueByStream() {
@@ -306,10 +326,12 @@ export interface DashboardData {
   buyback: BuybackData
   totalFeesSeries: TotalFeesSeriesPoint[]
   intentVolumeSeries: IntentVolumePoint[]
+  uniqueUsers: UniqueUsersData | null
+  confidentialTvlUsd: number
 }
 
 export async function fetchDashboardData(): Promise<DashboardData> {
-  const [snapshot, revenueEnv, walletEnv, emissionsEnv, buybackEnv, totalFeesEnv, intentVolumeEnv] = await Promise.all([
+  const [snapshot, revenueEnv, walletEnv, emissionsEnv, buybackEnv, totalFeesEnv, intentVolumeEnv, uniqueUsersEnv, confTvlEnv] = await Promise.all([
     fetchSnapshot(),
     fetchRevenueSeries(),
     fetchWalletBreakdown(),
@@ -317,7 +339,10 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     fetchBuyback(),
     fetchTotalFeesSeries(),
     fetchIntentVolumeSeries(),
+    fetchUniqueUsers(),
+    fetchConfidentialTvlLatest(),
   ])
+  const latestTvl = confTvlEnv.data.filter(p => p.tvl_usd > 0).pop()?.tvl_usd ?? 0
   return {
     snapshot,
     revenueSeries: revenueEnv.data,
@@ -326,5 +351,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     buyback: buybackEnv.data,
     totalFeesSeries: totalFeesEnv.data,
     intentVolumeSeries: intentVolumeEnv.data,
+    uniqueUsers: uniqueUsersEnv.data,
+    confidentialTvlUsd: latestTvl,
   }
 }

@@ -59,9 +59,9 @@ export const WALLET_ROWS: WalletRow[] = [
 
 export const STATS: StatCard[] = [
   { label: "Revenue · all-time", value: "3.27M", unit: "NEAR", sub: "Captured by NEAR" },
-  { label: "Intent Volume · all-time", value: "$19.3B", unit: "Dollars", sub: "Captured on NEAR Intents" },
-  { label: "Confidential TVL · Now", value: "$15.8M", unit: "Dollars", sub: "NEAR Intents Current Confidential TVL" },
-  { label: "Unique Users · 30D", value: "555,000", unit: "", sub: "Unique Users on NEAR Intents" },
+  { label: "Intent Volume · all-time", value: "$20.44B", unit: "Dollars", sub: "Captured on NEAR Intents" },
+  { label: "Confidential TVL · Now", value: "$15.53M", unit: "Dollars", sub: "NEAR Intents Current Confidential TVL" },
+  { label: "Unique Users · 30D", value: "552.7K", unit: "", sub: "Unique Users on NEAR Intents" },
   { label: "Stablecoin Liquidity Depth · Now", value: "$1M", unit: "Dollars", sub: "Max Swap size on NEAR Intents" },
 ]
 
@@ -136,7 +136,7 @@ export const SWAP_BREAKDOWN: SwapDataPoint[] = [
   { date: "Apr '26", confidential: 200000, normal: 90000 },
 ]
 
-export const GAUGE_VALUE = 14.3
-export const FEES_LAST_30D = "1.84M"
-export const TOTAL_FEES_DISPLAY = "22.83M"
-export const FEES_CHANGE = "11.3"
+export const GAUGE_VALUE = 30.9
+export const FEES_LAST_30D = "352.6K"
+export const TOTAL_FEES_DISPLAY = "$34.84M"
+export const FEES_CHANGE = "121.1"
