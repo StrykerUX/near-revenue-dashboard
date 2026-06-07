@@ -130,55 +130,8 @@ export default async function AnalyticsPage() {
           </div>
         </section>
 
-        {/* ── Unique Users ──────────────────────────────────────────────────── */}
-        {(uniqueUsersD1 > 0 || uniqueUsersD7 > 0 || uniqueUsersD30 > 0) && (
-          <UniqueUsersSection d1={uniqueUsersD1} d7={uniqueUsersD7} d30={uniqueUsersD30} />
-        )}
-
         {/* ── Intent Volume ─────────────────────────────────────────────────── */}
         <IntentVolumeSection data={intentVolumeSeries} />
-
-        {/* ── Confidential TVL ──────────────────────────────────────────────── */}
-        <Card
-          padding="none"
-          className="overflow-hidden" style={debugGlow("api")}
-        >
-          <div className="p-6 pb-2">
-            <div className="flex items-start justify-between gap-4 mb-3 flex-wrap">
-              <div className="flex items-center gap-3 flex-wrap">
-                <h2 className="text-base font-semibold text-near-text">
-                  Confidential Intents TVL
-                </h2>
-                <SourceBadge label="Dune Analytics" />
-              </div>
-              {currentTvl > 0 && (
-                <div className="flex items-end gap-4">
-                  {tvlGrowthX && (
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-near-green/70">{tvlGrowthX}× since launch</p>
-                    </div>
-                  )}
-                  <StatBadge value={formatUSD(currentTvl)} label="Current TVL" />
-                </div>
-              )}
-            </div>
-            <p className="text-xs text-near-muted max-w-2xl leading-relaxed">
-              Total value locked in NEAR Intents' confidential pools, tracked daily in USD. Confidential pools
-              enable private swap routing — assets deposited here are used for executing trades without
-              revealing order size or intent on-chain. Data sourced from Dune Analytics (
-              <span className="font-mono text-near-subtle">dune:7586891</span>).
-            </p>
-          </div>
-          <div className="px-2 pb-4 pt-2">
-            {tvlSeries.length > 0 ? (
-              <TvlBarChart data={tvlSeries} />
-            ) : (
-              <div className="h-[300px] flex items-center justify-center text-near-subtle text-sm">
-                TVL data unavailable
-              </div>
-            )}
-          </div>
-        </Card>
 
         {/* ── Revenue by Stream ─────────────────────────────────────────────── */}
         <Card

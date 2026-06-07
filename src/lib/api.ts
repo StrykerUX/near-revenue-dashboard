@@ -334,6 +334,7 @@ export interface DashboardData {
   intentVolumeSeries: IntentVolumePoint[]
   uniqueUsers: UniqueUsersData | null
   confidentialTvlUsd: number
+  tvlSeries: ConfidentialTvlPoint[]
 }
 
 export async function fetchDashboardData(): Promise<DashboardData> {
@@ -346,7 +347,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     fetchTotalFeesSeries(),
     fetchIntentVolumeSeries(),
     fetchUniqueUsers(),
-    fetchConfidentialTvlLatest(),
+    fetchConfidentialTvlSeries(),
   ])
   const latestTvl = confTvlEnv.data.filter(p => p.tvl_usd > 0).pop()?.tvl_usd ?? 0
   return {
@@ -359,5 +360,6 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     intentVolumeSeries: intentVolumeEnv.data,
     uniqueUsers: uniqueUsersEnv.data,
     confidentialTvlUsd: latestTvl,
+    tvlSeries: confTvlEnv.data,
   }
 }

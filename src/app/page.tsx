@@ -3,6 +3,8 @@ import { Hero } from "@/components/sections/hero"
 import { StatsGrid } from "@/components/sections/stats-grid"
 import { FeesChart } from "@/components/sections/fees-chart"
 import { CumulativeFeesSection, type CumulativeFeesPoint } from "@/components/sections/cumulative-fees-section"
+import { TvlChartSection } from "@/components/sections/tvl-chart-section"
+import { UniqueUsersSection } from "@/components/sections/unique-users-section"
 import { RevenueCharts } from "@/components/sections/revenue-charts"
 import { WalletTable } from "@/components/sections/wallet-table"
 import { Faq } from "@/components/sections/faq"
@@ -19,7 +21,7 @@ export default async function Page() {
   let gaugeValue = GAUGE_VALUE
   let feesChange = parseFloat(FEES_CHANGE)
   let sparklineData: number[] = SPARKLINE_DATA
-  let stats: StatCard[] = STATS.slice(1)
+  let stats: StatCard[] = STATS.slice(1, 4) // exclude Stablecoin Liquidity Depth (no API yet)
   let revenueChartSeries: TimeSeriesPoint[] = REVENUE_MONTHLY
   let walletRows: WalletRow[] = WALLET_ROWS
   let updatedAt = "—"
@@ -29,9 +31,15 @@ export default async function Page() {
   let totalFeesSeriesNear: TimeSeriesPoint[] = TOTAL_FEES_SERIES
   let totalFeesSeriesUsd: TimeSeriesPoint[] = TOTAL_FEES_SERIES
   let cumulativeFeesData: CumulativeFeesPoint[] = []
+  let tvlChartSeries: TimeSeriesPoint[] = []
+  let tvlCurrentUsd = 0
+  let tvlGrowthX: string | null = null
+  let uniqueUsersD1 = 0
+  let uniqueUsersD7 = 0
+  let uniqueUsersD30 = 0
 
   try {
-    const { snapshot, revenueSeries, walletBreakdown, emissionsDaily: emissionsDailyRaw, buyback: buybackData, totalFeesSeries: totalFeesRaw, intentVolumeSeries, uniqueUsers, confidentialTvlUsd } = await fetchDashboardData()
+    const { snapshot, revenueSeries, walletBreakdown, emissionsDaily: emissionsDailyRaw, buyback: buybackData, totalFeesSeries: totalFeesRaw, intentVolumeSeries, uniqueUsers, confidentialTvlUsd, tvlSeries: tvlRaw } = await fetchDashboardData()
     buyback = buybackData
     const snap = snapshot.data
 
@@ -68,7 +76,6 @@ export default async function Page() {
         value:  uniqueUsers ? formatNear(uniqueUsers.d30) : STATS[3].value,
         source: uniqueUsers ? "api" : "static",
       },
-      STATS[4], // Stablecoin — no API yet, stays static
     ]
 
     revenueChartSeries = revenueSeries.map((p) => ({
@@ -107,6 +114,22 @@ export default async function Page() {
       }))
     }
 
+    // Unique users
+    if (uniqueUsers) {
+      uniqueUsersD1  = uniqueUsers.d1
+      uniqueUsersD7  = uniqueUsers.d7
+      uniqueUsersD30 = uniqueUsers.d30
+    }
+
+    // Confidential TVL chart
+    const validTvl = tvlRaw.filter(p => p.tvl_usd > 0)
+    if (validTvl.length > 0) {
+      tvlChartSeries = validTvl.map(p => ({ date: p.date_at, value: p.tvl_usd }))
+      tvlCurrentUsd = validTvl[validTvl.length - 1].tvl_usd
+      const launchTvl = validTvl[0].tvl_usd
+      if (launchTvl > 0) tvlGrowthX = Math.round(tvlCurrentUsd / launchTvl).toLocaleString()
+    }
+
     // Cumulative Fees section — real daily fees split by fee type, cumulative line,
     // plus same-day intent volume joined by date for the tooltip.
     const volumeByDate = new Map(intentVolumeSeries.map((p) => [p.date_at, p.volume_usd]))
@@ -142,8 +165,12 @@ export default async function Page() {
           sparklineData={sparklineData}
         />
         <StatsGrid stats={stats} />
+        {(uniqueUsersD1 > 0 || uniqueUsersD7 > 0 || uniqueUsersD30 > 0) && (
+          <UniqueUsersSection d1={uniqueUsersD1} d7={uniqueUsersD7} d30={uniqueUsersD30} />
+        )}
         <FeesChart dataNear={totalFeesSeriesNear} dataUsd={totalFeesSeriesUsd} />
         <CumulativeFeesSection data={cumulativeFeesData} />
+        <TvlChartSection data={tvlChartSeries} currentTvl={tvlCurrentUsd} growthX={tvlGrowthX} />
         <RevenueCharts
           revenueSeries={revenueChartSeries}
           emissionsMonthly={emissionsMonthly}
