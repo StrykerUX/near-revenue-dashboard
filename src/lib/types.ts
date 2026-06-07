@@ -21,4 +21,5 @@ export interface StatCard {
   value: string
   unit: string
   sub: string
+  source?: "api" | "static"
 }

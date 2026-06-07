@@ -58,11 +58,11 @@ export const WALLET_ROWS: WalletRow[] = [
 ]
 
 export const STATS: StatCard[] = [
-  { label: "Revenue · all-time", value: "3.27M", unit: "NEAR", sub: "Captured by NEAR" },
-  { label: "Intent Volume · all-time", value: "$20.44B", unit: "Dollars", sub: "Captured on NEAR Intents" },
-  { label: "Confidential TVL · Now", value: "$15.53M", unit: "Dollars", sub: "NEAR Intents Current Confidential TVL" },
-  { label: "Unique Users · 30D", value: "552.7K", unit: "", sub: "Unique Users on NEAR Intents" },
-  { label: "Stablecoin Liquidity Depth · Now", value: "$1M", unit: "Dollars", sub: "Max Swap size on NEAR Intents" },
+  { label: "Revenue · all-time",             value: "3.27M",    unit: "NEAR",    sub: "Captured by NEAR",                           source: "static" },
+  { label: "Intent Volume · all-time",        value: "$20.44B",  unit: "Dollars", sub: "Captured on NEAR Intents",                   source: "static" },
+  { label: "Confidential TVL · Now",          value: "$15.53M",  unit: "Dollars", sub: "NEAR Intents Current Confidential TVL",       source: "static" },
+  { label: "Unique Users · 30D",              value: "552.7K",   unit: "",        sub: "Unique Users on NEAR Intents",                source: "static" },
+  { label: "Stablecoin Liquidity Depth · Now",value: "$1M",      unit: "Dollars", sub: "Max Swap size on NEAR Intents",               source: "static" },
 ]
 
 export const FAQ_ITEMS: FaqItem[] = [

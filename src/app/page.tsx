@@ -62,17 +62,20 @@ export default async function Page() {
     stats = [
       {
         ...STATS[1],
-        value: intentVolumeTotal > 0 ? formatUSD(intentVolumeTotal) : STATS[1].value,
+        value:  intentVolumeTotal > 0 ? formatUSD(intentVolumeTotal) : STATS[1].value,
+        source: intentVolumeTotal > 0 ? "api" : "static",
       },
       {
         ...STATS[2],
-        value: confidentialTvlUsd > 0 ? formatUSD(confidentialTvlUsd) : STATS[2].value,
+        value:  confidentialTvlUsd > 0 ? formatUSD(confidentialTvlUsd) : STATS[2].value,
+        source: confidentialTvlUsd > 0 ? "api" : "static",
       },
       {
         ...STATS[3],
-        value: uniqueUsers ? formatNear(uniqueUsers.d30) : STATS[3].value,
+        value:  uniqueUsers ? formatNear(uniqueUsers.d30) : STATS[3].value,
+        source: uniqueUsers ? "api" : "static",
       },
-      STATS[4],
+      STATS[4], // Stablecoin — no API yet, stays static
     ]
 
     revenueChartSeries = revenueSeries.map((p) => ({

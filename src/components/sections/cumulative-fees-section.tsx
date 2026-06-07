@@ -144,7 +144,11 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
 
   return (
     <div
-      className="rounded-2xl overflow-hidden"
+      className={`rounded-2xl overflow-hidden${
+        process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true"
+          ? data.length > 0 ? " ring-2 ring-blue-500/70" : " ring-2 ring-red-500/70"
+          : ""
+      }`}
       style={{ background: "#0e0f0f" }}
     >
       {/* Header */}

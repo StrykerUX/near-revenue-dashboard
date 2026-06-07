@@ -19,7 +19,8 @@ function StatCardItem({ stat, index, isSelected, onClick }: {
         isSelected
           ? "border-near-green/30"
           : "border-near-border hover:border-near-border/60 bg-near-card",
-        process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" && "ring-2 ring-red-500/70"
+        process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" &&
+          (stat.source === "api" ? "ring-2 ring-blue-500/70" : "ring-2 ring-red-500/70")
       )}
       style={
         isSelected
