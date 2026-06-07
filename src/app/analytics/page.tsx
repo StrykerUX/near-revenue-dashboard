@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import Link from "next/link"
 import { SiteLayout } from "@/components/sections/site-layout"
 import { Card } from "@/components/ui/card"

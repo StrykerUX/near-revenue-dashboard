@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { SiteLayout } from "@/components/sections/site-layout"
 import { Hero } from "@/components/sections/hero"
 import { StatsGrid } from "@/components/sections/stats-grid"
