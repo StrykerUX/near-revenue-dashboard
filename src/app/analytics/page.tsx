@@ -2,7 +2,7 @@ import Link from "next/link"
 import { Header } from "@/components/sections/header"
 import { Footer } from "@/components/sections/footer"
 import { Card } from "@/components/ui/card"
-import { TvlAreaChart } from "@/components/charts/tvl-area-chart"
+import { TvlBarChart } from "@/components/charts/tvl-bar-chart"
 import { PriceLineChart } from "@/components/charts/price-chart"
 import { RevenueStreams } from "@/components/sections/revenue-streams"
 import { CaptureSplit } from "@/components/sections/capture-split"
@@ -155,7 +155,7 @@ export default async function AnalyticsPage() {
           </div>
           <div className="px-2 pb-4 pt-2">
             {tvlSeries.length > 0 ? (
-              <TvlAreaChart data={tvlSeries} />
+              <TvlBarChart data={tvlSeries} />
             ) : (
               <div className="h-[300px] flex items-center justify-center text-near-subtle text-sm">
                 TVL data unavailable

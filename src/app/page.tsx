@@ -2,12 +2,13 @@ import { Header } from "@/components/sections/header"
 import { Hero } from "@/components/sections/hero"
 import { StatsGrid } from "@/components/sections/stats-grid"
 import { FeesChart } from "@/components/sections/fees-chart"
+import { CumulativeFeesSection, type CumulativeFeesPoint } from "@/components/sections/cumulative-fees-section"
 import { RevenueCharts } from "@/components/sections/revenue-charts"
 import { WalletTable } from "@/components/sections/wallet-table"
 import { Faq } from "@/components/sections/faq"
 import { Footer } from "@/components/sections/footer"
 import { fetchDashboardData, type BuybackData } from "@/lib/api"
-import { formatUSD, formatNear, formatMonthLabel, formatUpdatedAt, aggregateEmissionsByMonth, computeRevenueVsEmissions } from "@/lib/utils"
+import { formatUSD, formatNear, formatMonthLabel, formatDayLabel, formatUpdatedAt, aggregateEmissionsByMonth, computeRevenueVsEmissions } from "@/lib/utils"
 import { STATS, REVENUE_MONTHLY, WALLET_ROWS, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES, TOTAL_FEES_SERIES } from "@/lib/data"
 import type { StatCard, TimeSeriesPoint, WalletRow } from "@/lib/types"
 
@@ -28,9 +29,10 @@ export default async function Page() {
   let buyback: BuybackData | null = null
   let totalFeesSeriesNear: TimeSeriesPoint[] = TOTAL_FEES_SERIES
   let totalFeesSeriesUsd: TimeSeriesPoint[] = TOTAL_FEES_SERIES
+  let cumulativeFeesData: CumulativeFeesPoint[] = []
 
   try {
-    const { snapshot, revenueSeries, walletBreakdown, emissionsDaily: emissionsDailyRaw, buyback: buybackData, totalFeesSeries: totalFeesRaw } = await fetchDashboardData()
+    const { snapshot, revenueSeries, walletBreakdown, emissionsDaily: emissionsDailyRaw, buyback: buybackData, totalFeesSeries: totalFeesRaw, intentVolumeSeries } = await fetchDashboardData()
     buyback = buybackData
     const snap = snapshot.data
 
@@ -84,6 +86,26 @@ export default async function Page() {
         value: Math.round(p.cumulative_fees_usd),
       }))
     }
+
+    // Cumulative Fees section — real daily fees split by fee type, cumulative line,
+    // plus same-day intent volume joined by date for the tooltip.
+    const volumeByDate = new Map(intentVolumeSeries.map((p) => [p.date_at, p.volume_usd]))
+    cumulativeFeesData = totalFeesRaw
+      .filter((p) => p.fees_usd > 0 && p.total_fees_near > 0)
+      .map((p) => {
+        // The API gives USD only as a daily total; split it in USD by the NEAR
+        // protocol/intents ratio (same-day price applies to both legs).
+        const protocolShare = p.protocol_fee_near / p.total_fees_near
+        const protocolUsd = p.fees_usd * protocolShare
+        return {
+          isoDate: p.date_at,
+          label: formatDayLabel(p.date_at),
+          protocolUsd,
+          intentsUsd: p.fees_usd - protocolUsd,
+          cumulativeUsd: p.cumulative_fees_usd,
+          volumeUsd: volumeByDate.get(p.date_at) ?? 0,
+        }
+      })
   } catch {
     // API unavailable — render with static fallback data
   }
@@ -102,6 +124,7 @@ export default async function Page() {
         />
         <StatsGrid stats={stats} />
         <FeesChart dataNear={totalFeesSeriesNear} dataUsd={totalFeesSeriesUsd} />
+        <CumulativeFeesSection data={cumulativeFeesData} />
         <RevenueCharts
           revenueSeries={revenueChartSeries}
           emissionsMonthly={emissionsMonthly}

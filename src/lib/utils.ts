@@ -29,6 +29,13 @@ export function formatMonthLabel(isoDate: string): string {
   return `${names[parseInt(month) - 1]} '${year.slice(2)}`
 }
 
+/** Convert ISO date "2026-06-04" → "Jun 4" */
+export function formatDayLabel(isoDate: string): string {
+  const [, month, day] = isoDate.split("-")
+  const names = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+  return `${names[parseInt(month) - 1]} ${parseInt(day)}`
+}
+
 /** Format ISO datetime "2026-06-04T19:37:39.927127Z" → "Jun 04, 2026" */
 export function formatUpdatedAt(isoDateTime: string): string {
   return new Date(isoDateTime).toLocaleDateString("en-US", {

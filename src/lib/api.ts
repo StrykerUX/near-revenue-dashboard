@@ -110,9 +110,21 @@ export interface BuybackData {
 export interface TotalFeesSeriesPoint {
   date_at: string
   total_fees_near: number
+  protocol_fee_near: number
+  intents_revenue_near: number
+  burn_revenue_near: number
   cumulative_fees_near: number
   fees_usd: number
   cumulative_fees_usd: number
+}
+
+// ─── Intent Volume series types ────────────────────────────────────────────────
+
+export interface IntentVolumePoint {
+  date_at: string
+  volume_usd: number
+  cumulative_volume_usd: number
+  is_stale: number
 }
 
 // ─── Emissions types ──────────────────────────────────────────────────────────
@@ -228,6 +240,15 @@ export function fetchTotalFeesSeries() {
   })
 }
 
+export function fetchIntentVolumeSeries() {
+  const to = new Date().toISOString().slice(0, 10)
+  return apiFetch<IntentVolumePoint[]>("/v1/series/intent-volume", {
+    from: "2025-01-01",
+    to,
+    grain: "day",
+  })
+}
+
 export function fetchPriceSeries() {
   const to = new Date().toISOString().slice(0, 10)
   const from = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
@@ -284,16 +305,18 @@ export interface DashboardData {
   emissionsDaily: EmissionsSeriesPoint[]
   buyback: BuybackData
   totalFeesSeries: TotalFeesSeriesPoint[]
+  intentVolumeSeries: IntentVolumePoint[]
 }
 
 export async function fetchDashboardData(): Promise<DashboardData> {
-  const [snapshot, revenueEnv, walletEnv, emissionsEnv, buybackEnv, totalFeesEnv] = await Promise.all([
+  const [snapshot, revenueEnv, walletEnv, emissionsEnv, buybackEnv, totalFeesEnv, intentVolumeEnv] = await Promise.all([
     fetchSnapshot(),
     fetchRevenueSeries(),
     fetchWalletBreakdown(),
     fetchEmissionsSeries(),
     fetchBuyback(),
     fetchTotalFeesSeries(),
+    fetchIntentVolumeSeries(),
   ])
   return {
     snapshot,
@@ -302,5 +325,6 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     emissionsDaily: emissionsEnv.data,
     buyback: buybackEnv.data,
     totalFeesSeries: totalFeesEnv.data,
+    intentVolumeSeries: intentVolumeEnv.data,
   }
 }
