@@ -201,12 +201,19 @@ async function apiFetch<T>(
   if (params) {
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v)
   }
-  const res = await fetch(url.toString(), {
-    headers: { "X-API-Key": API_KEY },
-    next: { revalidate: 300 },
-  })
-  if (!res.ok) throw new Error(`API ${res.status} for ${path}`)
-  return res.json() as Promise<Envelope<T>>
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 10_000)
+  try {
+    const res = await fetch(url.toString(), {
+      headers: { "X-API-Key": API_KEY },
+      next: { revalidate: 300 },
+      signal: controller.signal,
+    })
+    if (!res.ok) throw new Error(`API ${res.status} for ${path}`)
+    return res.json() as Promise<Envelope<T>>
+  } finally {
+    clearTimeout(timeout)
+  }
 }
 
 // ─── Individual fetchers ──────────────────────────────────────────────────────
@@ -337,29 +344,59 @@ export interface DashboardData {
   tvlSeries: ConfidentialTvlPoint[]
 }
 
+// Unwraps the envelope data and returns a fallback if the call fails.
+function safe<T>(p: Promise<Envelope<T>>, fallback: T): Promise<T> {
+  return p.then(r => r.data).catch(() => fallback)
+}
+
+const BUYBACK_ZERO: BuybackData = {
+  buyback_near_all_time: 0, buyback_near_ytd: 0,
+  buyback_near_d30: 0, buyback_near_d7: 0,
+  pct_of_revenue_all_time: 0, pct_of_revenue_ytd: 0,
+  pct_of_revenue_d30: 0, pct_of_revenue_d7: 0,
+  is_stale: 0,
+}
+
 export async function fetchDashboardData(): Promise<DashboardData> {
-  const [snapshot, revenueEnv, walletEnv, emissionsEnv, buybackEnv, totalFeesEnv, intentVolumeEnv, uniqueUsersEnv, confTvlEnv] = await Promise.all([
+  // fetchSnapshot is the only critical call — if it fails the page falls back
+  // entirely to static data. All other calls are fault-tolerant: a timeout or
+  // API error returns an empty fallback so the rest of the page still renders
+  // with live data.
+  const [
+    snapshot,
+    revenueSeries,
+    walletBreakdown,
+    emissionsDaily,
+    buyback,
+    totalFeesSeries,
+    intentVolumeSeries,
+    uniqueUsers,
+    tvlSeries,
+  ] = await Promise.all([
     fetchSnapshot(),
-    fetchRevenueSeries(),
-    fetchWalletBreakdown(),
-    fetchEmissionsSeries(),
-    fetchBuyback(),
-    fetchTotalFeesSeries(),
-    fetchIntentVolumeSeries(),
-    fetchUniqueUsers(),
-    fetchConfidentialTvlSeries(),
+    safe(fetchRevenueSeries(),           []),
+    safe(fetchWalletBreakdown(),         []),
+    safe(fetchEmissionsSeries(),         []),
+    safe(fetchBuyback(),                 BUYBACK_ZERO),
+    safe(fetchTotalFeesSeries(),         []),
+    safe(fetchIntentVolumeSeries(),      []),
+    safe(fetchUniqueUsers(),             null),
+    safe(fetchConfidentialTvlSeries(),   []),
   ])
-  const latestTvl = confTvlEnv.data.filter(p => p.tvl_usd > 0).pop()?.tvl_usd ?? 0
+
+  const latestTvl = (tvlSeries as ConfidentialTvlPoint[])
+    .filter(p => p.tvl_usd > 0).pop()?.tvl_usd ?? 0
+
   return {
     snapshot,
-    revenueSeries: revenueEnv.data,
-    walletBreakdown: walletEnv.data,
-    emissionsDaily: emissionsEnv.data,
-    buyback: buybackEnv.data,
-    totalFeesSeries: totalFeesEnv.data,
-    intentVolumeSeries: intentVolumeEnv.data,
-    uniqueUsers: uniqueUsersEnv.data,
+    revenueSeries:      revenueSeries     as RevenueSeriesPoint[],
+    walletBreakdown:    walletBreakdown   as WalletBreakdownItem[],
+    emissionsDaily:     emissionsDaily    as EmissionsSeriesPoint[],
+    buyback:            buyback           as BuybackData,
+    totalFeesSeries:    totalFeesSeries   as TotalFeesSeriesPoint[],
+    intentVolumeSeries: intentVolumeSeries as IntentVolumePoint[],
+    uniqueUsers:        uniqueUsers       as UniqueUsersData | null,
     confidentialTvlUsd: latestTvl,
-    tvlSeries: confTvlEnv.data,
+    tvlSeries:          tvlSeries         as ConfidentialTvlPoint[],
   }
 }
