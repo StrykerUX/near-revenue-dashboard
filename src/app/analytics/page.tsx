@@ -1,12 +1,14 @@
 import Link from "next/link"
-import { Header } from "@/components/sections/header"
-import { Footer } from "@/components/sections/footer"
+import { SiteLayout } from "@/components/sections/site-layout"
 import { Card } from "@/components/ui/card"
 import { TvlBarChart } from "@/components/charts/tvl-bar-chart"
 import { PriceLineChart } from "@/components/charts/price-chart"
 import { RevenueStreams } from "@/components/sections/revenue-streams"
 import { CaptureSplit } from "@/components/sections/capture-split"
-import { fetchAnalyticsData, type SnapshotCaptureSplit, type RevenueStreamItem } from "@/lib/api"
+import { UniqueUsersSection } from "@/components/sections/unique-users-section"
+import { IntentVolumeSection } from "@/components/sections/intent-volume-section"
+import { fetchAnalyticsData, type SnapshotCaptureSplit, type RevenueStreamItem, type IntentVolumePoint } from "@/lib/api"
+import { debugGlow } from "@/lib/utils"
 import type { TimeSeriesPoint } from "@/lib/types"
 
 // ── Local helpers ──────────────────────────────────────────────────────────────
@@ -44,6 +46,10 @@ export default async function AnalyticsPage() {
   let priceSeries: TimeSeriesPoint[] = []
   let revenueStreams: RevenueStreamItem[] = []
   let captureSplit: SnapshotCaptureSplit | null = null
+  let intentVolumeSeries: IntentVolumePoint[] = []
+  let uniqueUsersD1 = 0
+  let uniqueUsersD7 = 0
+  let uniqueUsersD30 = 0
 
   try {
     const data = await fetchAnalyticsData()
@@ -59,6 +65,13 @@ export default async function AnalyticsPage() {
 
     revenueStreams = data.revenueStreams
     captureSplit = data.captureSplit
+    intentVolumeSeries = data.intentVolumeSeries
+
+    if (data.uniqueUsers) {
+      uniqueUsersD1  = data.uniqueUsers.d1
+      uniqueUsersD7  = data.uniqueUsers.d7
+      uniqueUsersD30 = data.uniqueUsers.d30
+    }
   } catch {
     // Render empty states — API unavailable
   }
@@ -79,12 +92,7 @@ export default async function AnalyticsPage() {
   const priceIsUp = priceChange7d >= 0
 
   return (
-    <main className="min-h-screen bg-near-bg">
-      <Header
-        updatedAt="Live"
-        nav={[{ href: "/", label: "Dashboard" }, { href: "/data", label: "Data Guide" }]}
-      />
-
+    <SiteLayout updatedAt="Live">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
         {/* ── Hero ──────────────────────────────────────────────────────────── */}
@@ -122,10 +130,18 @@ export default async function AnalyticsPage() {
           </div>
         </section>
 
+        {/* ── Unique Users ──────────────────────────────────────────────────── */}
+        {(uniqueUsersD1 > 0 || uniqueUsersD7 > 0 || uniqueUsersD30 > 0) && (
+          <UniqueUsersSection d1={uniqueUsersD1} d7={uniqueUsersD7} d30={uniqueUsersD30} />
+        )}
+
+        {/* ── Intent Volume ─────────────────────────────────────────────────── */}
+        <IntentVolumeSection data={intentVolumeSeries} />
+
         {/* ── Confidential TVL ──────────────────────────────────────────────── */}
         <Card
           padding="none"
-          className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-blue-500/70" : ""}`}
+          className="overflow-hidden" style={debugGlow("api")}
         >
           <div className="p-6 pb-2">
             <div className="flex items-start justify-between gap-4 mb-3 flex-wrap">
@@ -167,7 +183,7 @@ export default async function AnalyticsPage() {
         {/* ── Revenue by Stream ─────────────────────────────────────────────── */}
         <Card
           padding="none"
-          className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-blue-500/70" : ""}`}
+          className="overflow-hidden" style={debugGlow("api")}
         >
           <div className="p-6 pb-4">
             <div className="flex items-center gap-3 mb-2 flex-wrap">
@@ -215,7 +231,7 @@ export default async function AnalyticsPage() {
         {/* ── NEAR Token Price ──────────────────────────────────────────────── */}
         <Card
           padding="none"
-          className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-blue-500/70" : ""}`}
+          className="overflow-hidden" style={debugGlow("api")}
         >
           <div className="p-6 pb-2">
             <div className="flex items-start justify-between gap-4 mb-3 flex-wrap">
@@ -249,8 +265,6 @@ export default async function AnalyticsPage() {
         </Card>
 
       </div>
-
-      <Footer />
-    </main>
+    </SiteLayout>
   )
 }

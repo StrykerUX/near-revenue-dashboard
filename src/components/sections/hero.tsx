@@ -1,3 +1,4 @@
+import { debugGlow } from "@/lib/utils"
 import { Gauge } from "@/components/charts/gauge"
 import { Sparkline } from "@/components/charts/sparkline"
 import { Badge } from "@/components/ui/badge"
@@ -27,8 +28,8 @@ export function Hero({
 
   return (
     <section
-      className={`relative grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 rounded-2xl overflow-hidden px-10 py-12${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-blue-500/70" : ""}`}
-      style={{ backgroundImage: "url('/images/background-1.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}
+      className="relative grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 rounded-2xl overflow-hidden px-10 py-12"
+      style={{ backgroundImage: "url('/images/background-1.jpg')", backgroundSize: "cover", backgroundPosition: "center", ...debugGlow("api") }}
     >
       <div className="absolute -inset-px pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(11,13,13,0.3), rgba(11,13,13,1) 90%)" }} />
       <div className="absolute -inset-px pointer-events-none" style={{ background: "linear-gradient(225deg, rgba(11,13,13,0.2), rgba(11,13,13,1))" }} />

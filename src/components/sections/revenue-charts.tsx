@@ -7,6 +7,7 @@ import { RevenueBarChart } from "@/components/charts/bar-chart"
 import { EmissionsLineChart } from "@/components/charts/line-chart"
 import { SwapBreakdownChart } from "@/components/charts/stacked-bar-chart"
 import { CONFIDENTIAL_TVL, SWAP_BREAKDOWN } from "@/lib/data"
+import { debugGlow } from "@/lib/utils"
 import type { TimeSeriesPoint } from "@/lib/types"
 
 interface RevenueChartsProps {
@@ -24,7 +25,7 @@ export function RevenueCharts({ revenueSeries, emissionsMonthly, emissionsDaily 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Confidential TVL */}
-      <Card padding="none" className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-red-500/70" : ""}`}>
+      <Card padding="none" className="overflow-hidden" style={debugGlow("static")}>
         <div className="p-6 pb-2 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-base font-semibold text-near-text mb-1">Confidential TVL</h2>
@@ -38,7 +39,7 @@ export function RevenueCharts({ revenueSeries, emissionsMonthly, emissionsDaily 
       </Card>
 
       {/* NEAR Intent Swap Breakdown */}
-      <Card padding="none" className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-red-500/70" : ""}`}>
+      <Card padding="none" className="overflow-hidden" style={debugGlow("static")}>
         <div className="p-6 pb-2 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-base font-semibold text-near-text mb-1">NEAR Intent Swap Breakdown</h2>
@@ -62,7 +63,7 @@ export function RevenueCharts({ revenueSeries, emissionsMonthly, emissionsDaily 
       </Card>
 
       {/* Revenue over time */}
-      <Card padding="none" className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-blue-500/70" : ""}`}>
+      <Card padding="none" className="overflow-hidden" style={debugGlow("api")}>
         <div className="p-6 pb-2">
           <h2 className="text-base font-semibold text-near-text mb-1">Monthly Revenue</h2>
           <p className="text-xs text-near-muted">Monthly revenue after partner payouts.</p>
@@ -73,7 +74,7 @@ export function RevenueCharts({ revenueSeries, emissionsMonthly, emissionsDaily 
       </Card>
 
       {/* Revenue vs emissions */}
-      <Card padding="none" className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-blue-500/70" : ""}`}>
+      <Card padding="none" className="overflow-hidden" style={debugGlow("api")}>
         <div className="p-6 pb-2 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-base font-semibold text-near-text mb-1">Revenue vs emissions</h2>

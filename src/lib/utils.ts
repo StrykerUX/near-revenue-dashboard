@@ -7,6 +7,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function debugGlow(source: "api" | "static"): { boxShadow?: string } {
+  if (process.env.NEXT_PUBLIC_DEBUG_SOURCES !== "true") return {}
+  return {
+    boxShadow:
+      source === "api"
+        ? "0 0 0 1px rgba(0,236,151,0.20), 0 0 20px rgba(0,236,151,0.08)"
+        : "0 0 0 1px rgba(239,68,68,0.20), 0 0 14px rgba(239,68,68,0.07)",
+  }
+}
+
 /** Format a NEAR amount as an AnimatedNumber-compatible string (e.g. "1.38M", "345.2K"). */
 export function formatNear(value: number): string {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`

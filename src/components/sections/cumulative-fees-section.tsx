@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { debugGlow } from "@/lib/utils"
 import {
   ComposedChart,
   Bar,
@@ -144,12 +145,8 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
 
   return (
     <div
-      className={`rounded-2xl overflow-hidden${
-        process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true"
-          ? data.length > 0 ? " ring-2 ring-blue-500/70" : " ring-2 ring-red-500/70"
-          : ""
-      }`}
-      style={{ background: "#0e0f0f" }}
+      className="rounded-2xl overflow-hidden"
+      style={{ background: "#0e0f0f", ...debugGlow(data.length > 0 ? "api" : "static") }}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4">

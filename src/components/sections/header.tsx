@@ -6,7 +6,7 @@ function NearLogo() {
   )
 }
 
-interface NavItem {
+export interface NavItem {
   href: string
   label: string
 }

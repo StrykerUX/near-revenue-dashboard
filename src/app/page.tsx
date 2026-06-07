@@ -1,15 +1,12 @@
-import { Header } from "@/components/sections/header"
+import { SiteLayout } from "@/components/sections/site-layout"
 import { Hero } from "@/components/sections/hero"
 import { StatsGrid } from "@/components/sections/stats-grid"
 import { FeesChart } from "@/components/sections/fees-chart"
 import { CumulativeFeesSection, type CumulativeFeesPoint } from "@/components/sections/cumulative-fees-section"
-import { UniqueUsersSection } from "@/components/sections/unique-users-section"
-import { IntentVolumeSection } from "@/components/sections/intent-volume-section"
 import { RevenueCharts } from "@/components/sections/revenue-charts"
 import { WalletTable } from "@/components/sections/wallet-table"
 import { Faq } from "@/components/sections/faq"
-import { Footer } from "@/components/sections/footer"
-import { fetchDashboardData, type BuybackData, type IntentVolumePoint } from "@/lib/api"
+import { fetchDashboardData, type BuybackData } from "@/lib/api"
 import { formatUSD, formatNear, formatMonthLabel, formatDayLabel, formatUpdatedAt, aggregateEmissionsByMonth, computeRevenueVsEmissions } from "@/lib/utils"
 import { STATS, REVENUE_MONTHLY, WALLET_ROWS, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES, TOTAL_FEES_SERIES } from "@/lib/data"
 import type { StatCard, TimeSeriesPoint, WalletRow } from "@/lib/types"
@@ -32,10 +29,6 @@ export default async function Page() {
   let totalFeesSeriesNear: TimeSeriesPoint[] = TOTAL_FEES_SERIES
   let totalFeesSeriesUsd: TimeSeriesPoint[] = TOTAL_FEES_SERIES
   let cumulativeFeesData: CumulativeFeesPoint[] = []
-  let intentVolumeChart: IntentVolumePoint[] = []
-  let uniqueUsersD1 = 0
-  let uniqueUsersD7 = 0
-  let uniqueUsersD30 = 0
 
   try {
     const { snapshot, revenueSeries, walletBreakdown, emissionsDaily: emissionsDailyRaw, buyback: buybackData, totalFeesSeries: totalFeesRaw, intentVolumeSeries, uniqueUsers, confidentialTvlUsd } = await fetchDashboardData()
@@ -114,16 +107,6 @@ export default async function Page() {
       }))
     }
 
-    // Intent volume — passed raw to the standalone chart
-    intentVolumeChart = intentVolumeSeries
-
-    // Unique users
-    if (uniqueUsers) {
-      uniqueUsersD1  = uniqueUsers.d1
-      uniqueUsersD7  = uniqueUsers.d7
-      uniqueUsersD30 = uniqueUsers.d30
-    }
-
     // Cumulative Fees section — real daily fees split by fee type, cumulative line,
     // plus same-day intent volume joined by date for the tooltip.
     const volumeByDate = new Map(intentVolumeSeries.map((p) => [p.date_at, p.volume_usd]))
@@ -148,8 +131,7 @@ export default async function Page() {
   }
 
   return (
-    <main className="min-h-screen bg-near-bg">
-      <Header updatedAt={updatedAt}  />
+    <SiteLayout updatedAt={updatedAt}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
         <Hero
           totalFeesDisplay={totalFeesDisplay}
@@ -160,12 +142,8 @@ export default async function Page() {
           sparklineData={sparklineData}
         />
         <StatsGrid stats={stats} />
-        {(uniqueUsersD1 > 0 || uniqueUsersD7 > 0 || uniqueUsersD30 > 0) && (
-          <UniqueUsersSection d1={uniqueUsersD1} d7={uniqueUsersD7} d30={uniqueUsersD30} />
-        )}
         <FeesChart dataNear={totalFeesSeriesNear} dataUsd={totalFeesSeriesUsd} />
         <CumulativeFeesSection data={cumulativeFeesData} />
-        <IntentVolumeSection data={intentVolumeChart} />
         <RevenueCharts
           revenueSeries={revenueChartSeries}
           emissionsMonthly={emissionsMonthly}
@@ -174,7 +152,6 @@ export default async function Page() {
 
         <Faq />
       </div>
-      <Footer />
-    </main>
+    </SiteLayout>
   )
 }

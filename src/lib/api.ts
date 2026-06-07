@@ -299,20 +299,26 @@ export interface AnalyticsData {
   tvlSeries: ConfidentialTvlPoint[]
   revenueStreams: RevenueStreamItem[]
   captureSplit: SnapshotCaptureSplit
+  uniqueUsers: UniqueUsersData | null
+  intentVolumeSeries: IntentVolumePoint[]
 }
 
 export async function fetchAnalyticsData(): Promise<AnalyticsData> {
-  const [priceEnv, tvlEnv, streamsEnv, splitEnv] = await Promise.all([
+  const [priceEnv, tvlEnv, streamsEnv, splitEnv, uniqueUsersEnv, intentVolumeEnv] = await Promise.all([
     fetchPriceSeries(),
     fetchConfidentialTvlSeries(),
     fetchRevenueByStream(),
     fetchCaptureSplit(),
+    fetchUniqueUsers(),
+    fetchIntentVolumeSeries(),
   ])
   return {
     priceSeries: priceEnv.data,
     tvlSeries: tvlEnv.data,
     revenueStreams: streamsEnv.data,
     captureSplit: splitEnv.data,
+    uniqueUsers: uniqueUsersEnv.data,
+    intentVolumeSeries: intentVolumeEnv.data,
   }
 }
 

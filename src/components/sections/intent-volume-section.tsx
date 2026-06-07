@@ -12,7 +12,7 @@ import {
   type TooltipProps,
 } from "recharts"
 import type { IntentVolumePoint } from "@/lib/api"
-import { formatDayLabel } from "@/lib/utils"
+import { formatDayLabel, debugGlow } from "@/lib/utils"
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -164,10 +164,8 @@ export function IntentVolumeSection({ data }: { data: IntentVolumePoint[] }) {
 
   return (
     <div
-      className={`rounded-2xl overflow-hidden${
-        process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-blue-500/70" : ""
-      }`}
-      style={{ background: "#0e0f0f" }}
+      className="rounded-2xl overflow-hidden"
+      style={{ background: "#0e0f0f", ...debugGlow("api") }}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4">

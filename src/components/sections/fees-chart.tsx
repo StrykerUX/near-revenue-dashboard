@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
+import { debugGlow } from "@/lib/utils"
 import { Dropdown } from "@/components/ui/dropdown"
 import { FeesAreaChart } from "@/components/charts/area-chart"
 import type { TimeSeriesPoint } from "@/lib/types"
@@ -15,7 +16,7 @@ export function FeesChart({ dataNear, dataUsd }: FeesChartProps) {
   const [denomination, setDenomination] = useState<"NEAR" | "USD">("NEAR")
 
   return (
-    <Card padding="none" className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-blue-500/70" : ""}`}>
+    <Card padding="none" className="overflow-hidden" style={debugGlow("api")}>
       <div className="p-6 pb-2 flex items-start justify-between gap-4">
         <div>
           <h2 className="text-base font-semibold text-near-text mb-1">Total fees generated</h2>

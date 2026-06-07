@@ -1,5 +1,4 @@
-import { Header } from "@/components/sections/header"
-import { Footer } from "@/components/sections/footer"
+import { SiteLayout } from "@/components/sections/site-layout"
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -109,6 +108,31 @@ const GROUPS: DataGroup[] = [
     ],
   },
   {
+    title: "Activity",
+    description:
+      "Who is using NEAR Intents and how much volume flows through the protocol. These metrics measure adoption and economic throughput independently of revenue.",
+    items: [
+      {
+        title: "Unique users",
+        endpoint: "/v1/metrics/unique-users",
+        what: "A snapshot of distinct wallet addresses that interacted with NEAR Intents across three fixed windows: last 24 hours, last 7 days, and last 30 days. The endpoint returns the most recent snapshot available, not a live count.",
+        why: "Shows the size and activity of the user base. Comparing the 24h number to the 30d number reveals whether daily engagement is growing or contracting relative to the monthly base.",
+        source: "Dune Analytics (dune:5180328)",
+        status: "dashboard",
+        fields: ["d1", "d7", "d30", "snapshot_date"],
+      },
+      {
+        title: "Intent volume series",
+        endpoint: "/v1/series/intent-volume",
+        what: "Daily swap volume routed through NEAR Intents in USD, from the protocol's earliest recorded date to today. Also includes a running cumulative total — currently over $20 billion.",
+        why: "The single clearest measure of NEAR Intents' economic weight. Volume is orders of magnitude larger than fees, showing that NEAR is settling billions in trades while capturing a small but growing share as protocol revenue.",
+        source: "Dune Analytics (dune:5179085)",
+        status: "dashboard",
+        fields: ["date_at", "volume_usd", "cumulative_volume_usd"],
+      },
+    ],
+  },
+  {
     title: "Confidential TVL & Liquidity",
     description:
       "The assets sitting inside NEAR Intents' confidential pools. These pools are what make private, front-running-resistant swaps possible.",
@@ -141,8 +165,8 @@ const GROUPS: DataGroup[] = [
       {
         title: "Revenue vs emissions (pre-computed)",
         endpoint: "/v1/series/revenue-vs-emissions",
-        what: "The API can compute the revenue-to-emissions ratio directly, returning revenue_pct_of_emissions per day. The dashboard currently calculates this manually from the two raw series.",
-        why: "Switching to this endpoint would simplify the code and let the API own the computation. The data is already there.",
+        what: "The API pre-computes the revenue-to-emissions ratio per day, returning revenue_pct_of_emissions alongside raw revenue and emissions figures. It contains 521 daily rows, but only ~118 have a non-zero ratio — and most are flagged is_stale: 1.",
+        why: "Evaluated and intentionally not used. Three reasons: (1) the grain=month parameter does not aggregate — it always returns daily rows, so monthly aggregation would still be required in code. (2) Valid data only starts around April 2026, losing ~1 year of history that the manual computation covers. (3) Nearly all recent points carry is_stale: 1. The dashboard currently computes the ratio manually from /v1/series/revenue (monthly) + /v1/series/emissions (daily, aggregated by month), which produces cleaner, longer-range data. Revisit when the endpoint supports true monthly grain, has more history, and resolves the stale flag.",
         source: "Onchain",
         status: "available",
         fields: ["date_at", "revenue_near", "emissions_near", "revenue_pct_of_emissions", "cumulative_revenue_pct_of_emissions"],
@@ -331,15 +355,7 @@ export default function DataPage() {
   ).length
 
   return (
-    <main className="min-h-screen bg-near-bg">
-      <Header
-        updatedAt="—"
-        nav={[
-          { href: "/", label: "Dashboard" },
-          { href: "/analytics", label: "Analytics" },
-        ]}
-      />
-
+    <SiteLayout updatedAt="—">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
 
         {/* ── Hero ────────────────────────────────────────────────────────── */}
@@ -406,8 +422,6 @@ export default function DataPage() {
         </section>
 
       </div>
-
-      <Footer />
-    </main>
+    </SiteLayout>
   )
 }

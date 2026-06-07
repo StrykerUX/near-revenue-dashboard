@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Card } from "@/components/ui/card"
+import { debugGlow } from "@/lib/utils"
 import { AnimatedNumber } from "@/components/ui/animated-number"
 import type { WalletRow } from "@/lib/types"
 import type { BuybackData } from "@/lib/api"
@@ -33,7 +34,7 @@ export function WalletTable({ rows, buyback }: WalletTableProps) {
   }, [])
 
   return (
-    <Card padding="none" className={`overflow-hidden${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-blue-500/70" : ""}`}>
+    <Card padding="none" className="overflow-hidden" style={debugGlow("api")}>
       <div className="p-6 pb-4">
         <h2 className="text-base font-semibold text-near-text mb-1">Revenue wallet breakdown</h2>
         <p className="text-xs text-near-muted">

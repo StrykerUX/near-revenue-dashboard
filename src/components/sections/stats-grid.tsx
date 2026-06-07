@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { cn } from "@/lib/utils"
+import { cn, debugGlow } from "@/lib/utils"
 import { AnimatedNumber } from "@/components/ui/animated-number"
 import type { StatCard } from "@/lib/types"
 
@@ -19,17 +19,13 @@ function StatCardItem({ stat, index, isSelected, onClick }: {
         isSelected
           ? "border-near-green/30"
           : "border-near-border hover:border-near-border/60 bg-near-card",
-        process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" &&
-          (stat.source === "api" ? "ring-2 ring-blue-500/70" : "ring-2 ring-red-500/70")
       )}
-      style={
-        isSelected
-          ? {
-              background:
-                "radial-gradient(ellipse at top left, rgba(0,236,151,0.13) 0%, transparent 65%), var(--near-card)",
-            }
-          : undefined
-      }
+      style={{
+        ...(isSelected
+          ? { background: "radial-gradient(ellipse at top left, rgba(0,236,151,0.13) 0%, transparent 65%), var(--near-card)" }
+          : {}),
+        ...debugGlow(stat.source ?? "static"),
+      }}
     >
       <p className="text-xs text-near-muted uppercase tracking-widest font-medium">
         + {stat.label}

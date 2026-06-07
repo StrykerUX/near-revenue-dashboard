@@ -1,4 +1,5 @@
 import { AnimatedNumber } from "@/components/ui/animated-number"
+import { debugGlow } from "@/lib/utils"
 
 interface UniqueUsersSectionProps {
   d1: number
@@ -37,9 +38,8 @@ function Window({
 export function UniqueUsersSection({ d1, d7, d30 }: UniqueUsersSectionProps) {
   return (
     <div
-      className={`rounded-2xl border border-near-border bg-near-card px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-6${
-        process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-blue-500/70" : ""
-      }`}
+      className="rounded-2xl border border-near-border bg-near-card px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-6"
+      style={debugGlow("api")}
     >
       <div className="shrink-0">
         <p className="text-xs text-near-muted uppercase tracking-widest font-medium mb-0.5">
