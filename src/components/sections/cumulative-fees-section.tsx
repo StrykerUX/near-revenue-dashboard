@@ -61,10 +61,17 @@ function niceCeil(v: number): number {
 }
 
 // Build an array of `count` evenly spaced ticks from 0..max.
-// Deduplicates to avoid Recharts duplicate-key warnings when max is tiny.
 function makeTicks(max: number, count = 4): number[] {
   if (max <= 0) return [0]
   const raw = Array.from({ length: count + 1 }, (_, i) => Math.round((max / count) * i))
+  return [...new Set(raw)]
+}
+
+// Build ticks for a non-zero range (e.g. $33M–$35M) for zoomed-in views.
+function makeRangeTicks(min: number, max: number, count = 4): number[] {
+  if (min >= max) return [min]
+  const step = (max - min) / count
+  const raw = Array.from({ length: count + 1 }, (_, i) => Math.round(min + step * i))
   return [...new Set(raw)]
 }
 
@@ -135,14 +142,31 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
 
   const xTicks = useMemo(() => pickXTicks(view, range), [view, range])
 
-  // Dynamic axis domains from the visible data — real figures span $0–$30M+.
-  const { leftMax, leftTicks, rightMax, rightTicks } = useMemo(() => {
-    const maxCum = Math.max(0, ...view.map(d => d.cumulativeUsd))
+  // Dynamic axis — for 7D/30D use non-zero start so the cumulative movement is visible.
+  const { leftTicks, leftDomain, rightMax, rightTicks } = useMemo(() => {
+    const maxCum  = Math.max(0, ...view.map(d => d.cumulativeUsd))
+    const minCum  = view.length > 0 ? Math.min(...view.map(d => d.cumulativeUsd)) : 0
     const maxDaily = Math.max(0, ...view.map(d => d.protocolUsd + d.intentsUsd))
-    const lMax = niceCeil(maxCum)
-    const rMax = niceCeil(maxDaily)
-    return { leftMax: lMax, leftTicks: makeTicks(lMax), rightMax: rMax, rightTicks: makeTicks(rMax) }
-  }, [view])
+    const rMax    = niceCeil(maxDaily)
+
+    let lTicks: number[]
+    let lDomain: [number, number]
+
+    if (range === "ALL" || range === "90D") {
+      const lMax = niceCeil(maxCum)
+      lTicks  = makeTicks(lMax)
+      lDomain = [0, lMax]
+    } else {
+      // Non-zero start: pad 15 % around the visible range so the line isn't edge-to-edge
+      const pad  = Math.max((maxCum - minCum) * 0.15, maxCum * 0.005)
+      const lMin = Math.max(0, minCum - pad)
+      const lMax = maxCum + pad
+      lTicks  = makeRangeTicks(lMin, lMax)
+      lDomain = [lMin, lMax]
+    }
+
+    return { leftTicks: lTicks, leftDomain: lDomain, rightMax: rMax, rightTicks: makeTicks(rMax) }
+  }, [view, range])
 
   const headerTotal = data.length > 0 ? data[data.length - 1].cumulativeUsd : 0
 
@@ -177,9 +201,9 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
         </div>
       </div>
 
-      {/* Chart */}
+      {/* Chart — key forces remount on range change to reset Recharts animation */}
       <div className="px-2 pb-4">
-        <ResponsiveContainer width="100%" height={320}>
+        <ResponsiveContainer key={`cumfees-${range}`} width="100%" height={320}>
           <ComposedChart data={view} margin={{ top: 8, right: 56, left: 10, bottom: 0 }} barCategoryGap="20%">
 
             <XAxis
@@ -202,7 +226,7 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
               axisLine={false}
               tickLine={false}
               width={48}
-              domain={[0, leftMax]}
+              domain={leftDomain}
             />
 
             <YAxis key="cum-right" yAxisId="right" orientation="right" hide domain={[0, rightMax]} />

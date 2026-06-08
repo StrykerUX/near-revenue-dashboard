@@ -197,10 +197,10 @@ export function IntentVolumeSection({ data }: { data: IntentVolumePoint[] }) {
         </div>
       </div>
 
-      {/* Chart */}
+      {/* Chart — key forces remount on range change to reset Recharts animation */}
       {view.length > 0 ? (
         <div className="px-2 pb-4">
-          <ResponsiveContainer width="100%" height={320}>
+          <ResponsiveContainer key={`intvol-${range}`} width="100%" height={320}>
             <ComposedChart data={view} margin={{ top: 8, right: 56, left: 10, bottom: 0 }} barCategoryGap="20%">
               <XAxis
                 dataKey="label"

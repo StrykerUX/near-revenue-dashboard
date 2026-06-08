@@ -46,6 +46,13 @@ function buildTicks(max: number): number[] {
   return [...new Set([0, step, step * 2, step * 3, step * 4])]
 }
 
+function buildRangeTicks(min: number, max: number, count = 4): number[] {
+  if (min >= max) return [min]
+  const step = (max - min) / count
+  const raw = Array.from({ length: count + 1 }, (_, i) => Math.round(min + step * i))
+  return [...new Set(raw)]
+}
+
 function buildDeltaTicks(min: number, max: number): { ticks: number[]; domain: [number, number] } {
   const bound = Math.max(Math.abs(min), Math.abs(max)) * 1.2
   if (bound <= 0) return { ticks: [0], domain: [-1, 1] }
@@ -122,11 +129,12 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
   const [view, setView]   = useState<View>("TVL Level")
   const [range, setRange] = useState<Range>("ALL")
 
-  // ── Filter by range ────────────────────────────────────────────────────────
+  // ── Filter by range — anchored to the MOST RECENT date in the dataset ────────
   const filtered = useMemo(() => {
     if (range === "ALL" || data.length === 0) return data
-    const last = data[data.length - 1].date
-    const cutoff = new Date(last + "T12:00:00Z")
+    // Find max date explicitly (don't assume sort order)
+    const lastIso = data.reduce((max, d) => d.date > max ? d.date : max, data[0].date)
+    const cutoff  = new Date(lastIso + "T12:00:00Z")
     cutoff.setDate(cutoff.getDate() - (RANGE_DAYS[range] - 1))
     const cutoffIso = cutoff.toISOString().slice(0, 10)
     return data.filter(d => d.date >= cutoffIso)
@@ -143,15 +151,28 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
   // ── Axis config ────────────────────────────────────────────────────────────
   const xTicks = useMemo(() => {
     const src = view === "TVL Level" ? filtered : deltaData
-    return range === "30D"
-      ? src.filter((_, i) => i % 3 === 0).map(d => d.date)
-      : getMonthlyTicks(src)
+    if (range === "7D")  return src.map(d => d.date)                             // every day
+    if (range === "30D") return src.filter((_, i) => i % 7 === 0).map(d => d.date) // every week
+    if (range === "90D") return src.filter((_, i) => i % 7 === 0).map(d => d.date) // every week
+    return getMonthlyTicks(src)                                                    // ALL: monthly
   }, [filtered, deltaData, view, range])
 
-  const fmtTick = range === "30D" ? fmtDayTick : fmtMonthTick
+  const fmtTick = (range === "7D" || range === "30D" || range === "90D") ? fmtDayTick : fmtMonthTick
 
-  const lvlMax   = useMemo(() => Math.max(0, ...filtered.map(d => d.value)), [filtered])
-  const lvlTicks = useMemo(() => buildTicks(lvlMax), [lvlMax])
+  const { lvlTicks, lvlDomain } = useMemo(() => {
+    const maxVal = Math.max(0, ...filtered.map(d => d.value))
+    const minVal = filtered.length > 0 ? Math.min(...filtered.map(d => d.value)) : 0
+
+    if (range === "ALL" || range === "90D") {
+      const ticks = buildTicks(maxVal)
+      return { lvlTicks: ticks, lvlDomain: [0, ticks[ticks.length - 1]] as [number, number] }
+    } else {
+      const pad  = Math.max((maxVal - minVal) * 0.15, maxVal * 0.005)
+      const lMin = Math.max(0, minVal - pad)
+      const lMax = maxVal + pad
+      return { lvlTicks: buildRangeTicks(lMin, lMax), lvlDomain: [lMin, lMax] as [number, number] }
+    }
+  }, [filtered, range])
 
   const deltaMin  = useMemo(() => Math.min(0, ...deltaData.map(d => d.delta)), [deltaData])
   const deltaMax  = useMemo(() => Math.max(0, ...deltaData.map(d => d.delta)), [deltaData])
@@ -229,10 +250,11 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
         </div>
       </div>
 
-      {/* Chart */}
+      {/* Chart — key forces full remount on range/view change to avoid
+          Recharts morphing animation from old dataset positions */}
       <div className="px-2 pb-4">
         {view === "TVL Level" ? (
-          <ResponsiveContainer width="100%" height={280}>
+          <ResponsiveContainer key={`tvl-level-${range}`} width="100%" height={280}>
             <BarChart data={filtered} margin={{ top: 8, right: 56, left: 10, bottom: 0 }} barCategoryGap="12%">
               <defs>
                 <linearGradient id="tvlGrad" x1="0" y1="0" x2="0" y2="1">
@@ -245,15 +267,15 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
                 tick={{ fill: "var(--near-subtle)", fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis key="tvl-left" ticks={lvlTicks} tickFormatter={fmtTvlVal}
                 tick={{ fill: "var(--near-subtle)", fontSize: 11 }} axisLine={false} tickLine={false}
-                width={56} domain={[0, lvlTicks[lvlTicks.length - 1]]} />
-              <YAxis key="tvl-right" yAxisId="right" orientation="right" hide domain={[0, lvlTicks[lvlTicks.length - 1]]} />
+                width={56} domain={lvlDomain} />
+              <YAxis key="tvl-right" yAxisId="right" orientation="right" hide domain={lvlDomain} />
               <Tooltip content={<LevelTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
               <Bar dataKey="value" fill="url(#tvlGrad)" radius={[2, 2, 0, 0]}
                 isAnimationActive animationDuration={800} animationEasing="ease-out" />
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
+          <ResponsiveContainer key={`tvl-delta-${range}`} width="100%" height={280}>
             <BarChart data={deltaData} margin={{ top: 8, right: 56, left: 10, bottom: 0 }} barCategoryGap="12%">
               <CartesianGrid strokeDasharray="3 3" stroke="var(--near-border)" vertical={false} />
               <XAxis dataKey="date" ticks={xTicks} tickFormatter={fmtTick}
