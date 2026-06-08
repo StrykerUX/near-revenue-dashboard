@@ -202,7 +202,7 @@ async function apiFetch<T>(
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v)
   }
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 10_000)
+  const timeout = setTimeout(() => controller.abort(), 25_000)
   try {
     const res = await fetch(url.toString(), {
       headers: { "X-API-Key": API_KEY },
@@ -349,12 +349,18 @@ function safe<T>(p: Promise<Envelope<T>>, fallback: T): Promise<T> {
   return p.then(r => r.data).catch(() => fallback)
 }
 
+// Null snapshot used when the API is unreachable — page.tsx try/catch will
+// use static fallbacks for all hero values in this case.
+const NULL_SNAPSHOT: SnapshotData = {
+  total_fees:    { fees_usd_all_time: 0, fees_usd_ytd: 0, fees_usd_d30: 0, fees_usd_d7: 0, fees_usd_h24: 0, fees_usd_is_stale: 0, fees_near_all_time: 0, fees_near_ytd: 0, fees_near_d30: 0, fees_near_d7: 0, fees_near_h24: 0, fees_near_is_stale: 0 },
+  revenue:       { revenue_usd_all_time: 0, revenue_usd_ytd: 0, revenue_usd_d30: 0, revenue_usd_d7: 0, revenue_usd_h24: 0, revenue_near_all_time: 0, revenue_near_ytd: 0, revenue_near_d30: 0, revenue_near_d7: 0, revenue_near_h24: 0, revenue_usd_d30_current: 0, revenue_usd_d30_prior: 0, is_stale: 0 },
+  capture_rate:  { capture_rate_all_time: 0, capture_rate_ytd: 0, capture_rate_d30: 0, capture_rate_d7: 0, capture_rate_h24: null, capture_rate_delta_30d: 0, is_stale: 0 },
+  capture_split: { pp_fe_all_time: 0, pp_fe_ytd: 0, pp_fe_d30: 0, pp_fe_d7: 0, pp_b2b_all_time: 0, pp_b2b_ytd: 0, pp_b2b_d30: 0, pp_b2b_d7: 0, pp_qi_all_time: 0, pp_qi_ytd: 0, pp_qi_d30: 0, pp_qi_d7: 0, is_stale: 0 },
+}
 
 export async function fetchDashboardData(): Promise<DashboardData> {
-  // fetchSnapshot is the only critical call — if it fails the page falls back
-  // entirely to static data. All other calls are fault-tolerant: a timeout or
-  // API error returns an empty fallback so the rest of the page still renders
-  // with live data.
+  // All calls are now fault-tolerant — snapshot falls back to NULL_SNAPSHOT
+  // so page.tsx static fallbacks are used for hero values instead of crashing.
   const [
     snapshot,
     revenueSeries,
@@ -366,7 +372,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     revenueStreams,
     captureSplit,
   ] = await Promise.all([
-    fetchSnapshot(),
+    fetchSnapshot().catch((): Envelope<SnapshotData> => ({ metric: "snapshot", as_of: null, data: NULL_SNAPSHOT, denomination: null, is_stale: false, updated_at: new Date().toISOString() })),
     safe(fetchRevenueSeries(),           []),
     safe(fetchEmissionsSeries(),         []),
     safe(fetchTotalFeesSeries(),         []),
