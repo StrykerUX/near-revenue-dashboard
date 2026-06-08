@@ -224,18 +224,7 @@ export function IntentVolumeSection({ data }: { data: IntentVolumePoint[] }) {
                 domain={leftDomain}
               />
 
-              <YAxis
-                key="vol-right"
-                yAxisId="right"
-                orientation="right"
-                ticks={rightTicks}
-                tickFormatter={fmtMillions}
-                tick={{ fill: "#6b7280", fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
-                width={48}
-                domain={rightDomain}
-              />
+              <YAxis key="vol-right" yAxisId="right" orientation="right" hide domain={rightDomain} />
 
               <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
 

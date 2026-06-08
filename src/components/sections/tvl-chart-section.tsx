@@ -246,9 +246,7 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
               <YAxis key="tvl-left" ticks={lvlTicks} tickFormatter={fmtTvlVal}
                 tick={{ fill: "var(--near-subtle)", fontSize: 11 }} axisLine={false} tickLine={false}
                 width={56} domain={[0, lvlTicks[lvlTicks.length - 1]]} />
-              <YAxis key="tvl-right" yAxisId="right" orientation="right" ticks={lvlTicks} tickFormatter={fmtTvlVal}
-                tick={{ fill: "var(--near-subtle)", fontSize: 11 }} axisLine={false} tickLine={false}
-                width={56} domain={[0, lvlTicks[lvlTicks.length - 1]]} />
+              <YAxis key="tvl-right" yAxisId="right" orientation="right" hide domain={[0, lvlTicks[lvlTicks.length - 1]]} />
               <Tooltip content={<LevelTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
               <Bar dataKey="value" fill="url(#tvlGrad)" radius={[2, 2, 0, 0]}
                 isAnimationActive animationDuration={800} animationEasing="ease-out" />
@@ -263,9 +261,7 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
               <YAxis key="delta-left" ticks={deltaTicks} tickFormatter={fmtTvlVal}
                 tick={{ fill: "var(--near-subtle)", fontSize: 11 }} axisLine={false} tickLine={false}
                 width={56} domain={deltaDomain} />
-              <YAxis key="delta-right" yAxisId="right" orientation="right" ticks={deltaTicks} tickFormatter={fmtTvlVal}
-                tick={{ fill: "var(--near-subtle)", fontSize: 11 }} axisLine={false} tickLine={false}
-                width={56} domain={deltaDomain} />
+              <YAxis key="delta-right" yAxisId="right" orientation="right" hide domain={deltaDomain} />
               <Tooltip content={<DeltaTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
               <Bar dataKey="delta" radius={[2, 2, 0, 0]}
                 isAnimationActive animationDuration={800} animationEasing="ease-out">

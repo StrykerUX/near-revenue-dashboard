@@ -205,19 +205,7 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
               domain={[0, leftMax]}
             />
 
-            {/* Right axis — daily bars scale. */}
-            <YAxis
-              key="cum-right"
-              yAxisId="right"
-              orientation="right"
-              ticks={rightTicks}
-              tickFormatter={fmtAxisUSD}
-              tick={{ fill: "#6b7280", fontSize: 10 }}
-              axisLine={false}
-              tickLine={false}
-              width={48}
-              domain={[0, rightMax]}
-            />
+            <YAxis key="cum-right" yAxisId="right" orientation="right" hide domain={[0, rightMax]} />
 
             <Tooltip
               content={<CustomTooltip />}
