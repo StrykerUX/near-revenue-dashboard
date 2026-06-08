@@ -190,8 +190,10 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
               tickLine={false}
             />
 
-            {/* Left axis — cumulative */}
+            {/* Left axis — cumulative. key prop scopes children to a separate
+                React subtree, preventing Recharts tick key collisions with right. */}
             <YAxis
+              key="cum-left"
               yAxisId="left"
               orientation="left"
               ticks={leftTicks}
@@ -203,13 +205,17 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
               domain={[0, leftMax]}
             />
 
-            {/* Right axis — daily bars. Ticks hidden to avoid Recharts duplicate-key
-                collision with left axis (both share value 0 and sometimes others).
-                Tooltip shows exact daily values. */}
+            {/* Right axis — daily bars scale. */}
             <YAxis
+              key="cum-right"
               yAxisId="right"
               orientation="right"
-              hide
+              ticks={rightTicks}
+              tickFormatter={fmtAxisUSD}
+              tick={{ fill: "#6b7280", fontSize: 10 }}
+              axisLine={false}
+              tickLine={false}
+              width={48}
               domain={[0, rightMax]}
             />
 

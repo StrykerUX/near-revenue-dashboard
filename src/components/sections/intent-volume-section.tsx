@@ -212,6 +212,7 @@ export function IntentVolumeSection({ data }: { data: IntentVolumePoint[] }) {
 
               {/* Left — cumulative */}
               <YAxis
+                key="vol-left"
                 yAxisId="left"
                 orientation="left"
                 ticks={leftTicks}
@@ -223,12 +224,16 @@ export function IntentVolumeSection({ data }: { data: IntentVolumePoint[] }) {
                 domain={leftDomain}
               />
 
-              {/* Right — daily bars. Hidden to prevent Recharts tick key collisions
-                  with left axis (both share 0 and sometimes other values). */}
               <YAxis
+                key="vol-right"
                 yAxisId="right"
                 orientation="right"
-                hide
+                ticks={rightTicks}
+                tickFormatter={fmtMillions}
+                tick={{ fill: "#6b7280", fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+                width={48}
                 domain={rightDomain}
               />
 
