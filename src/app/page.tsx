@@ -7,10 +7,12 @@ import { CumulativeFeesSection, type CumulativeFeesPoint } from "@/components/se
 import { TvlChartSection } from "@/components/sections/tvl-chart-section"
 import { UniqueUsersSection } from "@/components/sections/unique-users-section"
 import { RevenueCharts } from "@/components/sections/revenue-charts"
+import { RevenueStreams } from "@/components/sections/revenue-streams"
+import { CaptureSplit } from "@/components/sections/capture-split"
 import { WalletTable } from "@/components/sections/wallet-table"
 import { Faq } from "@/components/sections/faq"
-import { fetchDashboardData, type BuybackData } from "@/lib/api"
-import { formatUSD, formatNear, formatMonthLabel, formatDayLabel, formatUpdatedAt, aggregateEmissionsByMonth, computeRevenueVsEmissions } from "@/lib/utils"
+import { fetchDashboardData, type BuybackData, type RevenueStreamItem, type SnapshotCaptureSplit } from "@/lib/api"
+import { formatUSD, formatNear, formatMonthLabel, formatDayLabel, formatUpdatedAt, aggregateEmissionsByMonth, computeRevenueVsEmissions, debugGlow } from "@/lib/utils"
 import { STATS, REVENUE_MONTHLY, WALLET_ROWS, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES } from "@/lib/data"
 import type { StatCard, TimeSeriesPoint, WalletRow } from "@/lib/types"
 
@@ -30,6 +32,8 @@ export default async function Page() {
   let emissionsDaily: TimeSeriesPoint[] = EMISSIONS_SERIES
   let buyback: BuybackData | null = null
   let cumulativeFeesData: CumulativeFeesPoint[] = []
+  let revenueStreams: RevenueStreamItem[] = []
+  let captureSplit: SnapshotCaptureSplit | null = null
   let tvlChartSeries: TimeSeriesPoint[] = []
   let tvlCurrentUsd = 0
   let tvlGrowthX: string | null = null
@@ -38,7 +42,7 @@ export default async function Page() {
   let uniqueUsersD30 = 0
 
   try {
-    const { snapshot, revenueSeries, walletBreakdown, emissionsDaily: emissionsDailyRaw, buyback: buybackData, totalFeesSeries: totalFeesRaw, intentVolumeSeries, uniqueUsers, confidentialTvlUsd, tvlSeries: tvlRaw } = await fetchDashboardData()
+    const { snapshot, revenueSeries, walletBreakdown, emissionsDaily: emissionsDailyRaw, buyback: buybackData, totalFeesSeries: totalFeesRaw, intentVolumeSeries, uniqueUsers, confidentialTvlUsd, tvlSeries: tvlRaw, revenueStreams: streamsRaw, captureSplit: captureSplitRaw } = await fetchDashboardData()
     buyback = buybackData
     const snap = snapshot.data
 
@@ -96,6 +100,9 @@ export default async function Page() {
     emissionsDaily = emissionsDailyRaw
       .slice(-90)
       .map((p) => ({ date: p.date_at, value: Math.round(p.emissions_near) }))
+
+    revenueStreams = streamsRaw
+    captureSplit  = captureSplitRaw
 
     // Unique users
     if (uniqueUsers) {
@@ -155,6 +162,46 @@ export default async function Page() {
           emissionsMonthly={emissionsMonthly}
           emissionsDaily={emissionsDaily}
         />
+
+        {/* Revenue by Stream */}
+        {revenueStreams.length > 0 && (
+          <div className="rounded-2xl border border-near-border bg-near-card overflow-hidden" style={debugGlow("api")}>
+            <div className="p-6 pb-4">
+              <div className="flex items-center gap-3 mb-2 flex-wrap">
+                <h2 className="text-base font-semibold text-near-text">Revenue by Stream</h2>
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs bg-near-border text-near-subtle font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-near-green/60 shrink-0" />
+                  Onchain
+                </span>
+              </div>
+              <p className="text-xs text-near-muted max-w-2xl leading-relaxed">
+                Protocol net revenue broken down by originating source. Figures denominated in USD.
+              </p>
+            </div>
+            <div className="px-6 pb-6">
+              <RevenueStreams streams={revenueStreams} />
+            </div>
+          </div>
+        )}
+
+        {/* Fee Capture Mechanics */}
+        {captureSplit && (
+          <div>
+            <div className="mb-5">
+              <div className="flex items-center gap-3 mb-2 flex-wrap">
+                <h2 className="text-base font-semibold text-near-text">Fee Capture Mechanics</h2>
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs bg-near-border text-near-subtle font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-near-green/60 shrink-0" />
+                  Onchain
+                </span>
+              </div>
+              <p className="text-xs text-near-muted max-w-2xl leading-relaxed">
+                Share of total gross fees captured as net protocol revenue, segmented by collection mechanism. Toggle between time windows to see how capture efficiency has evolved.
+              </p>
+            </div>
+            <CaptureSplit data={captureSplit} />
+          </div>
+        )}
 
         <Faq />
       </div>
