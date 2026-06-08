@@ -13,10 +13,10 @@ import { debugGlow } from "@/lib/utils"
 const VIEWS = ["TVL Level", "Daily Change"] as const
 type View = typeof VIEWS[number]
 
-const RANGES = ["30D", "90D", "ALL"] as const
+const RANGES = ["7D", "30D", "90D", "ALL"] as const
 type Range = typeof RANGES[number]
 
-const RANGE_DAYS: Record<Exclude<Range, "ALL">, number> = { "30D": 30, "90D": 90 }
+const RANGE_DAYS: Record<Exclude<Range, "ALL">, number> = { "7D": 7, "30D": 30, "90D": 90 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 

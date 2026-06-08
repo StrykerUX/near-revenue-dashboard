@@ -30,8 +30,8 @@ export interface CumulativeFeesPoint {
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const PROTOCOL_COLOR = "#2e5c47"
-const INTENTS_COLOR  = "#4a3070"
-const LINE_COLOR     = "#ffffff"
+const INTENTS_COLOR  = "#c2721f"
+const LINE_COLOR     = "#00ec97"
 
 const RANGES = ["7D", "30D", "90D", "ALL"] as const
 type Range = typeof RANGES[number]
