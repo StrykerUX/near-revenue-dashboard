@@ -41,7 +41,7 @@ export function RevenueBarChart({ data }: RevenueBarChartProps) {
 
   return (
     <ResponsiveContainer width="100%" height={240}>
-      <BarChart data={data} margin={{ top: 10, right: 44, left: 10, bottom: 0 }} barCategoryGap="28%">
+      <BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }} barCategoryGap="28%">
         <CartesianGrid strokeDasharray="3 3" stroke="var(--near-border)" vertical={false} />
         <XAxis
           dataKey="date"

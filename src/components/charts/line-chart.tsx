@@ -89,7 +89,7 @@ export function EmissionsLineChart({ data, mode = "monthly" }: EmissionsLineChar
 
   return (
     <ResponsiveContainer width="100%" height={240}>
-      <LineChart data={data} margin={{ top: 10, right: axisWidth, left: 10, bottom: 0 }}>
+      <LineChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--near-border)" vertical={false} />
         <XAxis
           dataKey="date"

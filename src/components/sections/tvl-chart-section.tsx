@@ -127,7 +127,7 @@ interface TvlChartSectionProps {
 
 export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionProps) {
   const [view, setView]   = useState<View>("TVL Level")
-  const [range, setRange] = useState<Range>("ALL")
+  const [range, setRange] = useState<Range>("90D")
 
   // ── Filter by range — anchored to the MOST RECENT date in the dataset ────────
   const filtered = useMemo(() => {
@@ -255,7 +255,7 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
       <div className="px-2 pb-4">
         {view === "TVL Level" ? (
           <ResponsiveContainer key={`tvl-level-${range}`} width="100%" height={280}>
-            <BarChart data={filtered} margin={{ top: 8, right: 56, left: 10, bottom: 0 }} barCategoryGap="12%">
+            <BarChart data={filtered} margin={{ top: 8, right: 12, left: 10, bottom: 0 }} barCategoryGap="12%">
               <defs>
                 <linearGradient id="tvlGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="var(--near-green)" stopOpacity={0.85} />
@@ -268,7 +268,7 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
               <YAxis key="tvl-left" ticks={lvlTicks} tickFormatter={fmtTvlVal}
                 tick={{ fill: "var(--near-subtle)", fontSize: 11 }} axisLine={false} tickLine={false}
                 width={56} domain={lvlDomain} />
-              <YAxis key="tvl-right" yAxisId="right" orientation="right" hide domain={lvlDomain} />
+              <YAxis key="tvl-right" yAxisId="right" orientation="right" hide width={0} domain={lvlDomain} />
               <Tooltip content={<LevelTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
               <Bar dataKey="value" fill="url(#tvlGrad)" radius={[2, 2, 0, 0]}
                 isAnimationActive animationDuration={800} animationEasing="ease-out" />
@@ -276,14 +276,14 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
           </ResponsiveContainer>
         ) : (
           <ResponsiveContainer key={`tvl-delta-${range}`} width="100%" height={280}>
-            <BarChart data={deltaData} margin={{ top: 8, right: 56, left: 10, bottom: 0 }} barCategoryGap="12%">
+            <BarChart data={deltaData} margin={{ top: 8, right: 12, left: 10, bottom: 0 }} barCategoryGap="12%">
               <CartesianGrid strokeDasharray="3 3" stroke="var(--near-border)" vertical={false} />
               <XAxis dataKey="date" ticks={xTicks} tickFormatter={fmtTick}
                 tick={{ fill: "var(--near-subtle)", fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis key="delta-left" ticks={deltaTicks} tickFormatter={fmtTvlVal}
                 tick={{ fill: "var(--near-subtle)", fontSize: 11 }} axisLine={false} tickLine={false}
                 width={56} domain={deltaDomain} />
-              <YAxis key="delta-right" yAxisId="right" orientation="right" hide domain={deltaDomain} />
+              <YAxis key="delta-right" yAxisId="right" orientation="right" hide width={0} domain={deltaDomain} />
               <Tooltip content={<DeltaTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
               <Bar dataKey="delta" radius={[2, 2, 0, 0]}
                 isAnimationActive animationDuration={800} animationEasing="ease-out">

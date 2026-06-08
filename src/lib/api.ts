@@ -334,9 +334,7 @@ export async function fetchAnalyticsData(): Promise<AnalyticsData> {
 export interface DashboardData {
   snapshot: Envelope<SnapshotData>
   revenueSeries: RevenueSeriesPoint[]
-  walletBreakdown: WalletBreakdownItem[]
   emissionsDaily: EmissionsSeriesPoint[]
-  buyback: BuybackData
   totalFeesSeries: TotalFeesSeriesPoint[]
   intentVolumeSeries: IntentVolumePoint[]
   uniqueUsers: UniqueUsersData | null
@@ -351,13 +349,6 @@ function safe<T>(p: Promise<Envelope<T>>, fallback: T): Promise<T> {
   return p.then(r => r.data).catch(() => fallback)
 }
 
-const BUYBACK_ZERO: BuybackData = {
-  buyback_near_all_time: 0, buyback_near_ytd: 0,
-  buyback_near_d30: 0, buyback_near_d7: 0,
-  pct_of_revenue_all_time: 0, pct_of_revenue_ytd: 0,
-  pct_of_revenue_d30: 0, pct_of_revenue_d7: 0,
-  is_stale: 0,
-}
 
 export async function fetchDashboardData(): Promise<DashboardData> {
   // fetchSnapshot is the only critical call — if it fails the page falls back
@@ -367,9 +358,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
   const [
     snapshot,
     revenueSeries,
-    walletBreakdown,
     emissionsDaily,
-    buyback,
     totalFeesSeries,
     intentVolumeSeries,
     uniqueUsers,
@@ -379,9 +368,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
   ] = await Promise.all([
     fetchSnapshot(),
     safe(fetchRevenueSeries(),           []),
-    safe(fetchWalletBreakdown(),         []),
     safe(fetchEmissionsSeries(),         []),
-    safe(fetchBuyback(),                 BUYBACK_ZERO),
     safe(fetchTotalFeesSeries(),         []),
     safe(fetchIntentVolumeSeries(),      []),
     safe(fetchUniqueUsers(),             null),
@@ -395,16 +382,14 @@ export async function fetchDashboardData(): Promise<DashboardData> {
 
   return {
     snapshot,
-    revenueSeries:      revenueSeries     as RevenueSeriesPoint[],
-    walletBreakdown:    walletBreakdown   as WalletBreakdownItem[],
-    emissionsDaily:     emissionsDaily    as EmissionsSeriesPoint[],
-    buyback:            buyback           as BuybackData,
-    totalFeesSeries:    totalFeesSeries   as TotalFeesSeriesPoint[],
+    revenueSeries:      revenueSeries      as RevenueSeriesPoint[],
+    emissionsDaily:     emissionsDaily     as EmissionsSeriesPoint[],
+    totalFeesSeries:    totalFeesSeries    as TotalFeesSeriesPoint[],
     intentVolumeSeries: intentVolumeSeries as IntentVolumePoint[],
-    uniqueUsers:        uniqueUsers       as UniqueUsersData | null,
+    uniqueUsers:        uniqueUsers        as UniqueUsersData | null,
     confidentialTvlUsd: latestTvl,
-    tvlSeries:          tvlSeries         as ConfidentialTvlPoint[],
-    revenueStreams:      revenueStreams     as RevenueStreamItem[],
-    captureSplit:        captureSplit      as SnapshotCaptureSplit | null,
+    tvlSeries:          tvlSeries          as ConfidentialTvlPoint[],
+    revenueStreams:      revenueStreams      as RevenueStreamItem[],
+    captureSplit:        captureSplit       as SnapshotCaptureSplit | null,
   }
 }

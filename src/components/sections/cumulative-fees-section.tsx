@@ -137,7 +137,7 @@ function pickXTicks(data: CumulativeFeesPoint[], range: Range): string[] {
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] }) {
-  const [range, setRange] = useState<Range>("ALL")
+  const [range, setRange] = useState<Range>("90D")
 
   const view = useMemo(() => {
     if (range === "ALL" || data.length === 0) return data
@@ -180,8 +180,8 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
 
   return (
     <div
-      className="rounded-2xl overflow-hidden"
-      style={{ background: "#0e0f0f", ...debugGlow(data.length > 0 ? "api" : "static") }}
+      className="rounded-2xl border border-near-border bg-near-card overflow-hidden"
+      style={debugGlow(data.length > 0 ? "api" : "static")}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4">
@@ -212,7 +212,7 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
       {/* Chart — key forces remount on range change to reset Recharts animation */}
       <div className="px-2 pb-4">
         <ResponsiveContainer key={`cumfees-${range}`} width="100%" height={320}>
-          <ComposedChart data={view} margin={{ top: 8, right: 56, left: 10, bottom: 0 }} barCategoryGap="20%">
+          <ComposedChart data={view} margin={{ top: 8, right: 12, left: 10, bottom: 0 }} barCategoryGap="20%">
 
             <XAxis
               dataKey="label"
@@ -238,7 +238,7 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
               domain={leftDomain}
             />
 
-            <YAxis key="cum-right" yAxisId="right" orientation="right" hide domain={[0, rightMax]} />
+            <YAxis key="cum-right" yAxisId="right" orientation="right" hide width={0} domain={[0, rightMax]} />
 
             <Tooltip
               content={<CustomTooltip />}

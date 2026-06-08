@@ -9,12 +9,12 @@ import { UniqueUsersSection } from "@/components/sections/unique-users-section"
 import { RevenueCharts } from "@/components/sections/revenue-charts"
 import { RevenueStreams } from "@/components/sections/revenue-streams"
 import { CaptureSplit } from "@/components/sections/capture-split"
-import { WalletTable } from "@/components/sections/wallet-table"
+import { EfficiencyMetrics } from "@/components/sections/efficiency-metrics"
 import { Faq } from "@/components/sections/faq"
-import { fetchDashboardData, type BuybackData, type RevenueStreamItem, type SnapshotCaptureSplit } from "@/lib/api"
+import { fetchDashboardData, type RevenueStreamItem, type SnapshotCaptureSplit, type RevenueSeriesPoint, type IntentVolumePoint, type TotalFeesSeriesPoint } from "@/lib/api"
 import { formatUSD, formatNear, formatMonthLabel, formatDayLabel, formatUpdatedAt, aggregateEmissionsByMonth, computeRevenueVsEmissions, debugGlow } from "@/lib/utils"
-import { STATS, REVENUE_MONTHLY, WALLET_ROWS, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES } from "@/lib/data"
-import type { StatCard, TimeSeriesPoint, WalletRow } from "@/lib/types"
+import { STATS, REVENUE_MONTHLY, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES } from "@/lib/data"
+import type { StatCard, TimeSeriesPoint } from "@/lib/types"
 
 export default async function Page() {
   // ── Fallback values (static data) ─────────────────────────────────────────
@@ -26,14 +26,15 @@ export default async function Page() {
   let sparklineData: number[] = SPARKLINE_DATA
   let stats: StatCard[] = STATS.slice(1, 4) // exclude Stablecoin Liquidity Depth (no API yet)
   let revenueChartSeries: TimeSeriesPoint[] = REVENUE_MONTHLY
-  let walletRows: WalletRow[] = WALLET_ROWS
   let updatedAt = "—"
   let emissionsMonthly: TimeSeriesPoint[] = EMISSIONS_SERIES
   let emissionsDaily: TimeSeriesPoint[] = EMISSIONS_SERIES
-  let buyback: BuybackData | null = null
   let cumulativeFeesData: CumulativeFeesPoint[] = []
   let revenueStreams: RevenueStreamItem[] = []
   let captureSplit: SnapshotCaptureSplit | null = null
+  let effRevenueSeries: RevenueSeriesPoint[] = []
+  let effVolumeSeries: IntentVolumePoint[] = []
+  let effFeesSeries: TotalFeesSeriesPoint[] = []
   let tvlChartSeries: TimeSeriesPoint[] = []
   let tvlCurrentUsd = 0
   let tvlGrowthX: string | null = null
@@ -42,8 +43,7 @@ export default async function Page() {
   let uniqueUsersD30 = 0
 
   try {
-    const { snapshot, revenueSeries, walletBreakdown, emissionsDaily: emissionsDailyRaw, buyback: buybackData, totalFeesSeries: totalFeesRaw, intentVolumeSeries, uniqueUsers, confidentialTvlUsd, tvlSeries: tvlRaw, revenueStreams: streamsRaw, captureSplit: captureSplitRaw } = await fetchDashboardData()
-    buyback = buybackData
+    const { snapshot, revenueSeries, emissionsDaily: emissionsDailyRaw, totalFeesSeries: totalFeesRaw, intentVolumeSeries, uniqueUsers, confidentialTvlUsd, tvlSeries: tvlRaw, revenueStreams: streamsRaw, captureSplit: captureSplitRaw } = await fetchDashboardData()
     const snap = snapshot.data
 
     totalFeesDisplay = formatUSD(snap.total_fees.fees_usd_all_time)
@@ -86,13 +86,6 @@ export default async function Page() {
       value: Math.round(p.revenue_usd),
     }))
 
-    walletRows = walletBreakdown.map((item) => ({
-      name: item.wallet,
-      share: parseFloat((item.share_all_time * 100).toFixed(1)),
-      totalRevenue: formatNear(item.inflow_near_all_time),
-      pct: parseFloat((item.share_all_time * 100).toFixed(1)),
-    }))
-
     updatedAt = formatUpdatedAt(snapshot.updated_at)
 
     const monthlyEmissionsMap = aggregateEmissionsByMonth(emissionsDailyRaw)
@@ -103,6 +96,10 @@ export default async function Page() {
 
     revenueStreams = streamsRaw
     captureSplit  = captureSplitRaw
+
+    effRevenueSeries = revenueSeries
+    effVolumeSeries  = intentVolumeSeries
+    effFeesSeries    = totalFeesRaw
 
     // Unique users
     if (uniqueUsers) {
@@ -202,6 +199,12 @@ export default async function Page() {
             <CaptureSplit data={captureSplit} />
           </div>
         )}
+
+        <EfficiencyMetrics
+          revenueSeries={effRevenueSeries}
+          intentVolumeSeries={effVolumeSeries}
+          totalFeesSeries={effFeesSeries}
+        />
 
         <Faq />
       </div>
