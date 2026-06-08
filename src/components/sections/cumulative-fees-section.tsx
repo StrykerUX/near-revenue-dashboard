@@ -56,7 +56,7 @@ function niceCeil(v: number): number {
   if (v <= 0) return 1
   const mag = Math.pow(10, Math.floor(Math.log10(v)))
   const norm = v / mag
-  const niceNorm = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10
+  const niceNorm = norm <= 1 ? 1 : norm <= 1.5 ? 1.5 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 3 ? 3 : norm <= 3.5 ? 3.5 : norm <= 4 ? 4 : norm <= 5 ? 5 : 10
   return niceNorm * mag
 }
 
@@ -122,8 +122,16 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
 // ── X-axis tick density per range ──────────────────────────────────────────────
 
 function pickXTicks(data: CumulativeFeesPoint[], range: Range): string[] {
-  const step = range === "7D" ? 1 : range === "30D" ? 2 : range === "90D" ? 4 : 5
-  return data.filter((_, i) => i % step === 0).map(d => d.label)
+  if (range === "7D") return data.map(d => d.label)                              // every day
+  if (range === "30D" || range === "90D") return data.filter((_, i) => i % 7 === 0).map(d => d.label) // weekly
+  // ALL: first day of each month
+  const seen = new Set<string>()
+  return data.filter(d => {
+    const month = d.isoDate.slice(0, 7)
+    if (seen.has(month)) return false
+    seen.add(month)
+    return true
+  }).map(d => d.label)
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -209,6 +217,7 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
             <XAxis
               dataKey="label"
               ticks={xTicks}
+              tickFormatter={(label: string) => range === "ALL" ? label.split(" ")[0] : label}
               tick={{ fill: "#6b7280", fontSize: 10 }}
               axisLine={false}
               tickLine={false}

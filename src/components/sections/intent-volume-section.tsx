@@ -51,7 +51,7 @@ function niceCeil(v: number): number {
   if (v <= 0) return 1
   const mag = Math.pow(10, Math.floor(Math.log10(v)))
   const norm = v / mag
-  const n = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10
+  const n = norm <= 1 ? 1 : norm <= 1.5 ? 1.5 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 3 ? 3 : norm <= 3.5 ? 3.5 : norm <= 4 ? 4 : norm <= 5 ? 5 : 10
   return n * mag
 }
 

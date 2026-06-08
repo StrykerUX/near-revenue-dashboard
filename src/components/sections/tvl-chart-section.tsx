@@ -75,7 +75,7 @@ function getMonthlyTicks(data: { date: string }[]): string[] {
 
 function fmtMonthTick(s: string): string {
   const d = new Date(s + "T12:00:00Z")
-  return d.toLocaleDateString("en-US", { month: "short", year: "2-digit" })
+  return d.toLocaleDateString("en-US", { month: "short" })
 }
 
 function fmtDayTick(s: string): string {
