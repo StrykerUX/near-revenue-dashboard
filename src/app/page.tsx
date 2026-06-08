@@ -3,7 +3,6 @@ export const dynamic = 'force-dynamic'
 import { SiteLayout } from "@/components/sections/site-layout"
 import { Hero } from "@/components/sections/hero"
 import { StatsGrid } from "@/components/sections/stats-grid"
-import { FeesChart } from "@/components/sections/fees-chart"
 import { CumulativeFeesSection, type CumulativeFeesPoint } from "@/components/sections/cumulative-fees-section"
 import { TvlChartSection } from "@/components/sections/tvl-chart-section"
 import { UniqueUsersSection } from "@/components/sections/unique-users-section"
@@ -12,7 +11,7 @@ import { WalletTable } from "@/components/sections/wallet-table"
 import { Faq } from "@/components/sections/faq"
 import { fetchDashboardData, type BuybackData } from "@/lib/api"
 import { formatUSD, formatNear, formatMonthLabel, formatDayLabel, formatUpdatedAt, aggregateEmissionsByMonth, computeRevenueVsEmissions } from "@/lib/utils"
-import { STATS, REVENUE_MONTHLY, WALLET_ROWS, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES, TOTAL_FEES_SERIES } from "@/lib/data"
+import { STATS, REVENUE_MONTHLY, WALLET_ROWS, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES } from "@/lib/data"
 import type { StatCard, TimeSeriesPoint, WalletRow } from "@/lib/types"
 
 export default async function Page() {
@@ -30,8 +29,6 @@ export default async function Page() {
   let emissionsMonthly: TimeSeriesPoint[] = EMISSIONS_SERIES
   let emissionsDaily: TimeSeriesPoint[] = EMISSIONS_SERIES
   let buyback: BuybackData | null = null
-  let totalFeesSeriesNear: TimeSeriesPoint[] = TOTAL_FEES_SERIES
-  let totalFeesSeriesUsd: TimeSeriesPoint[] = TOTAL_FEES_SERIES
   let cumulativeFeesData: CumulativeFeesPoint[] = []
   let tvlChartSeries: TimeSeriesPoint[] = []
   let tvlCurrentUsd = 0
@@ -100,22 +97,6 @@ export default async function Page() {
       .slice(-90)
       .map((p) => ({ date: p.date_at, value: Math.round(p.emissions_near) }))
 
-    const validFeesNear = totalFeesRaw.filter((p) => p.cumulative_fees_near > 0)
-    if (validFeesNear.length > 0) {
-      totalFeesSeriesNear = validFeesNear.map((p) => ({
-        date: p.date_at,
-        value: Math.round(p.cumulative_fees_near),
-      }))
-    }
-
-    const validFeesUsd = totalFeesRaw.filter((p) => p.cumulative_fees_usd > 0)
-    if (validFeesUsd.length > 0) {
-      totalFeesSeriesUsd = validFeesUsd.map((p) => ({
-        date: p.date_at,
-        value: Math.round(p.cumulative_fees_usd),
-      }))
-    }
-
     // Unique users
     if (uniqueUsers) {
       uniqueUsersD1  = uniqueUsers.d1
@@ -170,7 +151,6 @@ export default async function Page() {
         {(uniqueUsersD1 > 0 || uniqueUsersD7 > 0 || uniqueUsersD30 > 0) && (
           <UniqueUsersSection d1={uniqueUsersD1} d7={uniqueUsersD7} d30={uniqueUsersD30} />
         )}
-        <FeesChart dataNear={totalFeesSeriesNear} dataUsd={totalFeesSeriesUsd} />
         <CumulativeFeesSection data={cumulativeFeesData} />
         <TvlChartSection data={tvlChartSeries} currentTvl={tvlCurrentUsd} growthX={tvlGrowthX} />
         <RevenueCharts
