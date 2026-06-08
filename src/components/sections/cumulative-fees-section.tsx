@@ -203,16 +203,13 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
               domain={[0, leftMax]}
             />
 
-            {/* Right axis — daily bars */}
+            {/* Right axis — daily bars. Ticks hidden to avoid Recharts duplicate-key
+                collision with left axis (both share value 0 and sometimes others).
+                Tooltip shows exact daily values. */}
             <YAxis
               yAxisId="right"
               orientation="right"
-              ticks={rightTicks}
-              tickFormatter={fmtAxisUSD}
-              tick={{ fill: "#6b7280", fontSize: 10 }}
-              axisLine={false}
-              tickLine={false}
-              width={44}
+              hide
               domain={[0, rightMax]}
             />
 

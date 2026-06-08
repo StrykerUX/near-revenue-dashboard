@@ -223,16 +223,12 @@ export function IntentVolumeSection({ data }: { data: IntentVolumePoint[] }) {
                 domain={leftDomain}
               />
 
-              {/* Right — daily bars */}
+              {/* Right — daily bars. Hidden to prevent Recharts tick key collisions
+                  with left axis (both share 0 and sometimes other values). */}
               <YAxis
                 yAxisId="right"
                 orientation="right"
-                ticks={rightTicks}
-                tickFormatter={fmtMillions}
-                tick={{ fill: "#6b7280", fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
-                width={48}
+                hide
                 domain={rightDomain}
               />
 
