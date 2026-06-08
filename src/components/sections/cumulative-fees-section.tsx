@@ -61,8 +61,11 @@ function niceCeil(v: number): number {
 }
 
 // Build an array of `count` evenly spaced ticks from 0..max.
+// Deduplicates to avoid Recharts duplicate-key warnings when max is tiny.
 function makeTicks(max: number, count = 4): number[] {
-  return Array.from({ length: count + 1 }, (_, i) => Math.round((max / count) * i))
+  if (max <= 0) return [0]
+  const raw = Array.from({ length: count + 1 }, (_, i) => Math.round((max / count) * i))
+  return [...new Set(raw)]
 }
 
 // Days back per range button (ALL handled separately).

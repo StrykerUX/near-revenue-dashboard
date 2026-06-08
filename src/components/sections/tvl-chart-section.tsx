@@ -38,17 +38,21 @@ function fmtFull(v: number): string {
 }
 
 function buildTicks(max: number): number[] {
+  if (max <= 0) return [0]
   const abs = Math.abs(max)
   const unit = abs > 4_000_000 ? 1_000_000 : abs > 400_000 ? 100_000 : 10_000
   const step = Math.ceil(abs * 1.15 / 4 / unit) * unit
-  return [0, step, step * 2, step * 3, step * 4]
+  if (step === 0) return [0]
+  return [...new Set([0, step, step * 2, step * 3, step * 4])]
 }
 
 function buildDeltaTicks(min: number, max: number): { ticks: number[]; domain: [number, number] } {
   const bound = Math.max(Math.abs(min), Math.abs(max)) * 1.2
+  if (bound <= 0) return { ticks: [0], domain: [-1, 1] }
   const unit = bound > 1_000_000 ? 1_000_000 : bound > 100_000 ? 100_000 : 10_000
   const step = Math.ceil(bound / 3 / unit) * unit
-  const ticks = [-step * 3, -step * 2, -step, 0, step, step * 2, step * 3]
+  if (step === 0) return { ticks: [0], domain: [-1, 1] }
+  const ticks = [...new Set([-step * 3, -step * 2, -step, 0, step, step * 2, step * 3])]
   return { ticks, domain: [-step * 3, step * 3] }
 }
 

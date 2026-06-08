@@ -56,7 +56,9 @@ function niceCeil(v: number): number {
 }
 
 function makeTicks(max: number, count = 4): number[] {
-  return Array.from({ length: count + 1 }, (_, i) => Math.round((max / count) * i))
+  if (max <= 0) return [0]
+  const raw = Array.from({ length: count + 1 }, (_, i) => Math.round((max / count) * i))
+  return [...new Set(raw)]
 }
 
 function makeRangeTicks(min: number, max: number, count = 4): number[] {
