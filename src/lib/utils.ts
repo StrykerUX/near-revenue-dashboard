@@ -87,3 +87,33 @@ export function computeRevenueVsEmissions(
     })
     .filter((p): p is TimeSeriesPoint => p !== null && p.value > 0)
 }
+
+export interface AbsoluteRevEmissionsPoint {
+  date: string        // "YYYY-MM"
+  revenueNear: number // cumulative_revenue_near
+  emissionsNear: number // cumulative_emissions_near (last day of month)
+}
+
+/**
+ * Pair cumulative revenue NEAR with cumulative emissions NEAR per month
+ * for the "Absolute" view of the Revenue vs Emissions chart.
+ */
+export function computeAbsoluteRevVsEmissions(
+  revenueSeries: RevenueSeriesPoint[],
+  emissionsDaily: EmissionsSeriesPoint[]
+): AbsoluteRevEmissionsPoint[] {
+  const cumEmissionsByMonth: Record<string, number> = {}
+  for (const p of emissionsDaily) {
+    const key = p.date_at.slice(0, 7)
+    // Last daily entry per month carries the latest cumulative total
+    cumEmissionsByMonth[key] = p.cumulative_emissions_near
+  }
+  return revenueSeries
+    .filter(p => p.cumulative_revenue_near > 0)
+    .map(p => ({
+      date: p.period_month,
+      revenueNear: p.cumulative_revenue_near,
+      emissionsNear: cumEmissionsByMonth[p.period_month.slice(0, 7)] ?? 0,
+    }))
+    .filter(p => p.emissionsNear > 0)
+}

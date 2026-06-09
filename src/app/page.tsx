@@ -12,7 +12,7 @@ import { CaptureSplit } from "@/components/sections/capture-split"
 import { EfficiencyMetrics } from "@/components/sections/efficiency-metrics"
 import { Faq } from "@/components/sections/faq"
 import { fetchDashboardData, type RevenueStreamItem, type SnapshotCaptureSplit, type RevenueSeriesPoint, type IntentVolumePoint, type TotalFeesSeriesPoint } from "@/lib/api"
-import { formatUSD, formatNear, formatMonthLabel, formatDayLabel, formatUpdatedAt, aggregateEmissionsByMonth, computeRevenueVsEmissions, debugGlow } from "@/lib/utils"
+import { formatUSD, formatNear, formatMonthLabel, formatDayLabel, formatUpdatedAt, aggregateEmissionsByMonth, computeRevenueVsEmissions, computeAbsoluteRevVsEmissions, debugGlow, type AbsoluteRevEmissionsPoint } from "@/lib/utils"
 import { STATS, REVENUE_MONTHLY, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES } from "@/lib/data"
 import type { StatCard, TimeSeriesPoint } from "@/lib/types"
 
@@ -29,6 +29,7 @@ export default async function Page() {
   let updatedAt = "—"
   let emissionsMonthly: TimeSeriesPoint[] = EMISSIONS_SERIES
   let emissionsDaily: TimeSeriesPoint[] = EMISSIONS_SERIES
+  let absoluteRevEmissions: AbsoluteRevEmissionsPoint[] = []
   let cumulativeFeesData: CumulativeFeesPoint[] = []
   let revenueStreams: RevenueStreamItem[] = []
   let captureSplit: SnapshotCaptureSplit | null = null
@@ -90,6 +91,7 @@ export default async function Page() {
 
     const monthlyEmissionsMap = aggregateEmissionsByMonth(emissionsDailyRaw)
     emissionsMonthly = computeRevenueVsEmissions(revenueSeries, monthlyEmissionsMap)
+    absoluteRevEmissions = computeAbsoluteRevVsEmissions(revenueSeries, emissionsDailyRaw)
     emissionsDaily = emissionsDailyRaw
       .slice(-90)
       .map((p) => ({ date: p.date_at, value: Math.round(p.emissions_near) }))
@@ -158,6 +160,7 @@ export default async function Page() {
           revenueSeries={revenueChartSeries}
           emissionsMonthly={emissionsMonthly}
           emissionsDaily={emissionsDaily}
+          absoluteRevEmissions={absoluteRevEmissions}
         />
 
         {/* Revenue by Stream */}

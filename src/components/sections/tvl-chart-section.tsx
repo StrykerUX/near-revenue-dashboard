@@ -182,6 +182,24 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
 
   const fmtTvlVal = (v: number) => fmtTvl(v)
 
+  // ── Header value + sub-text (range + view aware) ───────────────────────────
+  const headerValue = useMemo(() => {
+    if (view === "Daily Change") return deltaData.reduce((sum, d) => sum + d.delta, 0)
+    return filtered.length > 0 ? filtered[filtered.length - 1].value : 0
+  }, [view, filtered, deltaData])
+
+  const headerSub = useMemo(() => {
+    if (view === "Daily Change") return `net change · ${range}`
+    if (range === "ALL" && growthX) return `${growthX}× since launch`
+    if (filtered.length < 2) return null
+    const first = filtered[0].value
+    const last  = filtered[filtered.length - 1].value
+    if (first <= 0) return null
+    const pct  = ((last - first) / first) * 100
+    const sign = pct >= 0 ? "+" : ""
+    return `${sign}${pct.toFixed(1)}% over ${range}`
+  }, [view, range, filtered, growthX])
+
   return (
     <div
       className="rounded-2xl border border-near-border bg-near-card overflow-hidden"
@@ -199,15 +217,23 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
           </div>
           <p className="text-xs text-near-muted max-w-xl">
             {view === "TVL Level"
-              ? "Total value locked in NEAR Intents' confidential pools, tracked daily in USD."
+              ? "Total value locked in NEAR Intents' confidential pools, in USD."
               : "Net daily change in TVL — positive bars are days assets flowed in, negative bars are net outflows."}
           </p>
         </div>
 
-        {currentTvl > 0 && (
+        {filtered.length > 0 && (
           <div className="text-right shrink-0">
-            <p className="text-2xl font-bold text-near-green">{fmtFull(currentTvl).replace("+", "")}</p>
-            {growthX && <p className="text-xs text-near-green/60">{growthX}× since launch</p>}
+            <p className={`text-2xl font-bold ${view === "Daily Change" ? (headerValue >= 0 ? "text-near-green" : "text-red-400") : "text-near-green"}`}>
+              {view === "Daily Change"
+                ? (headerValue >= 0 ? "+" : "") + fmtFull(headerValue)
+                : fmtFull(headerValue).replace("+", "")}
+            </p>
+            {headerSub && (
+              <p className={`text-xs ${view === "Daily Change" ? "text-near-muted" : "text-near-green/60"}`}>
+                {headerSub}
+              </p>
+            )}
           </div>
         )}
       </div>
