@@ -25,14 +25,15 @@ export function RevenueCharts({
   const [view, setView] = useState<"pct" | "absolute">("pct")
   const { range } = useGlobalRange()
 
-  // Monthly data: 7D/30D → last 1 month, 90D → last 3 months, ALL → all
-  const nMonths = range === "ALL" ? Infinity : range === "90D" ? 3 : 1
+  // Monthly data: 7D/30D → last 1 month, 90D → last 3 months, YTD → current year months
+  const ytdMonths = new Date().getMonth() + 1
+  const nMonths = range === "YTD" ? ytdMonths : range === "90D" ? 3 : 1
   const visiblePct = useMemo(
-    () => nMonths === Infinity ? emissionsMonthly : emissionsMonthly.slice(-nMonths),
+    () => emissionsMonthly.slice(-nMonths),
     [emissionsMonthly, nMonths]
   )
   const visibleAbs = useMemo(
-    () => nMonths === Infinity ? absoluteRevEmissions : absoluteRevEmissions.slice(-nMonths),
+    () => absoluteRevEmissions.slice(-nMonths),
     [absoluteRevEmissions, nMonths]
   )
 

@@ -15,7 +15,8 @@ const VIEWS = ["TVL Level", "Daily Change"] as const
 type View = typeof VIEWS[number]
 
 type Range = GlobalRange
-const RANGE_DAYS: Record<Exclude<Range, "ALL">, number> = { "7D": 7, "30D": 30, "90D": 90 }
+const RANGE_DAYS: Record<Exclude<Range, "YTD">, number> = { "7D": 7, "30D": 30, "90D": 90 }
+const YTD_START = `${new Date().getFullYear()}-01-01`
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -130,8 +131,8 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
 
   // ── Filter by range — anchored to the MOST RECENT date in the dataset ────────
   const filtered = useMemo(() => {
-    if (range === "ALL" || data.length === 0) return data
-    // Find max date explicitly (don't assume sort order)
+    if (data.length === 0) return data
+    if (range === "YTD") return data.filter(d => d.date >= YTD_START)
     const lastIso = data.reduce((max, d) => d.date > max ? d.date : max, data[0].date)
     const cutoff  = new Date(lastIso + "T12:00:00Z")
     cutoff.setDate(cutoff.getDate() - (RANGE_DAYS[range] - 1))
@@ -162,7 +163,7 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
     const maxVal = Math.max(0, ...filtered.map(d => d.value))
     const minVal = filtered.length > 0 ? Math.min(...filtered.map(d => d.value)) : 0
 
-    if (range === "ALL" || range === "90D") {
+    if (range === "YTD" || range === "90D") {
       const ticks = buildTicks(maxVal)
       return { lvlTicks: ticks, lvlDomain: [0, ticks[ticks.length - 1]] as [number, number] }
     } else {
@@ -190,7 +191,6 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
 
   const headerSub = useMemo(() => {
     if (view === "Daily Change") return `net change · ${range}`
-    if (range === "ALL" && growthX) return `${growthX}× since launch`
     if (filtered.length < 2) return null
     const first = filtered[0].value
     const last  = filtered[filtered.length - 1].value

@@ -2,7 +2,7 @@
 
 import { useGlobalRange, type GlobalRange } from "@/providers/global-range-provider"
 
-const RANGES: GlobalRange[] = ["7D", "30D", "90D", "ALL"]
+const RANGES: GlobalRange[] = ["7D", "30D", "90D", "YTD"]
 
 export function HeaderRangeControls() {
   const { range, setRange } = useGlobalRange()

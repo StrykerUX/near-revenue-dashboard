@@ -137,8 +137,9 @@ function NetRevYieldChart({ revenueSeries, intentVolumeSeries }: {
       .filter(p => p.value > 0)
   }, [revenueSeries, intentVolumeSeries])
 
-  // Monthly chart: 7D/30D → 1 month, 90D → 3 months, ALL → all
-  const visible = range === "ALL" ? allPoints : allPoints.slice(-(range === "90D" ? 3 : 1))
+  // Monthly chart: 7D/30D → 1 month, 90D → 3 months, YTD → current year months
+  const ytdMonths = new Date().getMonth() + 1
+  const visible = range === "YTD" ? allPoints.slice(-ytdMonths) : allPoints.slice(-(range === "90D" ? 3 : 1))
 
   return (
     <div className="rounded-2xl border border-near-border bg-near-card p-4">
@@ -178,15 +179,16 @@ function GrossFeeRateChart({ totalFeesSeries, intentVolumeSeries }: {
   }, [totalFeesSeries, intentVolumeSeries])
 
   const { points, xTicks, tickFmt } = useMemo(() => {
-    if (range === "ALL") {
-      // Aggregate to monthly
+    if (range === "YTD") {
+      // Aggregate to monthly for current year only
+      const ytdStart = `${new Date().getFullYear()}-01-01`
       const byMonth: Record<string, { fees: number; vol: number }> = {}
-      for (const p of totalFeesSeries.filter(t => t.fees_usd > 0)) {
+      for (const p of totalFeesSeries.filter(t => t.fees_usd > 0 && t.date_at >= ytdStart)) {
         const k = p.date_at.slice(0, 7)
         if (!byMonth[k]) byMonth[k] = { fees: 0, vol: 0 }
         byMonth[k].fees += p.fees_usd
       }
-      for (const p of intentVolumeSeries) {
+      for (const p of intentVolumeSeries.filter(p => p.date_at >= ytdStart)) {
         const k = p.date_at.slice(0, 7)
         if (byMonth[k]) byMonth[k].vol += p.volume_usd
       }
@@ -252,8 +254,9 @@ function CaptureRateTrendChart({ revenueSeries, totalFeesSeries }: {
       .filter(p => p.value > 0)
   }, [revenueSeries, totalFeesSeries])
 
-  // Monthly chart: 7D/30D → 1 month, 90D → 3 months, ALL → all
-  const visible = range === "ALL" ? allPoints : allPoints.slice(-(range === "90D" ? 3 : 1))
+  // Monthly chart: 7D/30D → 1 month, 90D → 3 months, YTD → current year months
+  const ytdMonths = new Date().getMonth() + 1
+  const visible = range === "YTD" ? allPoints.slice(-ytdMonths) : allPoints.slice(-(range === "90D" ? 3 : 1))
 
   return (
     <div className="rounded-2xl border border-near-border bg-near-card p-4">

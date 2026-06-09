@@ -75,8 +75,9 @@ function makeRangeTicks(min: number, max: number, count = 4): number[] {
   return [...new Set(raw)]
 }
 
-// Days back per range button (ALL handled separately).
-const RANGE_DAYS: Record<Exclude<Range, "ALL">, number> = { "7D": 7, "30D": 30, "90D": 90 }
+// Days back per range button (YTD handled separately).
+const RANGE_DAYS: Record<Exclude<Range, "YTD">, number> = { "7D": 7, "30D": 30, "90D": 90 }
+const YTD_START = `${new Date().getFullYear()}-01-01`
 
 // ── Custom Tooltip ─────────────────────────────────────────────────────────────
 
@@ -140,7 +141,8 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
   const { range } = useGlobalRange()
 
   const view = useMemo(() => {
-    if (range === "ALL" || data.length === 0) return data
+    if (data.length === 0) return data
+    if (range === "YTD") return data.filter(d => d.isoDate >= YTD_START)
     const lastIso = data[data.length - 1].isoDate
     const cutoff = new Date(lastIso)
     cutoff.setDate(cutoff.getDate() - (RANGE_DAYS[range] - 1))
@@ -160,7 +162,7 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
     let lTicks: number[]
     let lDomain: [number, number]
 
-    if (range === "ALL" || range === "90D") {
+    if (range === "YTD" || range === "90D") {
       const lMax = niceCeil(maxCum)
       lTicks  = makeTicks(lMax)
       lDomain = [0, lMax]
@@ -178,9 +180,8 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
 
   const headerTotal = useMemo(() => {
     if (view.length === 0) return 0
-    if (range === "ALL") return view[view.length - 1].cumulativeUsd
     return view.reduce((sum, d) => sum + d.protocolUsd + d.intentsUsd, 0)
-  }, [view, range])
+  }, [view])
 
   return (
     <div
@@ -205,7 +206,7 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
             <XAxis
               dataKey="label"
               ticks={xTicks}
-              tickFormatter={(label: string) => range === "ALL" ? label.split(" ")[0] : label}
+              tickFormatter={(label: string) => range === "YTD" ? label.split(" ")[0] : label}
               tick={{ fill: "#6b7280", fontSize: 10 }}
               axisLine={false}
               tickLine={false}
