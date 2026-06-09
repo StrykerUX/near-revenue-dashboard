@@ -146,7 +146,7 @@ function NetRevYieldChart({ revenueSeries, intentVolumeSeries }: {
         Net Revenue Yield
       </p>
       <p className="text-xs text-near-subtle mb-2 leading-relaxed">
-        Net revenue as % of swap volume — how much of each dollar traded becomes net protocol revenue.
+        Net revenue as % of swap volume — protocol revenue retained after partner and frontend fee splits.
       </p>
       <MetricLine data={visible} chartKey={`net-rev-${range}`} />
     </div>
@@ -261,7 +261,7 @@ function CaptureRateTrendChart({ revenueSeries, totalFeesSeries }: {
         Capture Rate Trend
       </p>
       <p className="text-xs text-near-subtle mb-2 leading-relaxed">
-        Net revenue as % of gross fees — how much of the fees generated the protocol retains, month by month.
+        Net revenue as % of gross fees — the protocol&apos;s share of gross fees, and whether that share is growing, month by month.
       </p>
       {/* Full-width: taller chart to take advantage of the extra space */}
       <ResponsiveContainer key={`capture-${range}`} width="100%" height={200}>
@@ -327,8 +327,7 @@ export function EfficiencyMetrics({
           </span>
         </div>
         <p className="text-xs text-near-muted max-w-2xl leading-relaxed">
-          Three key ratios showing how efficiently NEAR Intents converts swap volume into revenue.
-          Net Revenue Yield and Capture Rate are monthly-grained; Gross Fee Rate supports daily resolution.
+          Three ratios tracking NEAR&apos;s path to deflation. As Intents volume scales, these measure whether the protocol is capturing enough revenue to become a net sink for NEAR.
         </p>
       </div>
 
