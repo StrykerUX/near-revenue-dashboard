@@ -142,12 +142,22 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
 
   const view = useMemo(() => {
     if (data.length === 0) return data
-    if (range === "YTD") return data.filter(d => d.isoDate >= YTD_START)
-    const lastIso = data[data.length - 1].isoDate
-    const cutoff = new Date(lastIso)
-    cutoff.setDate(cutoff.getDate() - (RANGE_DAYS[range] - 1))
-    const cutoffIso = cutoff.toISOString().slice(0, 10)
-    return data.filter(d => d.isoDate >= cutoffIso)
+    let filtered: CumulativeFeesPoint[]
+    if (range === "YTD") {
+      filtered = data.filter(d => d.isoDate >= YTD_START)
+    } else {
+      const lastIso = data[data.length - 1].isoDate
+      const cutoff = new Date(lastIso)
+      cutoff.setDate(cutoff.getDate() - (RANGE_DAYS[range] - 1))
+      const cutoffIso = cutoff.toISOString().slice(0, 10)
+      filtered = data.filter(d => d.isoDate >= cutoffIso)
+    }
+    if (filtered.length === 0) return filtered
+    // Rebase: subtract the cumulative total *before* the window starts
+    // so Day 1 = Day 1's fees, Day 2 = Day1+Day2, etc.
+    const first = filtered[0]
+    const offset = first.cumulativeUsd - (first.protocolUsd + first.intentsUsd)
+    return filtered.map(d => ({ ...d, cumulativeUsd: d.cumulativeUsd - offset }))
   }, [data, range])
 
   const xTicks = useMemo(() => pickXTicks(view, range), [view, range])
@@ -162,18 +172,10 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
     let lTicks: number[]
     let lDomain: [number, number]
 
-    if (range === "YTD" || range === "90D") {
-      const lMax = niceCeil(maxCum)
-      lTicks  = makeTicks(lMax)
-      lDomain = [0, lMax]
-    } else {
-      // Non-zero start: pad 15 % around the visible range so the line isn't edge-to-edge
-      const pad  = Math.max((maxCum - minCum) * 0.15, maxCum * 0.005)
-      const lMin = Math.max(0, minCum - pad)
-      const lMax = maxCum + pad
-      lTicks  = makeRangeTicks(lMin, lMax)
-      lDomain = [lMin, lMax]
-    }
+    // Windowed cumulative always starts near 0 — use zero-based axis
+    const lMax = niceCeil(maxCum)
+    lTicks  = makeTicks(lMax)
+    lDomain = [0, lMax]
 
     return { leftTicks: lTicks, leftDomain: lDomain, rightMax: rMax, rightTicks: makeTicks(rMax) }
   }, [view, range])

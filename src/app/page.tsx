@@ -154,14 +154,14 @@ export default async function Page() {
           sparklineData={sparklineData}
         />
         <StatsGrid stats={stats} />
-        <CumulativeFeesSection data={cumulativeFeesData} />
-        <TvlChartSection data={tvlChartSeries} currentTvl={tvlCurrentUsd} growthX={tvlGrowthX} />
         <RevenueCharts
           revenueSeries={revenueChartSeries}
           emissionsMonthly={emissionsMonthly}
           emissionsDaily={emissionsDaily}
           absoluteRevEmissions={absoluteRevEmissions}
         />
+        <CumulativeFeesSection data={cumulativeFeesData} />
+        <TvlChartSection data={tvlChartSeries} currentTvl={tvlCurrentUsd} growthX={tvlGrowthX} />
 
         {/* Revenue by Stream */}
         {revenueStreams.length > 0 && (

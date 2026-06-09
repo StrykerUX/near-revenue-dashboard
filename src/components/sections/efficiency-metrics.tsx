@@ -21,6 +21,12 @@ function fmtPct(v: number): string {
   return `${v.toFixed(3)}%`
 }
 
+function fmtBps(v: number): string {
+  const bps = v * 100
+  if (bps >= 10) return `${bps.toFixed(1)} bps`
+  return `${bps.toFixed(2)} bps`
+}
+
 function buildTicks(max: number, count = 4): number[] {
   if (max <= 0) return [0]
   const step = max / count
@@ -47,30 +53,29 @@ function maxIsoDate(dates: string[]): string {
   return dates.reduce((m, d) => d > m ? d : m, dates[0] ?? "")
 }
 
-// ── Shared tooltip ─────────────────────────────────────────────────────────────
-
-function MiniTooltip({ active, payload, label }: TooltipProps<number, string>) {
-  if (!active || !payload?.length) return null
-  const val = payload[0].value ?? 0
-  return (
-    <div className="bg-near-card border border-near-border rounded-lg px-3 py-2 text-sm shadow-lg">
-      <p className="text-near-subtle text-xs mb-1">{label}</p>
-      <span className="text-near-green font-semibold">{fmtPct(val as number)}</span>
-    </div>
-  )
-}
-
 // ── Shared line chart ──────────────────────────────────────────────────────────
 
-function MetricLine({ data, chartKey, xTicks, tickFmt }: {
+function MetricLine({ data, chartKey, xTicks, tickFmt, valueFmt = fmtPct }: {
   data: ChartPoint[]
   chartKey: string
   xTicks?: string[]
   tickFmt?: (s: string) => string
+  valueFmt?: (v: number) => string
 }) {
   const max   = Math.max(0, ...data.map(d => d.value))
   const ticks = buildTicks(max * 1.15)
   const domain: [number, number] = [0, ticks[ticks.length - 1]]
+
+  function TooltipContent({ active, payload, label }: TooltipProps<number, string>) {
+    if (!active || !payload?.length) return null
+    const val = payload[0].value ?? 0
+    return (
+      <div className="bg-near-card border border-near-border rounded-lg px-3 py-2 text-sm shadow-lg">
+        <p className="text-near-subtle text-xs mb-1">{label}</p>
+        <span className="text-near-green font-semibold">{valueFmt(val as number)}</span>
+      </div>
+    )
+  }
 
   return (
     <ResponsiveContainer key={chartKey} width="100%" height={160}>
@@ -86,14 +91,14 @@ function MetricLine({ data, chartKey, xTicks, tickFmt }: {
         />
         <YAxis
           ticks={ticks}
-          tickFormatter={fmtPct}
+          tickFormatter={valueFmt}
           tick={{ fill: "var(--near-subtle)", fontSize: 10 }}
           axisLine={false}
           tickLine={false}
-          width={44}
+          width={52}
           domain={domain}
         />
-        <Tooltip content={<MiniTooltip />} cursor={{ stroke: "var(--near-border)" }} />
+        <Tooltip content={<TooltipContent />} cursor={{ stroke: "var(--near-border)" }} />
         <Line
           type="monotone"
           dataKey="value"
@@ -149,7 +154,7 @@ function NetRevYieldChart({ revenueSeries, intentVolumeSeries }: {
       <p className="text-xs text-near-subtle mb-2 leading-relaxed">
         Net revenue as % of swap volume — protocol revenue retained after partner and frontend fee splits.
       </p>
-      <MetricLine data={visible} chartKey={`net-rev-${range}`} />
+      <MetricLine data={visible} chartKey={`net-rev-${range}`} valueFmt={fmtBps} />
     </div>
   )
 }
@@ -220,7 +225,7 @@ function GrossFeeRateChart({ totalFeesSeries, intentVolumeSeries }: {
       <p className="text-xs text-near-subtle mb-2 leading-relaxed">
         Gross fees as % of swap volume — the effective fee rate across all swaps routed through NEAR Intents.
       </p>
-      <MetricLine data={points} chartKey={`gross-fee-${range}`} xTicks={xTicks} tickFmt={tickFmt} />
+      <MetricLine data={points} chartKey={`gross-fee-${range}`} xTicks={xTicks} tickFmt={tickFmt} valueFmt={fmtBps} />
     </div>
   )
 }
@@ -285,7 +290,18 @@ function CaptureRateTrendChart({ revenueSeries, totalFeesSeries }: {
             width={44}
             domain={[0, buildTicks(Math.max(0, ...visible.map(d => d.value)) * 1.15).at(-1) ?? 1]}
           />
-          <Tooltip content={<MiniTooltip />} cursor={{ stroke: "var(--near-border)" }} />
+          <Tooltip
+            content={({ active, payload, label }: import("recharts").TooltipProps<number, string>) => {
+              if (!active || !payload?.length) return null
+              return (
+                <div className="bg-near-card border border-near-border rounded-lg px-3 py-2 text-sm shadow-lg">
+                  <p className="text-near-subtle text-xs mb-1">{label}</p>
+                  <span className="text-near-green font-semibold">{fmtPct(payload[0].value as number ?? 0)}</span>
+                </div>
+              )
+            }}
+            cursor={{ stroke: "var(--near-border)" }}
+          />
           <Line
             type="monotone"
             dataKey="value"
