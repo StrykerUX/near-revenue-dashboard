@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useMemo } from "react"
+import { useGlobalRange, type GlobalRange } from "@/providers/global-range-provider"
 import { debugGlow } from "@/lib/utils"
 import {
   ComposedChart,
@@ -33,8 +34,7 @@ const PROTOCOL_COLOR = "#2e5c47"
 const INTENTS_COLOR  = "#c2721f"
 const LINE_COLOR     = "#00ec97"
 
-const RANGES = ["7D", "30D", "90D", "ALL"] as const
-type Range = typeof RANGES[number]
+type Range = GlobalRange
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -137,7 +137,7 @@ function pickXTicks(data: CumulativeFeesPoint[], range: Range): string[] {
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] }) {
-  const [range, setRange] = useState<Range>("90D")
+  const { range } = useGlobalRange()
 
   const view = useMemo(() => {
     if (range === "ALL" || data.length === 0) return data
@@ -176,7 +176,11 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
     return { leftTicks: lTicks, leftDomain: lDomain, rightMax: rMax, rightTicks: makeTicks(rMax) }
   }, [view, range])
 
-  const headerTotal = data.length > 0 ? data[data.length - 1].cumulativeUsd : 0
+  const headerTotal = useMemo(() => {
+    if (view.length === 0) return 0
+    if (range === "ALL") return view[view.length - 1].cumulativeUsd
+    return view.reduce((sum, d) => sum + d.protocolUsd + d.intentsUsd, 0)
+  }, [view, range])
 
   return (
     <div
@@ -186,27 +190,11 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
       {/* Header */}
       <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4">
         <div>
-          <p className="text-xs text-gray-400 mb-1">Cumulative Fees</p>
-          <p className="text-3xl font-bold text-white tracking-tight">{fmtTooltipUSD(headerTotal)}</p>
+          <h2 className="text-base font-semibold text-near-text mb-1">NEAR Cumulative Fees</h2>
+          <p className="text-xs text-near-muted max-w-xl">Protocol fees and Intents revenue, compounding over time, in USD</p>
         </div>
+        <p className="text-3xl font-bold text-white tracking-tight shrink-0">{fmtTooltipUSD(headerTotal)}</p>
 
-        {/* Timeframe buttons */}
-        <div className="flex items-center gap-1 shrink-0 pt-1">
-          {RANGES.map(r => (
-            <button
-              key={r}
-              onClick={() => setRange(r)}
-              className="px-3 py-1 rounded text-xs font-medium transition-colors"
-              style={
-                r === range
-                  ? { background: "#ffffff", color: "#0e0f0f" }
-                  : { background: "transparent", color: "#9ca3af", border: "1px solid #374151" }
-              }
-            >
-              {r}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Chart — key forces remount on range change to reset Recharts animation */}

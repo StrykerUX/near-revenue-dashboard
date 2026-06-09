@@ -1,6 +1,7 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
+import { useGlobalRange } from "@/providers/global-range-provider"
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
   ResponsiveContainer, type TooltipProps,
@@ -109,41 +110,13 @@ function MetricLine({ data, chartKey, xTicks, tickFmt }: {
   )
 }
 
-// ── Shared range button row ────────────────────────────────────────────────────
-
-function RangeButtons<T extends string>({ ranges, active, onChange }: {
-  ranges: readonly T[]
-  active: T
-  onChange: (r: T) => void
-}) {
-  return (
-    <div className="flex gap-1 mb-3">
-      {ranges.map(r => (
-        <button
-          key={r}
-          onClick={() => onChange(r)}
-          className="px-2.5 py-0.5 rounded text-xs font-medium transition-colors"
-          style={r === active
-            ? { background: "#ffffff", color: "#0e0f0f" }
-            : { background: "transparent", color: "#9ca3af", border: "1px solid #374151" }
-          }
-        >
-          {r}
-        </button>
-      ))}
-    </div>
-  )
-}
-
 // ── Chart 1: Net Revenue Yield (monthly only — revenue is monthly-grained) ────
-
-const NET_REV_RANGES = ["90D", "ALL"] as const
 
 function NetRevYieldChart({ revenueSeries, intentVolumeSeries }: {
   revenueSeries: RevenueSeriesPoint[]
   intentVolumeSeries: IntentVolumePoint[]
 }) {
-  const [range, setRange] = useState<typeof NET_REV_RANGES[number]>("90D")
+  const { range } = useGlobalRange()
 
   const allPoints = useMemo((): ChartPoint[] => {
     const volByMonth: Record<string, number> = {}
@@ -164,7 +137,8 @@ function NetRevYieldChart({ revenueSeries, intentVolumeSeries }: {
       .filter(p => p.value > 0)
   }, [revenueSeries, intentVolumeSeries])
 
-  const visible = range === "90D" ? allPoints.slice(-3) : allPoints
+  // Monthly chart: 7D/30D → 1 month, 90D → 3 months, ALL → all
+  const visible = range === "ALL" ? allPoints : allPoints.slice(-(range === "90D" ? 3 : 1))
 
   return (
     <div className="rounded-2xl border border-near-border bg-near-card p-4">
@@ -174,7 +148,6 @@ function NetRevYieldChart({ revenueSeries, intentVolumeSeries }: {
       <p className="text-xs text-near-subtle mb-2 leading-relaxed">
         Net revenue as % of swap volume — how much of each dollar traded becomes net protocol revenue.
       </p>
-      <RangeButtons ranges={NET_REV_RANGES} active={range} onChange={setRange} />
       <MetricLine data={visible} chartKey={`net-rev-${range}`} />
     </div>
   )
@@ -182,13 +155,11 @@ function NetRevYieldChart({ revenueSeries, intentVolumeSeries }: {
 
 // ── Chart 2: Gross Fee Rate (daily available → 7D/30D/90D/ALL) ────────────────
 
-const GROSS_FEE_RANGES = ["7D", "30D", "90D", "ALL"] as const
-
 function GrossFeeRateChart({ totalFeesSeries, intentVolumeSeries }: {
   totalFeesSeries: TotalFeesSeriesPoint[]
   intentVolumeSeries: IntentVolumePoint[]
 }) {
-  const [range, setRange] = useState<typeof GROSS_FEE_RANGES[number]>("90D")
+  const { range } = useGlobalRange()
 
   // Build daily join
   const dailyPoints = useMemo((): { date: string; value: number }[] => {
@@ -247,7 +218,6 @@ function GrossFeeRateChart({ totalFeesSeries, intentVolumeSeries }: {
       <p className="text-xs text-near-subtle mb-2 leading-relaxed">
         Gross fees as % of swap volume — the effective fee rate across all swaps routed through NEAR Intents.
       </p>
-      <RangeButtons ranges={GROSS_FEE_RANGES} active={range} onChange={setRange} />
       <MetricLine data={points} chartKey={`gross-fee-${range}`} xTicks={xTicks} tickFmt={tickFmt} />
     </div>
   )
@@ -255,13 +225,11 @@ function GrossFeeRateChart({ totalFeesSeries, intentVolumeSeries }: {
 
 // ── Chart 3: Capture Rate Trend (monthly only) ────────────────────────────────
 
-const CAPTURE_RANGES = ["90D", "ALL"] as const
-
 function CaptureRateTrendChart({ revenueSeries, totalFeesSeries }: {
   revenueSeries: RevenueSeriesPoint[]
   totalFeesSeries: TotalFeesSeriesPoint[]
 }) {
-  const [range, setRange] = useState<typeof CAPTURE_RANGES[number]>("90D")
+  const { range } = useGlobalRange()
 
   const allPoints = useMemo((): ChartPoint[] => {
     const feesByMonth: Record<string, number> = {}
@@ -284,7 +252,8 @@ function CaptureRateTrendChart({ revenueSeries, totalFeesSeries }: {
       .filter(p => p.value > 0)
   }, [revenueSeries, totalFeesSeries])
 
-  const visible = range === "90D" ? allPoints.slice(-3) : allPoints
+  // Monthly chart: 7D/30D → 1 month, 90D → 3 months, ALL → all
+  const visible = range === "ALL" ? allPoints : allPoints.slice(-(range === "90D" ? 3 : 1))
 
   return (
     <div className="rounded-2xl border border-near-border bg-near-card p-4">
@@ -294,7 +263,6 @@ function CaptureRateTrendChart({ revenueSeries, totalFeesSeries }: {
       <p className="text-xs text-near-subtle mb-2 leading-relaxed">
         Net revenue as % of gross fees — how much of the fees generated the protocol retains, month by month.
       </p>
-      <RangeButtons ranges={CAPTURE_RANGES} active={range} onChange={setRange} />
       {/* Full-width: taller chart to take advantage of the extra space */}
       <ResponsiveContainer key={`capture-${range}`} width="100%" height={200}>
         <LineChart data={visible} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>

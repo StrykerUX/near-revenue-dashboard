@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { useGlobalRange, type GlobalRange } from "@/providers/global-range-provider"
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   Cell, ResponsiveContainer, type TooltipProps,
@@ -13,9 +14,7 @@ import { debugGlow } from "@/lib/utils"
 const VIEWS = ["TVL Level", "Daily Change"] as const
 type View = typeof VIEWS[number]
 
-const RANGES = ["7D", "30D", "90D", "ALL"] as const
-type Range = typeof RANGES[number]
-
+type Range = GlobalRange
 const RANGE_DAYS: Record<Exclude<Range, "ALL">, number> = { "7D": 7, "30D": 30, "90D": 90 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -126,8 +125,8 @@ interface TvlChartSectionProps {
 }
 
 export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionProps) {
-  const [view, setView]   = useState<View>("TVL Level")
-  const [range, setRange] = useState<Range>("90D")
+  const [view, setView] = useState<View>("TVL Level")
+  const { range }       = useGlobalRange()
 
   // ── Filter by range — anchored to the MOST RECENT date in the dataset ────────
   const filtered = useMemo(() => {
@@ -192,7 +191,7 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
       <div className="p-6 pb-4 flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <h2 className="text-base font-semibold text-near-text">Confidential Intents TVL</h2>
+            <h2 className="text-base font-semibold text-near-text">NEAR Intents Confidential TVL</h2>
             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs bg-near-border text-near-subtle font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-near-green/60 shrink-0" />
               Dune Analytics
@@ -213,41 +212,21 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
         )}
       </div>
 
-      {/* Toggles */}
-      <div className="px-6 pb-4 flex items-center gap-6 flex-wrap">
-        {/* View toggle */}
-        <div className="flex gap-1">
-          {VIEWS.map(v => (
-            <button
-              key={v}
-              onClick={() => setView(v)}
-              className="px-3 py-1 rounded text-xs font-medium transition-colors"
-              style={v === view
-                ? { background: "var(--near-green)", color: "#0e0f0f" }
-                : { background: "transparent", color: "var(--near-subtle)", border: "1px solid var(--near-border)" }
-              }
-            >
-              {v}
-            </button>
-          ))}
-        </div>
-
-        {/* Range toggle */}
-        <div className="flex gap-1 ml-auto">
-          {RANGES.map(r => (
-            <button
-              key={r}
-              onClick={() => setRange(r)}
-              className="px-3 py-1 rounded text-xs font-medium transition-colors"
-              style={r === range
-                ? { background: "#ffffff", color: "#0e0f0f" }
-                : { background: "transparent", color: "#9ca3af", border: "1px solid #374151" }
-              }
-            >
-              {r}
-            </button>
-          ))}
-        </div>
+      {/* View toggle */}
+      <div className="px-6 pb-4 flex gap-1">
+        {VIEWS.map(v => (
+          <button
+            key={v}
+            onClick={() => setView(v)}
+            className="px-3 py-1 rounded text-xs font-medium transition-colors"
+            style={v === view
+              ? { background: "var(--near-green)", color: "#0e0f0f" }
+              : { background: "transparent", color: "var(--near-subtle)", border: "1px solid var(--near-border)" }
+            }
+          >
+            {v}
+          </button>
+        ))}
       </div>
 
       {/* Chart — key forces full remount on range/view change to avoid

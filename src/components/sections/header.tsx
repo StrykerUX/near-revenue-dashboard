@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { HeaderRangeControls } from "./header-range-controls"
 
 function NearLogo() {
   return (
@@ -13,7 +14,7 @@ export interface NavItem {
 
 export function Header({ updatedAt, nav }: { updatedAt: string; nav?: NavItem[] }) {
   return (
-    <header className="flex items-center justify-between px-6 py-4 border-b border-near-border">
+    <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 border-b border-near-border bg-near-bg/90 backdrop-blur-sm">
       <div className="flex items-center gap-3">
         <NearLogo />
         <div>
@@ -21,7 +22,7 @@ export function Header({ updatedAt, nav }: { updatedAt: string; nav?: NavItem[] 
           <p className="text-xs text-near-muted leading-tight">Protocol & product revenue tracker</p>
         </div>
       </div>
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-4 flex-wrap">
         {nav?.map((item) => (
           <Link
             key={item.href}
@@ -31,6 +32,7 @@ export function Header({ updatedAt, nav }: { updatedAt: string; nav?: NavItem[] 
             {item.label}
           </Link>
         ))}
+        <HeaderRangeControls />
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-near-green" />
           <span className={`text-xs text-near-muted${process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true" ? " ring-2 ring-blue-500/70 rounded px-1" : ""}`}>

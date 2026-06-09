@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import localFont from "next/font/local"
 import { Inter } from "next/font/google"
 import { LenisProvider } from "@/providers/lenis-provider"
+import { GlobalRangeProvider } from "@/providers/global-range-provider"
 import "./globals.css"
 
 const fkGrotesk = localFont({
@@ -52,7 +53,9 @@ export default function RootLayout({
       className={`${fkGrotesk.variable} ${fkGroteskMono.variable} ${inter.variable} antialiased`}
     >
       <body className="min-h-screen bg-near-bg text-near-text">
-        <LenisProvider>{children}</LenisProvider>
+        <LenisProvider>
+          <GlobalRangeProvider>{children}</GlobalRangeProvider>
+        </LenisProvider>
       </body>
     </html>
   )
