@@ -32,10 +32,17 @@ export function RevenueCharts({
     () => emissionsMonthly.slice(-nMonths),
     [emissionsMonthly, nMonths]
   )
-  const visibleAbs = useMemo(
-    () => absoluteRevEmissions.slice(-nMonths),
-    [absoluteRevEmissions, nMonths]
-  )
+  // absoluteRevEmissions is daily — filter by date range, not slice
+  const visibleAbs = useMemo(() => {
+    if (!absoluteRevEmissions.length) return absoluteRevEmissions
+    if (range === "YTD") return absoluteRevEmissions
+    const nDays = range === "90D" ? 90 : range === "30D" ? 30 : 7
+    const last = absoluteRevEmissions[absoluteRevEmissions.length - 1].date
+    const cutoff = new Date(last + "T12:00:00Z")
+    cutoff.setDate(cutoff.getDate() - (nDays - 1))
+    const cutoffIso = cutoff.toISOString().slice(0, 10)
+    return absoluteRevEmissions.filter(d => d.date >= cutoffIso)
+  }, [absoluteRevEmissions, range])
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

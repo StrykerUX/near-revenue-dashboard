@@ -95,25 +95,40 @@ export interface AbsoluteRevEmissionsPoint {
 }
 
 /**
- * Pair cumulative revenue NEAR with cumulative emissions NEAR per month
- * for the "Absolute" view of the Revenue vs Emissions chart.
+ * Build daily points for the "Absolute" Revenue vs Emissions chart.
+ * Both series start at 0 on Jan 1 of the current year (YTD window).
+ * Emissions: running sum of daily emissions_near from Jan 1.
+ * Revenue:   running sum of monthly revenue_near — steps up once per month.
  */
 export function computeAbsoluteRevVsEmissions(
   revenueSeries: RevenueSeriesPoint[],
   emissionsDaily: EmissionsSeriesPoint[]
 ): AbsoluteRevEmissionsPoint[] {
-  const cumEmissionsByMonth: Record<string, number> = {}
-  for (const p of emissionsDaily) {
-    const key = p.date_at.slice(0, 7)
-    // Last daily entry per month carries the latest cumulative total
-    cumEmissionsByMonth[key] = p.cumulative_emissions_near
+  const ytdStart = `${new Date().getFullYear()}-01-01`
+  const ytdMonthStart = ytdStart.slice(0, 7)
+
+  // Build month → cumulative revenue (running sum from Jan 1)
+  const monthRevCumulative: Record<string, number> = {}
+  let runningRev = 0
+  const sortedRev = [...revenueSeries]
+    .filter(p => p.period_month.slice(0, 7) >= ytdMonthStart && p.revenue_near > 0)
+    .sort((a, b) => a.period_month.localeCompare(b.period_month))
+  for (const p of sortedRev) {
+    runningRev += p.revenue_near
+    monthRevCumulative[p.period_month.slice(0, 7)] = runningRev
   }
-  return revenueSeries
-    .filter(p => p.cumulative_revenue_near > 0)
-    .map(p => ({
-      date: p.period_month,
-      revenueNear: p.cumulative_revenue_near,
-      emissionsNear: cumEmissionsByMonth[p.period_month.slice(0, 7)] ?? 0,
-    }))
-    .filter(p => p.emissionsNear > 0)
+
+  // Walk daily emissions, accumulate from Jan 1, carry forward monthly revenue
+  const ytdEmissions = emissionsDaily
+    .filter(p => p.date_at >= ytdStart)
+    .sort((a, b) => a.date_at.localeCompare(b.date_at))
+
+  let cumEmissions = 0
+  let currentRev = 0
+  return ytdEmissions.map(p => {
+    cumEmissions += p.emissions_near
+    const mk = p.date_at.slice(0, 7)
+    if (monthRevCumulative[mk] !== undefined) currentRev = monthRevCumulative[mk]
+    return { date: p.date_at, emissionsNear: cumEmissions, revenueNear: currentRev }
+  })
 }

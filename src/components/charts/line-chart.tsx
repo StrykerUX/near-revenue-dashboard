@@ -111,11 +111,10 @@ function buildAbsTicks(max: number, count = 4): number[] {
   return Array.from({ length: count + 1 }, (_, i) => Math.round(step * i))
 }
 
-function fmtAbsMonthLabel(s: string): string {
-  const iso = s.length <= 7 ? s + "-01" : s.slice(0, 10)
-  const d = new Date(iso + "T12:00:00Z")
+function fmtAbsDayLabel(s: string): string {
+  const d = new Date(s + "T12:00:00Z")
   if (isNaN(d.getTime())) return s
-  return d.toLocaleDateString("en-US", { month: "short", year: "2-digit" })
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
 }
 
 export function AbsoluteEmissionsChart({ data }: { data: AbsoluteRevEmissionsPoint[] }) {
@@ -123,6 +122,8 @@ export function AbsoluteEmissionsChart({ data }: { data: AbsoluteRevEmissionsPoi
   const maxEmissions = Math.max(0, ...data.map(d => d.emissionsNear))
   const yTicks = buildAbsTicks(maxEmissions * 1.1)
   const yMax   = yTicks[yTicks.length - 1]
+  // Show a tick every ~14 days so x-axis doesn't crowd
+  const xTicks = data.filter((_, i) => i % 14 === 0).map(d => d.date)
 
   return (
     <ResponsiveContainer width="100%" height={240}>
@@ -140,7 +141,8 @@ export function AbsoluteEmissionsChart({ data }: { data: AbsoluteRevEmissionsPoi
         <CartesianGrid strokeDasharray="3 3" stroke="var(--near-border)" vertical={false} />
         <XAxis
           dataKey="date"
-          tickFormatter={fmtAbsMonthLabel}
+          ticks={xTicks}
+          tickFormatter={fmtAbsDayLabel}
           tick={{ fill: "var(--near-subtle)", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
