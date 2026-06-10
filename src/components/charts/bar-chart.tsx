@@ -52,7 +52,7 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
 export function RevenueBarChart({ data }: RevenueBarChartProps) {
   const xTicks = data.map((d) => d.date)
   const maxValue = Math.max(0, ...data.map(d => d.value))
-  const barStep = Math.ceil(maxValue * 1.15 / 4 / 25_000) * 25_000
+  const barStep = Math.max(25_000, Math.ceil(maxValue * 1.15 / 4 / 25_000) * 25_000)
   const barTicks = [0, barStep, barStep * 2, barStep * 3, barStep * 4]
   const barDomain: [number, number] = [0, barStep * 4]
 
