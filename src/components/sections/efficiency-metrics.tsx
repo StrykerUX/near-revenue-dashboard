@@ -153,7 +153,7 @@ function NetRevYieldChart({ revenueSeries, intentVolumeSeries }: {
 
   // Monthly chart: 7D/30D → 1 month, 90D → 3 months, YTD → current year months
   const ytdMonths = new Date().getMonth() + 1
-  const visible = range === "YTD" ? allPoints.slice(-ytdMonths) : allPoints.slice(-(range === "90D" ? 3 : 1))
+  const visible = range === "YTD" ? allPoints.slice(-ytdMonths) : allPoints.slice(-(range === "90D" || range === "ALL" ? 3 : 1))
 
   return (
     <div className="rounded-2xl border border-near-border bg-near-card p-4">
@@ -194,7 +194,7 @@ function GrossFeeRateChart({ totalFeesSeries, intentVolumeSeries }: {
   }, [totalFeesSeries, intentVolumeSeries])
 
   const { points, xTicks, tickFmt } = useMemo(() => {
-    if (range === "YTD") {
+    if (range === "YTD" || range === "ALL") {
       // Aggregate to monthly for current year only
       const ytdStart = `${new Date().getFullYear()}-01-01`
       const byMonth: Record<string, { fees: number; vol: number }> = {}
@@ -272,7 +272,7 @@ function CaptureRateTrendChart({ revenueSeries, totalFeesSeries }: {
 
   // Monthly chart: 7D/30D → 1 month, 90D → 3 months, YTD → current year months
   const ytdMonths = new Date().getMonth() + 1
-  const visible = range === "YTD" ? allPoints.slice(-ytdMonths) : allPoints.slice(-(range === "90D" ? 3 : 1))
+  const visible = range === "YTD" ? allPoints.slice(-ytdMonths) : allPoints.slice(-(range === "90D" || range === "ALL" ? 3 : 1))
 
   return (
     <div className="rounded-2xl border border-near-border bg-near-card p-4">

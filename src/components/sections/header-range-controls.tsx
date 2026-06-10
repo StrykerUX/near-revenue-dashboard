@@ -2,7 +2,10 @@
 
 import { useGlobalRange, type GlobalRange } from "@/providers/global-range-provider"
 
-const RANGES: GlobalRange[] = ["7D", "30D", "90D", "YTD"]
+const RANGES: GlobalRange[] = ["7D", "30D", "90D", "YTD", "ALL"]
+const RANGE_LABELS: Record<GlobalRange, string> = {
+  "7D": "7D", "30D": "30D", "90D": "90D", "YTD": "YTD", "ALL": "All time",
+}
 
 export function HeaderRangeControls() {
   const { range, setRange } = useGlobalRange()
@@ -19,7 +22,7 @@ export function HeaderRangeControls() {
               : { background: "transparent", color: "#9ca3af", border: "1px solid #374151" }
           }
         >
-          {r}
+          {RANGE_LABELS[r]}
         </button>
       ))}
     </div>

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState } from "react"
 
-export type GlobalRange = "7D" | "30D" | "90D" | "YTD"
+export type GlobalRange = "7D" | "30D" | "90D" | "YTD" | "ALL"
 
 interface GlobalRangeCtx {
   range: GlobalRange

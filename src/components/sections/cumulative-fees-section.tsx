@@ -76,7 +76,7 @@ function makeRangeTicks(min: number, max: number, count = 4): number[] {
 }
 
 // Days back per range button (YTD handled separately).
-const RANGE_DAYS: Record<Exclude<Range, "YTD">, number> = { "7D": 7, "30D": 30, "90D": 90 }
+const RANGE_DAYS: Record<Exclude<Range, "YTD" | "ALL">, number> = { "7D": 7, "30D": 30, "90D": 90 }
 const YTD_START = `${new Date().getFullYear()}-01-01`
 
 // ── Custom Tooltip ─────────────────────────────────────────────────────────────
@@ -143,7 +143,9 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
   const view = useMemo(() => {
     if (data.length === 0) return data
     let filtered: CumulativeFeesPoint[]
-    if (range === "YTD") {
+    if (range === "ALL") {
+      filtered = data
+    } else if (range === "YTD") {
       filtered = data.filter(d => d.isoDate >= YTD_START)
     } else {
       const lastIso = data[data.length - 1].isoDate
@@ -153,6 +155,8 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
       filtered = data.filter(d => d.isoDate >= cutoffIso)
     }
     if (filtered.length === 0) return filtered
+    // ALL shows true cumulative from inception — no rebase needed
+    if (range === "ALL") return filtered
     // Rebase: subtract the cumulative total *before* the window starts
     // so Day 1 = Day 1's fees, Day 2 = Day1+Day2, etc.
     const first = filtered[0]
@@ -208,7 +212,7 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
             <XAxis
               dataKey="label"
               ticks={xTicks}
-              tickFormatter={(label: string) => range === "YTD" ? label.split(" ")[0] : label}
+              tickFormatter={(label: string) => (range === "YTD" || range === "ALL") ? label.split(" ")[0] : label}
               tick={{ fill: "#6b7280", fontSize: 10 }}
               axisLine={false}
               tickLine={false}

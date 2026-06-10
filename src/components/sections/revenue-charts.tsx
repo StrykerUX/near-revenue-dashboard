@@ -27,7 +27,7 @@ export function RevenueCharts({
 
   // Monthly data: 7D/30D → last 1 month, 90D → last 3 months, YTD → current year months
   const ytdMonths = new Date().getMonth() + 1
-  const nMonths = range === "YTD" ? ytdMonths : range === "90D" ? 3 : 1
+  const nMonths = (range === "YTD" || range === "ALL") ? ytdMonths : range === "90D" ? 3 : 1
   const visibleRevenue = useMemo(
     () => revenueSeries.slice(-nMonths),
     [revenueSeries, nMonths]
@@ -39,7 +39,7 @@ export function RevenueCharts({
   // absoluteRevEmissions is daily — filter by date range, not slice
   const visibleAbs = useMemo(() => {
     if (!absoluteRevEmissions.length) return absoluteRevEmissions
-    if (range === "YTD") return absoluteRevEmissions
+    if (range === "YTD" || range === "ALL") return absoluteRevEmissions
     const nDays = range === "90D" ? 90 : range === "30D" ? 30 : 7
     const last = absoluteRevEmissions[absoluteRevEmissions.length - 1].date
     const cutoff = new Date(last + "T12:00:00Z")

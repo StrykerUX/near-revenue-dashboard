@@ -15,7 +15,7 @@ const VIEWS = ["TVL Level", "Daily Change"] as const
 type View = typeof VIEWS[number]
 
 type Range = GlobalRange
-const RANGE_DAYS: Record<Exclude<Range, "YTD">, number> = { "7D": 7, "30D": 30, "90D": 90 }
+const RANGE_DAYS: Record<Exclude<Range, "YTD" | "ALL">, number> = { "7D": 7, "30D": 30, "90D": 90 }
 const YTD_START = `${new Date().getFullYear()}-01-01`
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -132,7 +132,7 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
   // ── Filter by range — anchored to the MOST RECENT date in the dataset ────────
   const filtered = useMemo(() => {
     if (data.length === 0) return data
-    if (range === "YTD") return data.filter(d => d.date >= YTD_START)
+    if (range === "ALL" || range === "YTD") return data.filter(d => d.date >= YTD_START)
     const lastIso = data.reduce((max, d) => d.date > max ? d.date : max, data[0].date)
     const cutoff  = new Date(lastIso + "T12:00:00Z")
     cutoff.setDate(cutoff.getDate() - (RANGE_DAYS[range] - 1))
