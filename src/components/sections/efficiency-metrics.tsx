@@ -21,10 +21,18 @@ function fmtPct(v: number): string {
   return `${v.toFixed(3)}%`
 }
 
+function fmtPctTick(v: number): string {
+  return `${Math.round(v)}%`
+}
+
 function fmtBps(v: number): string {
   const bps = v * 100
   if (bps >= 10) return `${bps.toFixed(1)} bps`
   return `${bps.toFixed(2)} bps`
+}
+
+function fmtBpsTick(v: number): string {
+  return `${Math.round(v * 100)}`
 }
 
 function buildTicks(max: number, count = 4): number[] {
@@ -55,12 +63,14 @@ function maxIsoDate(dates: string[]): string {
 
 // ── Shared line chart ──────────────────────────────────────────────────────────
 
-function MetricLine({ data, chartKey, xTicks, tickFmt, valueFmt = fmtPct }: {
+function MetricLine({ data, chartKey, xTicks, tickFmt, valueFmt = fmtPct, yAxisTickFmt, yAxisLabel }: {
   data: ChartPoint[]
   chartKey: string
   xTicks?: string[]
   tickFmt?: (s: string) => string
   valueFmt?: (v: number) => string
+  yAxisTickFmt?: (v: number) => string
+  yAxisLabel?: string
 }) {
   const max   = Math.max(0, ...data.map(d => d.value))
   const ticks = buildTicks(max * 1.15)
@@ -91,12 +101,18 @@ function MetricLine({ data, chartKey, xTicks, tickFmt, valueFmt = fmtPct }: {
         />
         <YAxis
           ticks={ticks}
-          tickFormatter={valueFmt}
+          tickFormatter={yAxisTickFmt ?? valueFmt}
           tick={{ fill: "var(--near-subtle)", fontSize: 10 }}
           axisLine={false}
           tickLine={false}
           width={52}
           domain={domain}
+          label={yAxisLabel ? {
+            value: yAxisLabel,
+            position: "insideTopLeft",
+            offset: 4,
+            style: { fontSize: 10, fill: "var(--near-subtle)", textAnchor: "start" },
+          } : undefined}
         />
         <Tooltip content={<TooltipContent />} cursor={{ stroke: "var(--near-border)" }} />
         <Line
@@ -154,7 +170,7 @@ function NetRevYieldChart({ revenueSeries, intentVolumeSeries }: {
       <p className="text-xs text-near-subtle mb-2 leading-relaxed">
         Net revenue as % of swap volume — protocol revenue retained after partner and frontend fee splits.
       </p>
-      <MetricLine data={visible} chartKey={`net-rev-${range}`} valueFmt={fmtBps} />
+      <MetricLine data={visible} chartKey={`net-rev-${range}`} valueFmt={fmtBps} yAxisTickFmt={fmtBpsTick} yAxisLabel="bps" />
     </div>
   )
 }
@@ -225,7 +241,7 @@ function GrossFeeRateChart({ totalFeesSeries, intentVolumeSeries }: {
       <p className="text-xs text-near-subtle mb-2 leading-relaxed">
         Gross fees as % of swap volume — the effective fee rate across all swaps routed through NEAR Intents.
       </p>
-      <MetricLine data={points} chartKey={`gross-fee-${range}`} xTicks={xTicks} tickFmt={tickFmt} valueFmt={fmtBps} />
+      <MetricLine data={points} chartKey={`gross-fee-${range}`} xTicks={xTicks} tickFmt={tickFmt} valueFmt={fmtBps} yAxisTickFmt={fmtBpsTick} yAxisLabel="bps" />
     </div>
   )
 }
@@ -283,7 +299,7 @@ function CaptureRateTrendChart({ revenueSeries, totalFeesSeries }: {
           />
           <YAxis
             ticks={buildTicks(Math.max(0, ...visible.map(d => d.value)) * 1.15)}
-            tickFormatter={fmtPct}
+            tickFormatter={fmtPctTick}
             tick={{ fill: "var(--near-subtle)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
