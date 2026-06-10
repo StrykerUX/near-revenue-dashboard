@@ -10,12 +10,11 @@ export default function Page() {
         <h1 className="text-2xl font-semibold text-near-text tracking-tight">
           Work in Progress
         </h1>
+        <div className="w-px h-6 bg-near-border" />
         <p className="text-near-muted text-sm max-w-xs leading-relaxed">
           The NEAR Revenue Dashboard is under construction. Check back soon.
         </p>
       </div>
-      <div className="w-px h-8 bg-near-border" />
-      <p className="text-near-subtle text-xs">near.foundation</p>
     </div>
   )
 }
