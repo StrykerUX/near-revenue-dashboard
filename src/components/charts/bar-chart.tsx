@@ -85,10 +85,11 @@ export function RevenueBarChart({ data }: RevenueBarChartProps) {
           yAxisId="right"
           orientation="right"
           ticks={cumTicks}
-          tick={false}
+          tickFormatter={formatY}
+          tick={{ fill: "#f97316", fontSize: 10 }}
           axisLine={false}
           tickLine={false}
-          width={0}
+          width={52}
           domain={[0, cumTicks[4]]}
         />
         <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />

@@ -28,6 +28,10 @@ export function RevenueCharts({
   // Monthly data: 7D/30D → last 1 month, 90D → last 3 months, YTD → current year months
   const ytdMonths = new Date().getMonth() + 1
   const nMonths = range === "YTD" ? ytdMonths : range === "90D" ? 3 : 1
+  const visibleRevenue = useMemo(
+    () => revenueSeries.slice(-nMonths),
+    [revenueSeries, nMonths]
+  )
   const visiblePct = useMemo(
     () => emissionsMonthly.slice(-nMonths),
     [emissionsMonthly, nMonths]
@@ -53,7 +57,7 @@ export function RevenueCharts({
           <p className="text-xs text-near-muted">Monthly revenue after partner payouts.</p>
         </div>
         <div className="px-2 pb-4">
-          <RevenueBarChart data={revenueSeries} />
+          <RevenueBarChart data={visibleRevenue} />
         </div>
       </Card>
 
