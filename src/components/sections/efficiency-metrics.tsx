@@ -63,14 +63,13 @@ function maxIsoDate(dates: string[]): string {
 
 // ── Shared line chart ──────────────────────────────────────────────────────────
 
-function MetricLine({ data, chartKey, xTicks, tickFmt, valueFmt = fmtPct, yAxisTickFmt, yAxisLabel }: {
+function MetricLine({ data, chartKey, xTicks, tickFmt, valueFmt = fmtPct, yAxisTickFmt }: {
   data: ChartPoint[]
   chartKey: string
   xTicks?: string[]
   tickFmt?: (s: string) => string
   valueFmt?: (v: number) => string
   yAxisTickFmt?: (v: number) => string
-  yAxisLabel?: string
 }) {
   const max   = Math.max(0, ...data.map(d => d.value))
   const ticks = buildTicks(max * 1.15)
@@ -89,7 +88,7 @@ function MetricLine({ data, chartKey, xTicks, tickFmt, valueFmt = fmtPct, yAxisT
 
   return (
     <ResponsiveContainer key={chartKey} width="100%" height={160}>
-      <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+      <LineChart data={data} margin={{ top: 8, right: 8, left: -6, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--near-border)" vertical={false} />
         <XAxis
           dataKey="label"
@@ -105,14 +104,8 @@ function MetricLine({ data, chartKey, xTicks, tickFmt, valueFmt = fmtPct, yAxisT
           tick={{ fill: "var(--near-subtle)", fontSize: 10 }}
           axisLine={false}
           tickLine={false}
-          width={52}
+          width={28}
           domain={domain}
-          label={yAxisLabel ? {
-            value: yAxisLabel,
-            position: "insideTopLeft",
-            offset: 4,
-            style: { fontSize: 10, fill: "var(--near-subtle)", textAnchor: "start" },
-          } : undefined}
         />
         <Tooltip content={<TooltipContent />} cursor={{ stroke: "var(--near-border)" }} />
         <Line
@@ -164,13 +157,14 @@ function NetRevYieldChart({ revenueSeries, intentVolumeSeries }: {
 
   return (
     <div className="rounded-2xl border border-near-border bg-near-card p-4">
-      <p className="text-xs font-medium text-near-muted uppercase tracking-wider mb-0.5">
-        Net Revenue Yield
-      </p>
+      <div className="flex items-baseline gap-2 mb-0.5">
+        <p className="text-xs font-medium text-near-muted uppercase tracking-wider">Net Revenue Yield</p>
+        <span className="text-xs text-near-subtle">(bps)</span>
+      </div>
       <p className="text-xs text-near-subtle mb-2 leading-relaxed">
         Net revenue as % of swap volume — protocol revenue retained after partner and frontend fee splits.
       </p>
-      <MetricLine data={visible} chartKey={`net-rev-${range}`} valueFmt={fmtBps} yAxisTickFmt={fmtBpsTick} yAxisLabel="bps" />
+      <MetricLine data={visible} chartKey={`net-rev-${range}`} valueFmt={fmtBps} yAxisTickFmt={fmtBpsTick} />
     </div>
   )
 }
@@ -235,13 +229,14 @@ function GrossFeeRateChart({ totalFeesSeries, intentVolumeSeries }: {
 
   return (
     <div className="rounded-2xl border border-near-border bg-near-card p-4">
-      <p className="text-xs font-medium text-near-muted uppercase tracking-wider mb-0.5">
-        Gross Fee Rate
-      </p>
+      <div className="flex items-baseline gap-2 mb-0.5">
+        <p className="text-xs font-medium text-near-muted uppercase tracking-wider">Gross Fee Rate</p>
+        <span className="text-xs text-near-subtle">(bps)</span>
+      </div>
       <p className="text-xs text-near-subtle mb-2 leading-relaxed">
         Gross fees as % of swap volume — the effective fee rate across all swaps routed through NEAR Intents.
       </p>
-      <MetricLine data={points} chartKey={`gross-fee-${range}`} xTicks={xTicks} tickFmt={tickFmt} valueFmt={fmtBps} yAxisTickFmt={fmtBpsTick} yAxisLabel="bps" />
+      <MetricLine data={points} chartKey={`gross-fee-${range}`} xTicks={xTicks} tickFmt={tickFmt} valueFmt={fmtBps} yAxisTickFmt={fmtBpsTick} />
     </div>
   )
 }
@@ -289,7 +284,7 @@ function CaptureRateTrendChart({ revenueSeries, totalFeesSeries }: {
       </p>
       {/* Full-width: taller chart to take advantage of the extra space */}
       <ResponsiveContainer key={`capture-${range}`} width="100%" height={200}>
-        <LineChart data={visible} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+        <LineChart data={visible} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--near-border)" vertical={false} />
           <XAxis
             dataKey="label"
@@ -303,7 +298,7 @@ function CaptureRateTrendChart({ revenueSeries, totalFeesSeries }: {
             tick={{ fill: "var(--near-subtle)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
-            width={44}
+            width={40}
             domain={[0, buildTicks(Math.max(0, ...visible.map(d => d.value)) * 1.15).at(-1) ?? 1]}
           />
           <Tooltip
