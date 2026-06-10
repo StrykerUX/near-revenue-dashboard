@@ -12,7 +12,7 @@ import { CaptureSplit } from "@/components/sections/capture-split"
 import { EfficiencyMetrics } from "@/components/sections/efficiency-metrics"
 import { Faq } from "@/components/sections/faq"
 import { fetchDashboardData, type RevenueStreamItem, type SnapshotCaptureSplit, type RevenueSeriesPoint, type IntentVolumePoint, type TotalFeesSeriesPoint } from "@/lib/api"
-import { formatUSD, formatNear, formatMonthLabel, formatDayLabel, formatUpdatedAt, aggregateEmissionsByMonth, computeRevenueVsEmissions, computeAbsoluteRevVsEmissions, debugGlow, type AbsoluteRevEmissionsPoint } from "@/lib/utils"
+import { formatUSD, formatNear, formatMonthLabel, formatDayLabel, formatUpdatedAt, aggregateEmissionsByMonth, buildPriceByMonth, computeRevenueVsEmissions, computeAbsoluteRevVsEmissions, debugGlow, type AbsoluteRevEmissionsPoint } from "@/lib/utils"
 import { STATS, REVENUE_MONTHLY, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES } from "@/lib/data"
 import type { StatCard, TimeSeriesPoint } from "@/lib/types"
 
@@ -44,11 +44,19 @@ export default async function Page() {
   let uniqueUsersD30 = 0
 
   try {
-    const { snapshot, revenueSeries, emissionsDaily: emissionsDailyRaw, totalFeesSeries: totalFeesRaw, intentVolumeSeries, uniqueUsers, confidentialTvlUsd, tvlSeries: tvlRaw, revenueStreams: streamsRaw, captureSplit: captureSplitRaw } = await fetchDashboardData()
+    const { snapshot, revenueSeries, emissionsDaily: emissionsDailyRaw, totalFeesSeries: totalFeesRaw, intentVolumeSeries, uniqueUsers, confidentialTvlUsd, tvlSeries: tvlRaw, revenueStreams: streamsRaw, captureSplit: captureSplitRaw, priceSeries } = await fetchDashboardData()
     const snap = snapshot.data
 
+    // Build price map for NEAR conversions using the API price feed
+    const priceByMonth = buildPriceByMonth(priceSeries)
+    const sortedPrices = priceSeries.filter(p => p.near_price_usd > 0).sort((a, b) => a.date_at.localeCompare(b.date_at))
+    const latestNearPrice = sortedPrices[sortedPrices.length - 1]?.near_price_usd ?? 0
+
     totalFeesDisplay = formatUSD(snap.total_fees.fees_usd_all_time)
-    feesLast30d = formatNear(snap.total_fees.fees_near_d30)
+    // Use price feed to convert fees_usd_d30 → NEAR (API's fees_near_d30 has a broken price conversion)
+    feesLast30d = latestNearPrice > 0
+      ? formatNear(snap.total_fees.fees_usd_d30 / latestNearPrice)
+      : formatNear(snap.total_fees.fees_near_d30)
     feesLast30dUsd = formatUSD(snap.total_fees.fees_usd_d30)
     gaugeValue = parseFloat((snap.capture_rate.capture_rate_d30 * 100).toFixed(1))
     feesChange =
@@ -90,8 +98,8 @@ export default async function Page() {
     updatedAt = formatUpdatedAt(snapshot.updated_at)
 
     const monthlyEmissionsMap = aggregateEmissionsByMonth(emissionsDailyRaw)
-    emissionsMonthly = computeRevenueVsEmissions(revenueSeries, monthlyEmissionsMap)
-    absoluteRevEmissions = computeAbsoluteRevVsEmissions(revenueSeries, emissionsDailyRaw)
+    emissionsMonthly = computeRevenueVsEmissions(revenueSeries, monthlyEmissionsMap, priceByMonth)
+    absoluteRevEmissions = computeAbsoluteRevVsEmissions(revenueSeries, emissionsDailyRaw, priceByMonth)
     emissionsDaily = emissionsDailyRaw
       .slice(-90)
       .map((p) => ({ date: p.date_at, value: Math.round(p.emissions_near) }))

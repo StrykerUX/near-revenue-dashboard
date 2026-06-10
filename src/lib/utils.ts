@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import type { EmissionsSeriesPoint, RevenueSeriesPoint } from "./api"
+import type { EmissionsSeriesPoint, PricePoint, RevenueSeriesPoint } from "./api"
 import type { TimeSeriesPoint } from "./types"
 
 export function cn(...inputs: ClassValue[]) {
@@ -55,6 +55,26 @@ export function formatUpdatedAt(isoDateTime: string): string {
   })
 }
 
+/**
+ * Build a map of month key "YYYY-MM" → average daily NEAR price for that month.
+ * Used to convert revenue_usd → revenue_near using the API price feed.
+ */
+export function buildPriceByMonth(priceSeries: PricePoint[]): Record<string, number> {
+  const sums: Record<string, { total: number; count: number }> = {}
+  for (const p of priceSeries) {
+    if (p.near_price_usd <= 0) continue
+    const key = p.date_at.slice(0, 7)
+    if (!sums[key]) sums[key] = { total: 0, count: 0 }
+    sums[key].total += p.near_price_usd
+    sums[key].count += 1
+  }
+  const result: Record<string, number> = {}
+  for (const [k, v] of Object.entries(sums)) {
+    result[k] = v.total / v.count
+  }
+  return result
+}
+
 /** Sum daily emissions_near by month key "YYYY-MM". */
 export function aggregateEmissionsByMonth(
   points: EmissionsSeriesPoint[]
@@ -73,16 +93,20 @@ export function aggregateEmissionsByMonth(
  */
 export function computeRevenueVsEmissions(
   revenueSeries: RevenueSeriesPoint[],
-  monthlyEmissions: Record<string, number>
+  monthlyEmissions: Record<string, number>,
+  priceByMonth: Record<string, number>
 ): TimeSeriesPoint[] {
   return revenueSeries
     .map((p) => {
       const key = p.period_month.slice(0, 7)
       const emissions = monthlyEmissions[key]
       if (!emissions || emissions === 0) return null
+      const price = priceByMonth[key]
+      if (!price || price === 0) return null
+      const revenueNear = p.revenue_usd / price
       return {
         date: p.period_month,
-        value: parseFloat(((p.revenue_near / emissions) * 100).toFixed(2)),
+        value: parseFloat(((revenueNear / emissions) * 100).toFixed(2)),
       }
     })
     .filter((p): p is TimeSeriesPoint => p !== null && p.value > 0)
@@ -102,20 +126,24 @@ export interface AbsoluteRevEmissionsPoint {
  */
 export function computeAbsoluteRevVsEmissions(
   revenueSeries: RevenueSeriesPoint[],
-  emissionsDaily: EmissionsSeriesPoint[]
+  emissionsDaily: EmissionsSeriesPoint[],
+  priceByMonth: Record<string, number>
 ): AbsoluteRevEmissionsPoint[] {
   const ytdStart = `${new Date().getFullYear()}-01-01`
   const ytdMonthStart = ytdStart.slice(0, 7)
 
-  // Build month → cumulative revenue (running sum from Jan 1)
+  // Build month → cumulative revenue in NEAR using price feed (running sum from Jan 1)
   const monthRevCumulative: Record<string, number> = {}
   let runningRev = 0
   const sortedRev = [...revenueSeries]
-    .filter(p => p.period_month.slice(0, 7) >= ytdMonthStart && p.revenue_near > 0)
+    .filter(p => p.period_month.slice(0, 7) >= ytdMonthStart && p.revenue_usd > 0)
     .sort((a, b) => a.period_month.localeCompare(b.period_month))
   for (const p of sortedRev) {
-    runningRev += p.revenue_near
-    monthRevCumulative[p.period_month.slice(0, 7)] = runningRev
+    const key = p.period_month.slice(0, 7)
+    const price = priceByMonth[key]
+    if (!price || price === 0) continue
+    runningRev += p.revenue_usd / price
+    monthRevCumulative[key] = runningRev
   }
 
   // Walk daily emissions, accumulate from Jan 1, carry forward monthly revenue
