@@ -123,9 +123,10 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
 // ── X-axis tick density per range ──────────────────────────────────────────────
 
 function pickXTicks(data: CumulativeFeesPoint[], range: Range): string[] {
-  if (range === "7D") return data.map(d => d.label)                              // every day
-  if (range === "30D" || range === "90D") return data.filter((_, i) => i % 7 === 0).map(d => d.label) // weekly
-  // ALL: first day of each month
+  if (range === "7D") return data.map(d => d.label)
+  if (range === "30D" || range === "90D") return data.filter((_, i) => i % 7 === 0).map(d => d.label)
+  if (range === "ALL") return data.map(d => d.label) // already monthly-aggregated
+  // YTD: first day of each month from daily data
   const seen = new Set<string>()
   return data.filter(d => {
     const month = d.isoDate.slice(0, 7)
@@ -144,7 +145,26 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
     if (data.length === 0) return data
     let filtered: CumulativeFeesPoint[]
     if (range === "ALL") {
-      filtered = data
+      // Aggregate daily → monthly so bars are visible (314 daily points → ~11 monthly)
+      const byMonth: Record<string, { proto: number; intents: number; cumulative: number; volume: number; firstDate: string }> = {}
+      for (const d of data) {
+        const mk = d.isoDate.slice(0, 7)
+        if (!byMonth[mk]) byMonth[mk] = { proto: 0, intents: 0, cumulative: 0, volume: 0, firstDate: d.isoDate }
+        byMonth[mk].proto     += d.protocolUsd
+        byMonth[mk].intents   += d.intentsUsd
+        byMonth[mk].cumulative = d.cumulativeUsd // last day of month wins
+        byMonth[mk].volume    += d.volumeUsd
+      }
+      return Object.entries(byMonth)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([mk, v]) => ({
+          isoDate:       v.firstDate,
+          label:         new Date(mk + "-01T12:00:00Z").toLocaleDateString("en-US", { month: "short", year: "2-digit" }),
+          protocolUsd:   v.proto,
+          intentsUsd:    v.intents,
+          cumulativeUsd: v.cumulative,
+          volumeUsd:     v.volume,
+        }))
     } else if (range === "YTD") {
       filtered = data.filter(d => d.isoDate >= YTD_START)
     } else {
@@ -155,8 +175,6 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
       filtered = data.filter(d => d.isoDate >= cutoffIso)
     }
     if (filtered.length === 0) return filtered
-    // ALL shows true cumulative from inception — no rebase needed
-    if (range === "ALL") return filtered
     // Rebase: subtract the cumulative total *before* the window starts
     // so Day 1 = Day 1's fees, Day 2 = Day1+Day2, etc.
     const first = filtered[0]
