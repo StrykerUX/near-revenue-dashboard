@@ -14,7 +14,7 @@ import { Faq } from "@/components/sections/faq"
 import { fetchDashboardData, type RevenueStreamItem, type SnapshotCaptureSplit, type RevenueSeriesPoint, type IntentVolumePoint, type TotalFeesSeriesPoint } from "@/lib/api"
 import { formatUSD, formatNear, formatMonthLabel, formatDayLabel, formatUpdatedAt, aggregateEmissionsByMonth, buildPriceByMonth, computeRevenueVsEmissions, computeAbsoluteRevVsEmissions, debugGlow, type AbsoluteRevEmissionsPoint } from "@/lib/utils"
 import { STATS, REVENUE_MONTHLY, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES } from "@/lib/data"
-import type { StatCard, TimeSeriesPoint } from "@/lib/types"
+import type { StatCard, TimeSeriesPoint, RevenueBarPoint } from "@/lib/types"
 
 export default async function Page() {
   // ── Fallback values (static data) ─────────────────────────────────────────
@@ -25,7 +25,7 @@ export default async function Page() {
   let feesChange = parseFloat(FEES_CHANGE)
   let sparklineData: number[] = SPARKLINE_DATA
   let stats: StatCard[] = STATS.slice(1, 4) // exclude Stablecoin Liquidity Depth (no API yet)
-  let revenueChartSeries: TimeSeriesPoint[] = REVENUE_MONTHLY
+  let revenueChartSeries: RevenueBarPoint[] = REVENUE_MONTHLY
   let updatedAt = "—"
   let emissionsMonthly: TimeSeriesPoint[] = EMISSIONS_SERIES
   let emissionsDaily: TimeSeriesPoint[] = EMISSIONS_SERIES
@@ -93,6 +93,7 @@ export default async function Page() {
     revenueChartSeries = revenueSeries.map((p) => ({
       date: formatMonthLabel(p.period_month),
       value: Math.round(p.revenue_usd),
+      cumulative: Math.round(p.cumulative_revenue_usd),
     }))
 
     updatedAt = formatUpdatedAt(snapshot.updated_at)

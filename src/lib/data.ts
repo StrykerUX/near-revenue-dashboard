@@ -1,4 +1,4 @@
-import type { TimeSeriesPoint, WalletRow, FaqItem, StatCard } from "./types"
+import type { TimeSeriesPoint, RevenueBarPoint, WalletRow, FaqItem, StatCard } from "./types"
 import type { SwapDataPoint } from "@/components/charts/stacked-bar-chart"
 
 // Cumulative fees — hockey-stick power curve (flat early, accelerates from Oct 2025)
@@ -16,20 +16,20 @@ function buildFeesSeries(): TimeSeriesPoint[] {
 export const TOTAL_FEES_SERIES: TimeSeriesPoint[] = buildFeesSeries()
 
 // Monthly revenue after partner payouts (Apr 2025 → Apr 2026)
-export const REVENUE_MONTHLY: TimeSeriesPoint[] = [
-  { date: "Apr '25", value: 52000 },
-  { date: "May '25", value: 78000 },
-  { date: "Jun '25", value: 105000 },
-  { date: "Jul '25", value: 138000 },
-  { date: "Aug '25", value: 172000 },
-  { date: "Sep '25", value: 210000 },
-  { date: "Oct '25", value: 255000 },
-  { date: "Nov '25", value: 305000 },
-  { date: "Dec '25", value: 358000 },
-  { date: "Jan '26", value: 398000 },
-  { date: "Feb '26", value: 438000 },
-  { date: "Mar '26", value: 465000 },
-  { date: "Apr '26", value: 490000 },
+export const REVENUE_MONTHLY: RevenueBarPoint[] = [
+  { date: "Apr '25", value:  52000, cumulative:   52000 },
+  { date: "May '25", value:  78000, cumulative:  130000 },
+  { date: "Jun '25", value: 105000, cumulative:  235000 },
+  { date: "Jul '25", value: 138000, cumulative:  373000 },
+  { date: "Aug '25", value: 172000, cumulative:  545000 },
+  { date: "Sep '25", value: 210000, cumulative:  755000 },
+  { date: "Oct '25", value: 255000, cumulative: 1010000 },
+  { date: "Nov '25", value: 305000, cumulative: 1315000 },
+  { date: "Dec '25", value: 358000, cumulative: 1673000 },
+  { date: "Jan '26", value: 398000, cumulative: 2071000 },
+  { date: "Feb '26", value: 438000, cumulative: 2509000 },
+  { date: "Mar '26", value: 465000, cumulative: 2974000 },
+  { date: "Apr '26", value: 490000, cumulative: 3464000 },
 ]
 
 // Revenue as % of $NEAR emissions — starts low/flat, oscillations grow over time

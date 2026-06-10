@@ -3,6 +3,12 @@ export interface TimeSeriesPoint {
   value: number
 }
 
+export interface RevenueBarPoint {
+  date: string
+  value: number
+  cumulative: number
+}
+
 export interface WalletRow {
   name: string
   share: number

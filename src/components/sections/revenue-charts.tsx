@@ -7,10 +7,10 @@ import { RevenueBarChart } from "@/components/charts/bar-chart"
 import { EmissionsLineChart, AbsoluteEmissionsChart } from "@/components/charts/line-chart"
 import { debugGlow } from "@/lib/utils"
 import type { AbsoluteRevEmissionsPoint } from "@/lib/utils"
-import type { TimeSeriesPoint } from "@/lib/types"
+import type { TimeSeriesPoint, RevenueBarPoint } from "@/lib/types"
 
 interface RevenueChartsProps {
-  revenueSeries: TimeSeriesPoint[]
+  revenueSeries: RevenueBarPoint[]
   emissionsMonthly: TimeSeriesPoint[]
   emissionsDaily: TimeSeriesPoint[]
   absoluteRevEmissions: AbsoluteRevEmissionsPoint[]
