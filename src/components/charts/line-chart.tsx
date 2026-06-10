@@ -221,11 +221,10 @@ export function EmissionsLineChart({ data, mode = "monthly" }: EmissionsLineChar
           yAxisId="right"
           orientation="right"
           ticks={yTicks}
-          tickFormatter={yFmt}
-          tick={{ fill: "var(--near-subtle)", fontSize: 11 }}
+          tick={false}
           axisLine={false}
           tickLine={false}
-          width={axisWidth}
+          width={0}
           domain={[0, yMax]}
         />
         <Tooltip

@@ -18,7 +18,6 @@ interface RevenueBarChartProps {
   data: RevenueBarPoint[]
 }
 
-const Y_TICKS = [0, 125_000, 250_000, 375_000, 500_000]
 
 function formatY(v: number): string {
   if (v === 0) return "0"
@@ -52,6 +51,11 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
 
 export function RevenueBarChart({ data }: RevenueBarChartProps) {
   const xTicks = data.map((d) => d.date)
+  const maxValue = Math.max(0, ...data.map(d => d.value))
+  const barStep = Math.ceil(maxValue * 1.15 / 4 / 25_000) * 25_000
+  const barTicks = [0, barStep, barStep * 2, barStep * 3, barStep * 4]
+  const barDomain: [number, number] = [0, barStep * 4]
+
   const maxCumulative = Math.max(0, ...data.map(d => d.cumulative))
   const cumStep = maxCumulative > 0 ? Math.ceil(maxCumulative / 4 / 100_000) * 100_000 : 250_000
   const cumTicks = [0, cumStep, cumStep * 2, cumStep * 3, cumStep * 4]
@@ -69,23 +73,22 @@ export function RevenueBarChart({ data }: RevenueBarChartProps) {
           tickLine={false}
         />
         <YAxis
-          ticks={Y_TICKS}
-          tickFormatter={formatY}
-          tick={{ fill: "var(--near-subtle)", fontSize: 11 }}
-          axisLine={false}
-          tickLine={false}
-          width={44}
-          domain={[0, 500_000]}
-        />
-        <YAxis
-          yAxisId="right"
-          orientation="right"
-          ticks={cumTicks}
+          ticks={barTicks}
           tickFormatter={formatY}
           tick={{ fill: "var(--near-subtle)", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
           width={52}
+          domain={barDomain}
+        />
+        <YAxis
+          yAxisId="right"
+          orientation="right"
+          ticks={cumTicks}
+          tick={false}
+          axisLine={false}
+          tickLine={false}
+          width={0}
           domain={[0, cumTicks[4]]}
         />
         <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
