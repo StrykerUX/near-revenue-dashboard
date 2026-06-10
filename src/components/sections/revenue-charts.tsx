@@ -74,7 +74,7 @@ export function RevenueCharts({
                 onClick={() => setView(v)}
                 className="px-2.5 py-1 rounded text-xs font-medium transition-colors"
                 style={v === view
-                  ? { background: "#ffffff", color: "#0e0f0f" }
+                  ? { background: "#00ec97", color: "#0e0f0f" }
                   : { background: "transparent", color: "#9ca3af", border: "1px solid #374151" }
                 }
               >

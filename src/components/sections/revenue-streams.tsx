@@ -3,7 +3,7 @@
 import { useState } from "react"
 import type { RevenueStreamItem } from "@/lib/api"
 
-type Timeframe = "d30" | "d7" | "all_time"
+type Timeframe = "d30" | "d7" | "ytd" | "all_time"
 
 const STREAM_COLORS: Record<string, string> = {
   "Front-end": "#00ec97",
@@ -15,14 +15,16 @@ const STREAM_COLORS: Record<string, string> = {
 }
 
 const TIMEFRAME_LABELS: Record<Timeframe, string> = {
-  d30: "Last 30 days",
-  d7: "Last 7 days",
+  d7: "7D",
+  d30: "30D",
+  ytd: "YTD",
   all_time: "All time",
 }
 
 function getRevenue(item: RevenueStreamItem, tf: Timeframe): number {
-  if (tf === "d30") return item.revenue_usd_d30
   if (tf === "d7") return item.revenue_usd_d7
+  if (tf === "d30") return item.revenue_usd_d30
+  if (tf === "ytd") return item.revenue_usd_ytd
   return item.revenue_usd_all_time
 }
 
@@ -46,15 +48,16 @@ export function RevenueStreams({ streams }: { streams: RevenueStreamItem[] }) {
     <div>
       {/* Timeframe toggle */}
       <div className="flex items-center gap-1 mb-6 flex-wrap">
-        {(["d30", "d7", "all_time"] as Timeframe[]).map((tf) => (
+        {(["d7", "d30", "ytd", "all_time"] as Timeframe[]).map((tf) => (
           <button
             key={tf}
             onClick={() => setTimeframe(tf)}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+            className="px-3 py-1 rounded text-xs font-medium transition-colors"
+            style={
               timeframe === tf
-                ? "bg-near-green/10 text-near-green border border-near-green/25"
-                : "text-near-muted hover:text-near-text border border-transparent hover:border-near-border"
-            }`}
+                ? { background: "#00ec97", color: "#0e0f0f" }
+                : { background: "transparent", color: "#9ca3af", border: "1px solid #374151" }
+            }
           >
             {TIMEFRAME_LABELS[tf]}
           </button>

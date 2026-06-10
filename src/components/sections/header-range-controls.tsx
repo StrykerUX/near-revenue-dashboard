@@ -15,7 +15,7 @@ export function HeaderRangeControls() {
           className="px-3 py-1 rounded text-xs font-medium transition-colors"
           style={
             r === range
-              ? { background: "#ffffff", color: "#0e0f0f" }
+              ? { background: "#00ec97", color: "#0e0f0f" }
               : { background: "transparent", color: "#9ca3af", border: "1px solid #374151" }
           }
         >

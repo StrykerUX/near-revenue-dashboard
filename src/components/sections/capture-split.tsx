@@ -7,17 +7,17 @@ import type { SnapshotCaptureSplit } from "@/lib/api"
 type Timeframe = "d7" | "d30" | "ytd" | "all_time"
 
 const TIMEFRAME_LABELS: Record<Timeframe, string> = {
-  d7: "Last 7 days",
-  d30: "Last 30 days",
-  ytd: "Year to date",
+  d7: "7D",
+  d30: "30D",
+  ytd: "YTD",
   all_time: "All time",
 }
 
 const TIMEFRAME_SHORT: Record<Timeframe, string> = {
-  d7: "7d",
-  d30: "30d",
+  d7: "7D",
+  d30: "30D",
   ytd: "YTD",
-  all_time: "All-time",
+  all_time: "All time",
 }
 
 type Prefix = "pp_fe" | "pp_qi" | "pp_b2b"
@@ -96,11 +96,12 @@ export function CaptureSplit({ data }: { data: SnapshotCaptureSplit }) {
           <button
             key={tf}
             onClick={() => setTimeframe(tf)}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+            className="px-3 py-1 rounded text-xs font-medium transition-colors"
+            style={
               timeframe === tf
-                ? "bg-near-green/10 text-near-green border border-near-green/25"
-                : "text-near-muted hover:text-near-text border border-transparent hover:border-near-border"
-            }`}
+                ? { background: "#00ec97", color: "#0e0f0f" }
+                : { background: "transparent", color: "#9ca3af", border: "1px solid #374151" }
+            }
           >
             {TIMEFRAME_LABELS[tf]}
           </button>
