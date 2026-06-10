@@ -224,7 +224,7 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
 
         {filtered.length > 0 && (
           <div className="text-right shrink-0">
-            <p className={`text-2xl font-bold ${view === "Daily Change" ? (headerValue >= 0 ? "text-near-green" : "text-red-400") : "text-near-green"}`}>
+            <p className={`text-3xl font-bold ${view === "Daily Change" ? (headerValue >= 0 ? "text-near-green" : "text-red-400") : "text-near-green"}`}>
               {view === "Daily Change"
                 ? (headerValue >= 0 ? "+" : "") + fmtFull(headerValue)
                 : fmtFull(headerValue).replace("+", "")}
