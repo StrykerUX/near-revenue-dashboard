@@ -40,7 +40,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "NEAR Revenue Dashboard",
   description: "Protocol & product revenue tracker",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://near-revenue-dashboard.up.railway.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://revenue.near.org"),
   openGraph: {
     title: "NEAR Revenue Dashboard",
     description: "Protocol & product revenue tracker",
