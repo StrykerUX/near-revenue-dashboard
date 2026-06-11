@@ -13,12 +13,6 @@ const TIMEFRAME_LABELS: Record<Timeframe, string> = {
   all_time: "All time",
 }
 
-const TIMEFRAME_SHORT: Record<Timeframe, string> = {
-  d7: "7D",
-  d30: "30D",
-  ytd: "YTD",
-  all_time: "All time",
-}
 
 type Prefix = "pp_fe" | "pp_qi" | "pp_b2b"
 
@@ -43,7 +37,6 @@ function CaptureCard({
   description: string
 }) {
   const primary = getVal(data, prefix, timeframe)
-  const allTimeframes: Timeframe[] = ["d7", "d30", "ytd", "all_time"]
 
   return (
     <Card padding="none" className="overflow-hidden">
@@ -60,25 +53,6 @@ function CaptureCard({
           <span className="text-xl text-near-muted font-light ml-1">%</span>
         </div>
         <p className="text-xs text-near-green/70 mb-4">{TIMEFRAME_LABELS[timeframe]} capture rate</p>
-
-        <div className="h-px bg-near-border mb-3" />
-
-        <div className="space-y-1.5 mb-4">
-          {allTimeframes.map((tf) => {
-            const val = getVal(data, prefix, tf)
-            const isActive = tf === timeframe
-            return (
-              <div key={tf} className="flex justify-between text-xs">
-                <span className={isActive ? "text-near-green/70 font-medium" : "text-near-subtle"}>
-                  {TIMEFRAME_SHORT[tf]}
-                </span>
-                <span className={`tabular-nums font-medium ${isActive ? "text-near-green" : "text-near-muted"}`}>
-                  {(val * 100).toFixed(1)}%
-                </span>
-              </div>
-            )
-          })}
-        </div>
 
         <p className="text-xs text-near-muted leading-relaxed mt-auto">{description}</p>
       </div>

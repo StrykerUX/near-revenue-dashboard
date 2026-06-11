@@ -165,14 +165,14 @@ function NetRevYieldChart({ revenueSeries, intentVolumeSeries }: {
   return (
     <div className="rounded-2xl border border-near-border bg-near-card p-4 flex flex-col">
       <div className="flex items-baseline gap-2 mb-0.5">
-        <p className="text-xs font-medium text-near-muted uppercase tracking-wider">Net Revenue Yield</p>
+        <p className="text-xs font-semibold text-near-text uppercase tracking-wider">Net Revenue Yield</p>
         <span className="text-xs text-near-subtle">(bps)</span>
         {dimmed && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium text-near-subtle border border-near-border">Showing 90D</span>}
       </div>
-      <p className="text-xs text-near-subtle mb-2 leading-relaxed">
+      <p className="text-xs text-near-muted mb-2 leading-relaxed">
         Net revenue as % of swap volume — protocol revenue retained after partner and frontend fee splits.
       </p>
-      <div className="mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.55 : 1 }}>
+      <div className="mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.40 : 1 }}>
         <MetricLine data={visible} chartKey={`net-rev-${range}`} valueFmt={fmtBps} yAxisTickFmt={fmtBpsTick} />
       </div>
     </div>
@@ -217,14 +217,14 @@ function GrossFeeRateChart({ totalFeesSeries, intentVolumeSeries }: {
   return (
     <div className="rounded-2xl border border-near-border bg-near-card p-4 flex flex-col">
       <div className="flex items-baseline gap-2 mb-0.5">
-        <p className="text-xs font-medium text-near-muted uppercase tracking-wider">Gross Fee Rate</p>
+        <p className="text-xs font-semibold text-near-text uppercase tracking-wider">Gross Fee Rate</p>
         <span className="text-xs text-near-subtle">(bps)</span>
         {dimmed && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium text-near-subtle border border-near-border">Showing 90D</span>}
       </div>
-      <p className="text-xs text-near-subtle mb-2 leading-relaxed">
+      <p className="text-xs text-near-muted mb-2 leading-relaxed">
         Gross fees as % of swap volume — the effective fee rate across all swaps routed through NEAR Intents.
       </p>
-      <div className="mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.55 : 1 }}>
+      <div className="mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.40 : 1 }}>
         <MetricLine data={points} chartKey={`gross-fee-${range}`} valueFmt={fmtBps} yAxisTickFmt={fmtBpsTick} />
       </div>
     </div>
@@ -267,14 +267,14 @@ function CaptureRateTrendChart({ revenueSeries, totalFeesSeries }: {
   return (
     <div className="rounded-2xl border border-near-border bg-near-card p-4 flex flex-col">
       <div className="flex items-baseline gap-2 mb-0.5">
-        <p className="text-xs font-medium text-near-muted uppercase tracking-wider">Capture Rate Trend</p>
+        <p className="text-xs font-semibold text-near-text uppercase tracking-wider">Capture Rate Trend</p>
         {dimmed && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium text-near-subtle border border-near-border">Showing 90D</span>}
       </div>
-      <p className="text-xs text-near-subtle mb-2 leading-relaxed">
+      <p className="text-xs text-near-muted mb-2 leading-relaxed">
         Net revenue as % of gross fees — the protocol&apos;s share of gross fees, and whether that share is growing, month by month.
       </p>
       {/* Full-width: taller chart to take advantage of the extra space */}
-      <div className="mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.55 : 1 }}>
+      <div className="mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.40 : 1 }}>
       <ResponsiveContainer key={`capture-${range}`} width="100%" height={200}>
         <ComposedChart data={visible} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
           <defs>

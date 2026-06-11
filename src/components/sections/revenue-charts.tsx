@@ -63,7 +63,7 @@ export function RevenueCharts({
           </div>
           <p className="text-xs text-near-muted">Monthly revenue after partner payouts.</p>
         </div>
-        <div className="px-2 pb-4 mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.55 : 1 }}>
+        <div className="px-2 pb-4 mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.40 : 1 }}>
           <RevenueBarChart data={visibleRevenue} />
         </div>
       </Card>
@@ -123,7 +123,7 @@ export function RevenueCharts({
           )}
         </div>
 
-        <div className="px-2 pb-4 mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.55 : 1 }}>
+        <div className="px-2 pb-4 mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.40 : 1 }}>
           {view === "pct" ? (
             <EmissionsLineChart data={visiblePct} mode="monthly" showYear={false} />
           ) : (
