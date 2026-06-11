@@ -177,55 +177,33 @@ function GrossFeeRateChart({ totalFeesSeries, intentVolumeSeries }: {
 }) {
   const { range } = useGlobalRange()
 
-  // Build daily join
-  const dailyPoints = useMemo((): { date: string; value: number }[] => {
-    const volMap: Record<string, number> = {}
+  // Always aggregate to monthly — consistent with Net Revenue Yield and Capture Rate Trend
+  const allPoints = useMemo((): ChartPoint[] => {
+    const volByMonth: Record<string, number> = {}
     for (const p of intentVolumeSeries) {
-      volMap[p.date_at] = p.volume_usd
+      const k = p.date_at.slice(0, 7)
+      volByMonth[k] = (volByMonth[k] ?? 0) + p.volume_usd
     }
-    return totalFeesSeries
-      .filter(p => p.fees_usd > 0)
-      .map(p => {
-        const vol = volMap[p.date_at] ?? 0
-        return { date: p.date_at, value: vol > 0 ? (p.fees_usd / vol) * 100 : 0 }
+    const feesByMonth: Record<string, number> = {}
+    for (const p of totalFeesSeries) {
+      if (p.fees_usd > 0) {
+        const k = p.date_at.slice(0, 7)
+        feesByMonth[k] = (feesByMonth[k] ?? 0) + p.fees_usd
+      }
+    }
+    return Object.keys(feesByMonth)
+      .sort()
+      .map(k => {
+        const vol = volByMonth[k] ?? 0
+        return { label: fmtMonthLabel(k + "-01"), value: vol > 0 ? (feesByMonth[k] / vol) * 100 : 0 }
       })
       .filter(p => p.value > 0)
-      .sort((a, b) => a.date.localeCompare(b.date))
   }, [totalFeesSeries, intentVolumeSeries])
 
-  const { points, xTicks, tickFmt } = useMemo(() => {
-    if (range === "YTD" || range === "ALL") {
-      // Aggregate to monthly for current year only
-      const ytdStart = `${new Date().getFullYear()}-01-01`
-      const byMonth: Record<string, { fees: number; vol: number }> = {}
-      for (const p of totalFeesSeries.filter(t => t.fees_usd > 0 && t.date_at >= ytdStart)) {
-        const k = p.date_at.slice(0, 7)
-        if (!byMonth[k]) byMonth[k] = { fees: 0, vol: 0 }
-        byMonth[k].fees += p.fees_usd
-      }
-      for (const p of intentVolumeSeries.filter(p => p.date_at >= ytdStart)) {
-        const k = p.date_at.slice(0, 7)
-        if (byMonth[k]) byMonth[k].vol += p.volume_usd
-      }
-      const pts: ChartPoint[] = Object.entries(byMonth)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([k, v]) => ({ label: fmtMonthLabel(k + "-01"), value: v.vol > 0 ? (v.fees / v.vol) * 100 : 0 }))
-        .filter(p => p.value > 0)
-      return { points: pts, xTicks: undefined, tickFmt: undefined }
-    }
-
-    const nDays = range === "7D" ? 7 : range === "30D" ? 30 : 90
-    const lastDate = maxIsoDate(dailyPoints.map(p => p.date))
-    const cutoff = new Date(lastDate + "T12:00:00Z")
-    cutoff.setDate(cutoff.getDate() - (nDays - 1))
-    const cutoffIso = cutoff.toISOString().slice(0, 10)
-    const filtered = dailyPoints.filter(p => p.date >= cutoffIso)
-    const pts: ChartPoint[] = filtered.map(p => ({ label: fmtDayLabel(p.date), value: p.value }))
-
-    const step = range === "7D" ? 1 : range === "30D" ? 7 : 14
-    const ticks = pts.filter((_, i) => i % step === 0).map(p => p.label)
-    return { points: pts, xTicks: ticks, tickFmt: undefined }
-  }, [range, dailyPoints, totalFeesSeries, intentVolumeSeries])
+  const ytdMonths = new Date().getMonth() + 1
+  const points = range === "YTD" || range === "ALL"
+    ? allPoints.slice(-ytdMonths)
+    : allPoints.slice(-(range === "90D" ? 3 : 1))
 
   return (
     <div className="rounded-2xl border border-near-border bg-near-card p-4">
@@ -236,7 +214,7 @@ function GrossFeeRateChart({ totalFeesSeries, intentVolumeSeries }: {
       <p className="text-xs text-near-subtle mb-2 leading-relaxed">
         Gross fees as % of swap volume — the effective fee rate across all swaps routed through NEAR Intents.
       </p>
-      <MetricLine data={points} chartKey={`gross-fee-${range}`} xTicks={xTicks} tickFmt={tickFmt} valueFmt={fmtBps} yAxisTickFmt={fmtBpsTick} />
+      <MetricLine data={points} chartKey={`gross-fee-${range}`} valueFmt={fmtBps} yAxisTickFmt={fmtBpsTick} />
     </div>
   )
 }
