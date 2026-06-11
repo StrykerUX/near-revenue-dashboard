@@ -132,11 +132,11 @@ export default async function Page() {
     // plus same-day intent volume joined by date for the tooltip.
     const volumeByDate = new Map(intentVolumeSeries.map((p) => [p.date_at, p.volume_usd]))
     cumulativeFeesData = totalFeesRaw
-      .filter((p) => p.fees_usd > 0 && p.total_fees_near > 0)
+      .filter((p) => p.fees_usd > 0)
       .map((p) => {
-        // The API gives USD only as a daily total; split it in USD by the NEAR
-        // protocol/intents ratio (same-day price applies to both legs).
-        const protocolShare = p.protocol_fee_near / p.total_fees_near
+        // Split USD fees by the NEAR protocol/intents ratio.
+        // For early records (Aug-Dec 2025) total_fees_near = 0 — attribute all to intents.
+        const protocolShare = p.total_fees_near > 0 ? p.protocol_fee_near / p.total_fees_near : 0
         const protocolUsd = p.fees_usd * protocolShare
         return {
           isoDate: p.date_at,
