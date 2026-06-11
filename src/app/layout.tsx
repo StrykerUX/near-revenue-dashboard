@@ -40,6 +40,19 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "NEAR Revenue Dashboard",
   description: "Protocol & product revenue tracker",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://near-revenue-dashboard.up.railway.app"),
+  openGraph: {
+    title: "NEAR Revenue Dashboard",
+    description: "Protocol & product revenue tracker",
+    images: [{ url: "/bg-meta.jpg", width: 1200, height: 630 }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NEAR Revenue Dashboard",
+    description: "Protocol & product revenue tracker",
+    images: ["/bg-meta.jpg"],
+  },
 }
 
 export default function RootLayout({
