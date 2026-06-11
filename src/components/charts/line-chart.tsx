@@ -124,8 +124,14 @@ export function AbsoluteEmissionsChart({ data }: { data: AbsoluteRevEmissionsPoi
   const maxEmissions = Math.max(0, ...data.map(d => d.emissionsNear))
   const yTicks = buildAbsTicks(maxEmissions * 1.1)
   const yMax   = yTicks[yTicks.length - 1]
-  // Show a tick every ~14 days so x-axis doesn't crowd
-  const xTicks = data.filter((_, i) => i % 14 === 0).map(d => d.date)
+  // One tick per month (first occurrence of each month)
+  const seenMonths = new Set<string>()
+  const xTicks = data.filter(d => {
+    const m = d.date.slice(0, 7)
+    if (seenMonths.has(m)) return false
+    seenMonths.add(m)
+    return true
+  }).map(d => d.date)
 
   return (
     <ResponsiveContainer width="100%" height={240}>
@@ -144,7 +150,7 @@ export function AbsoluteEmissionsChart({ data }: { data: AbsoluteRevEmissionsPoi
         <XAxis
           dataKey="date"
           ticks={xTicks}
-          tickFormatter={fmtAbsDayLabel}
+          tickFormatter={(s: string) => new Date(s + "T12:00:00Z").toLocaleDateString("en-US", { month: "short" })}
           tick={{ fill: "var(--near-subtle)", fontSize: 11 }}
           axisLine={false}
           tickLine={false}

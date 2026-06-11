@@ -41,10 +41,10 @@ export function RevenueCharts({
     () => emissionsMonthly.slice(-nMonths),
     [emissionsMonthly, nMonths]
   )
-  // Absolute view: 90D → last 90 days, everything else → full YTD
+  // Absolute view: 90D/7D/30D → last 90 days, YTD → full data
   const visibleAbs = useMemo(() => {
     if (!absoluteRevEmissions.length) return absoluteRevEmissions
-    if (range !== "90D") return absoluteRevEmissions
+    if (range === "YTD") return absoluteRevEmissions
     const last = absoluteRevEmissions[absoluteRevEmissions.length - 1].date
     const cutoff = new Date(last + "T12:00:00Z")
     cutoff.setDate(cutoff.getDate() - 89)
