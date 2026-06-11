@@ -102,9 +102,8 @@ export function computeRevenueVsEmissions(
       const emissions = monthlyEmissions[key]
       if (!emissions || emissions === 0) return null
       const price = priceByMonth[key]
-      // Fall back to API's revenue_near for months where price feed is unavailable (e.g. Aug-Dec 2025)
-      const revenueNear = (price && price > 0) ? p.revenue_usd / price : p.revenue_near
-      if (!revenueNear || revenueNear === 0) return null
+      if (!price || price === 0) return null
+      const revenueNear = p.revenue_usd / price
       return {
         date: p.period_month,
         value: parseFloat(((revenueNear / emissions) * 100).toFixed(2)),
