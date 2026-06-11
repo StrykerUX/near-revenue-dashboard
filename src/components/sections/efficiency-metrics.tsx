@@ -3,7 +3,7 @@
 import { useMemo } from "react"
 import { useGlobalRange } from "@/providers/global-range-provider"
 import {
-  AreaChart, Area, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
+  ComposedChart, Area, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
   ResponsiveContainer, type TooltipProps,
 } from "recharts"
 import type { RevenueSeriesPoint, IntentVolumePoint, TotalFeesSeriesPoint } from "@/lib/api"
@@ -88,7 +88,7 @@ function MetricLine({ data, chartKey, xTicks, tickFmt, valueFmt = fmtPct, yAxisT
 
   return (
     <ResponsiveContainer key={chartKey} width="100%" height={200}>
-      <AreaChart data={data} margin={{ top: 8, right: 8, left: -6, bottom: 0 }}>
+      <ComposedChart data={data} margin={{ top: 8, right: 8, left: -6, bottom: 0 }}>
         <defs>
           <linearGradient id={`metricGrad-${chartKey}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="var(--near-green)" stopOpacity={0.3} />
@@ -126,7 +126,7 @@ function MetricLine({ data, chartKey, xTicks, tickFmt, valueFmt = fmtPct, yAxisT
           animationDuration={700}
           animationEasing="ease-out"
         />
-      </AreaChart>
+      </ComposedChart>
     </ResponsiveContainer>
   )
 }
@@ -276,7 +276,7 @@ function CaptureRateTrendChart({ revenueSeries, totalFeesSeries }: {
       {/* Full-width: taller chart to take advantage of the extra space */}
       <div className="mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.55 : 1 }}>
       <ResponsiveContainer key={`capture-${range}`} width="100%" height={200}>
-        <AreaChart data={visible} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+        <ComposedChart data={visible} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
           <defs>
             <linearGradient id="captureGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="var(--near-green)" stopOpacity={0.3} />
@@ -323,7 +323,7 @@ function CaptureRateTrendChart({ revenueSeries, totalFeesSeries }: {
             animationDuration={700}
             animationEasing="ease-out"
           />
-        </AreaChart>
+        </ComposedChart>
       </ResponsiveContainer>
       </div>
     </div>
