@@ -29,10 +29,14 @@ export function RevenueCharts({
   const ytdMonths = new Date().getMonth() + 1
   const nMonths = (range === "90D" || range === "7D" || range === "30D") ? 3 : ytdMonths
   const dimmed = range === "7D" || range === "30D"
-  const visibleRevenue = useMemo(
-    () => revenueSeries.slice(-nMonths),
-    [revenueSeries, nMonths]
-  )
+  const visibleRevenue = useMemo(() => {
+    const sliced = revenueSeries.slice(-nMonths)
+    let running = 0
+    return sliced.map(p => {
+      running += p.value
+      return { ...p, cumulative: running }
+    })
+  }, [revenueSeries, nMonths])
   const visiblePct = useMemo(
     () => emissionsMonthly.slice(-nMonths),
     [emissionsMonthly, nMonths]
