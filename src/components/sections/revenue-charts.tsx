@@ -25,25 +25,24 @@ export function RevenueCharts({
   const [view, setView] = useState<"pct" | "absolute">("pct")
   const { range } = useGlobalRange()
 
-  // Monthly data: 7D/30D → last 1 month, 90D → last 3 months, YTD → current year, ALL → all
+  // These charts only respond to 90D and YTD — all other ranges default to YTD
   const ytdMonths = new Date().getMonth() + 1
-  const nMonths = range === "ALL" ? Infinity : (range === "YTD" ? ytdMonths : range === "90D" ? 3 : 1)
+  const nMonths = range === "90D" ? 3 : ytdMonths
   const visibleRevenue = useMemo(
-    () => nMonths === Infinity ? revenueSeries : revenueSeries.slice(-nMonths),
+    () => revenueSeries.slice(-nMonths),
     [revenueSeries, nMonths]
   )
   const visiblePct = useMemo(
-    () => nMonths === Infinity ? emissionsMonthly : emissionsMonthly.slice(-nMonths),
+    () => emissionsMonthly.slice(-nMonths),
     [emissionsMonthly, nMonths]
   )
-  // absoluteRevEmissions is daily — filter by date range, not slice
+  // Absolute view: 90D → last 90 days, everything else → full YTD
   const visibleAbs = useMemo(() => {
     if (!absoluteRevEmissions.length) return absoluteRevEmissions
-    if (range === "YTD" || range === "ALL") return absoluteRevEmissions
-    const nDays = range === "90D" ? 90 : range === "30D" ? 30 : 7
+    if (range !== "90D") return absoluteRevEmissions
     const last = absoluteRevEmissions[absoluteRevEmissions.length - 1].date
     const cutoff = new Date(last + "T12:00:00Z")
-    cutoff.setDate(cutoff.getDate() - (nDays - 1))
+    cutoff.setDate(cutoff.getDate() - 89)
     const cutoffIso = cutoff.toISOString().slice(0, 10)
     return absoluteRevEmissions.filter(d => d.date >= cutoffIso)
   }, [absoluteRevEmissions, range])
