@@ -42,8 +42,9 @@ function DailyTooltip({ active, payload, label }: TooltipProps<number, string>) 
   )
 }
 
-function formatMonthTick(dateStr: string): string {
-  const d = new Date(dateStr)
+function formatMonthTick(dateStr: string, showYear = false): string {
+  const d = new Date(dateStr + (dateStr.length === 7 ? "-01" : "") + "T12:00:00Z")
+  if (showYear) return d.toLocaleDateString("en-US", { month: "short", year: "2-digit" })
   return d.toLocaleDateString("en-US", { month: "short" })
 }
 
@@ -195,6 +196,9 @@ export function EmissionsLineChart({ data, mode = "monthly" }: EmissionsLineChar
   const yMax = yTicks[yTicks.length - 1]
   const yFmt = isDaily ? (v: number) => formatNear(v) : (v: number) => `${v.toFixed(1)}%`
   const axisWidth = isDaily ? 56 : 48
+  const multiYear = data.length > 1 &&
+    new Date(data[0].date + "T12:00:00Z").getFullYear() !==
+    new Date(data[data.length - 1].date + "T12:00:00Z").getFullYear()
 
   return (
     <ResponsiveContainer width="100%" height={240}>
@@ -203,7 +207,7 @@ export function EmissionsLineChart({ data, mode = "monthly" }: EmissionsLineChar
         <XAxis
           dataKey="date"
           ticks={ticks}
-          tickFormatter={isDaily ? formatDayTick : formatMonthTick}
+          tickFormatter={isDaily ? formatDayTick : (d: string) => formatMonthTick(d, multiYear)}
           tick={{ fill: "var(--near-subtle)", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
