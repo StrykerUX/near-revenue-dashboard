@@ -25,9 +25,10 @@ export function RevenueCharts({
   const [view, setView] = useState<"pct" | "absolute">("pct")
   const { range } = useGlobalRange()
 
-  // These charts only respond to 90D and YTD — all other ranges default to YTD
+  // These charts only respond to 90D and YTD — 7D/30D show 90D data dimmed, ALL shows YTD
   const ytdMonths = new Date().getMonth() + 1
-  const nMonths = range === "90D" ? 3 : ytdMonths
+  const nMonths = (range === "90D" || range === "7D" || range === "30D") ? 3 : ytdMonths
+  const dimmed = range === "7D" || range === "30D"
   const visibleRevenue = useMemo(
     () => revenueSeries.slice(-nMonths),
     [revenueSeries, nMonths]
@@ -52,10 +53,17 @@ export function RevenueCharts({
       {/* Monthly Revenue */}
       <Card padding="none" className="overflow-hidden" style={debugGlow("api")}>
         <div className="p-6 pb-2">
-          <h2 className="text-base font-semibold text-near-text mb-1">Monthly Revenue</h2>
+          <div className="flex items-center gap-2 mb-1">
+            <h2 className="text-base font-semibold text-near-text">Monthly Revenue</h2>
+            {dimmed && (
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-medium text-near-subtle border border-near-border">
+                Showing 90D
+              </span>
+            )}
+          </div>
           <p className="text-xs text-near-muted">Monthly revenue after partner payouts.</p>
         </div>
-        <div className="px-2 pb-4">
+        <div className="px-2 pb-4 transition-opacity duration-300" style={{ opacity: dimmed ? 0.55 : 1 }}>
           <RevenueBarChart data={visibleRevenue} />
         </div>
       </Card>
@@ -64,7 +72,14 @@ export function RevenueCharts({
       <Card padding="none" className="overflow-hidden" style={debugGlow("api")}>
         <div className="p-6 pb-2 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-base font-semibold text-near-text mb-1">Revenue vs Emissions</h2>
+            <div className="flex items-center gap-2 mb-1">
+              <h2 className="text-base font-semibold text-near-text">Revenue vs Emissions</h2>
+              {dimmed && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium text-near-subtle border border-near-border">
+                  Showing 90D
+                </span>
+              )}
+            </div>
             <p className="text-xs text-near-muted">
               Comparison of protocol revenue relative to token issuance.
             </p>
@@ -108,9 +123,9 @@ export function RevenueCharts({
           )}
         </div>
 
-        <div className="px-2 pb-4">
+        <div className="px-2 pb-4 transition-opacity duration-300" style={{ opacity: dimmed ? 0.55 : 1 }}>
           {view === "pct" ? (
-            <EmissionsLineChart data={visiblePct} mode="monthly" />
+            <EmissionsLineChart data={visiblePct} mode="monthly" showYear={false} />
           ) : (
             <AbsoluteEmissionsChart data={visibleAbs} />
           )}

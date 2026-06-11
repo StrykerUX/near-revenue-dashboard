@@ -18,6 +18,7 @@ import { formatNear, type AbsoluteRevEmissionsPoint } from "@/lib/utils"
 interface EmissionsLineChartProps {
   data: TimeSeriesPoint[]
   mode?: "monthly" | "daily"
+  showYear?: boolean
 }
 
 function MonthlyTooltip({ active, payload, label }: TooltipProps<number, string>) {
@@ -187,7 +188,7 @@ export function AbsoluteEmissionsChart({ data }: { data: AbsoluteRevEmissionsPoi
   )
 }
 
-export function EmissionsLineChart({ data, mode = "monthly" }: EmissionsLineChartProps) {
+export function EmissionsLineChart({ data, mode = "monthly", showYear }: EmissionsLineChartProps) {
   if (data.length === 0) return null
 
   const isDaily = mode === "daily"
@@ -196,9 +197,7 @@ export function EmissionsLineChart({ data, mode = "monthly" }: EmissionsLineChar
   const yMax = yTicks[yTicks.length - 1]
   const yFmt = isDaily ? (v: number) => formatNear(v) : (v: number) => `${v.toFixed(1)}%`
   const axisWidth = isDaily ? 56 : 48
-  const multiYear = data.length > 1 &&
-    new Date(data[0].date + "T12:00:00Z").getFullYear() !==
-    new Date(data[data.length - 1].date + "T12:00:00Z").getFullYear()
+  const multiYear = showYear ?? false
 
   return (
     <ResponsiveContainer width="100%" height={240}>

@@ -86,7 +86,7 @@ export function RevenueBarChart({ data }: RevenueBarChartProps) {
           orientation="right"
           ticks={cumTicks}
           tickFormatter={formatY}
-          tick={{ fill: "#f97316", fontSize: 10 }}
+          tick={{ fill: "#f97316", fontSize: 10, fillOpacity: 0.55 }}
           axisLine={false}
           tickLine={false}
           width={52}
