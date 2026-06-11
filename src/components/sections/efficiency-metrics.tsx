@@ -3,7 +3,7 @@
 import { useMemo } from "react"
 import { useGlobalRange } from "@/providers/global-range-provider"
 import {
-  LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
+  AreaChart, Area, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
   ResponsiveContainer, type TooltipProps,
 } from "recharts"
 import type { RevenueSeriesPoint, IntentVolumePoint, TotalFeesSeriesPoint } from "@/lib/api"
@@ -87,8 +87,14 @@ function MetricLine({ data, chartKey, xTicks, tickFmt, valueFmt = fmtPct, yAxisT
   }
 
   return (
-    <ResponsiveContainer key={chartKey} width="100%" height={160}>
-      <LineChart data={data} margin={{ top: 8, right: 8, left: -6, bottom: 0 }}>
+    <ResponsiveContainer key={chartKey} width="100%" height={200}>
+      <AreaChart data={data} margin={{ top: 8, right: 8, left: -6, bottom: 0 }}>
+        <defs>
+          <linearGradient id={`metricGrad-${chartKey}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--near-green)" stopOpacity={0.3} />
+            <stop offset="100%" stopColor="var(--near-green)" stopOpacity={0.02} />
+          </linearGradient>
+        </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--near-border)" vertical={false} />
         <XAxis
           dataKey="label"
@@ -108,9 +114,10 @@ function MetricLine({ data, chartKey, xTicks, tickFmt, valueFmt = fmtPct, yAxisT
           domain={domain}
         />
         <Tooltip content={<TooltipContent />} cursor={{ stroke: "var(--near-border)" }} />
-        <Line
+        <Area
           type="monotone"
           dataKey="value"
+          fill={`url(#metricGrad-${chartKey})`}
           stroke="var(--near-green)"
           strokeWidth={1.5}
           dot={{ r: 3, fill: "var(--near-green)", stroke: "var(--near-card)", strokeWidth: 1.5 }}
@@ -119,7 +126,7 @@ function MetricLine({ data, chartKey, xTicks, tickFmt, valueFmt = fmtPct, yAxisT
           animationDuration={700}
           animationEasing="ease-out"
         />
-      </LineChart>
+      </AreaChart>
     </ResponsiveContainer>
   )
 }
@@ -151,20 +158,23 @@ function NetRevYieldChart({ revenueSeries, intentVolumeSeries }: {
       .filter(p => p.value > 0)
   }, [revenueSeries, intentVolumeSeries])
 
-  // Monthly chart: 7D/30D → 1 month, 90D → 3 months, YTD → current year months
   const ytdMonths = new Date().getMonth() + 1
-  const visible = range === "YTD" ? allPoints.slice(-ytdMonths) : allPoints.slice(-(range === "90D" || range === "ALL" ? 3 : 1))
+  const dimmed = range === "7D" || range === "30D"
+  const visible = range === "YTD" ? allPoints.slice(-ytdMonths) : allPoints.slice(-3)
 
   return (
-    <div className="rounded-2xl border border-near-border bg-near-card p-4">
+    <div className="rounded-2xl border border-near-border bg-near-card p-4 flex flex-col">
       <div className="flex items-baseline gap-2 mb-0.5">
         <p className="text-xs font-medium text-near-muted uppercase tracking-wider">Net Revenue Yield</p>
         <span className="text-xs text-near-subtle">(bps)</span>
+        {dimmed && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium text-near-subtle border border-near-border">Showing 90D</span>}
       </div>
       <p className="text-xs text-near-subtle mb-2 leading-relaxed">
         Net revenue as % of swap volume — protocol revenue retained after partner and frontend fee splits.
       </p>
-      <MetricLine data={visible} chartKey={`net-rev-${range}`} valueFmt={fmtBps} yAxisTickFmt={fmtBpsTick} />
+      <div className="mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.55 : 1 }}>
+        <MetricLine data={visible} chartKey={`net-rev-${range}`} valueFmt={fmtBps} yAxisTickFmt={fmtBpsTick} />
+      </div>
     </div>
   )
 }
@@ -201,20 +211,22 @@ function GrossFeeRateChart({ totalFeesSeries, intentVolumeSeries }: {
   }, [totalFeesSeries, intentVolumeSeries])
 
   const ytdMonths = new Date().getMonth() + 1
-  const points = range === "YTD" || range === "ALL"
-    ? allPoints.slice(-ytdMonths)
-    : allPoints.slice(-(range === "90D" ? 3 : 1))
+  const dimmed = range === "7D" || range === "30D"
+  const points = range === "YTD" ? allPoints.slice(-ytdMonths) : allPoints.slice(-3)
 
   return (
-    <div className="rounded-2xl border border-near-border bg-near-card p-4">
+    <div className="rounded-2xl border border-near-border bg-near-card p-4 flex flex-col">
       <div className="flex items-baseline gap-2 mb-0.5">
         <p className="text-xs font-medium text-near-muted uppercase tracking-wider">Gross Fee Rate</p>
         <span className="text-xs text-near-subtle">(bps)</span>
+        {dimmed && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium text-near-subtle border border-near-border">Showing 90D</span>}
       </div>
       <p className="text-xs text-near-subtle mb-2 leading-relaxed">
         Gross fees as % of swap volume — the effective fee rate across all swaps routed through NEAR Intents.
       </p>
-      <MetricLine data={points} chartKey={`gross-fee-${range}`} valueFmt={fmtBps} yAxisTickFmt={fmtBpsTick} />
+      <div className="mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.55 : 1 }}>
+        <MetricLine data={points} chartKey={`gross-fee-${range}`} valueFmt={fmtBps} yAxisTickFmt={fmtBpsTick} />
+      </div>
     </div>
   )
 }
@@ -248,21 +260,29 @@ function CaptureRateTrendChart({ revenueSeries, totalFeesSeries }: {
       .filter(p => p.value > 0)
   }, [revenueSeries, totalFeesSeries])
 
-  // Monthly chart: 7D/30D → 1 month, 90D → 3 months, YTD → current year months
   const ytdMonths = new Date().getMonth() + 1
-  const visible = range === "YTD" ? allPoints.slice(-ytdMonths) : allPoints.slice(-(range === "90D" || range === "ALL" ? 3 : 1))
+  const dimmed = range === "7D" || range === "30D"
+  const visible = range === "YTD" ? allPoints.slice(-ytdMonths) : allPoints.slice(-3)
 
   return (
-    <div className="rounded-2xl border border-near-border bg-near-card p-4">
-      <p className="text-xs font-medium text-near-muted uppercase tracking-wider mb-0.5">
-        Capture Rate Trend
-      </p>
+    <div className="rounded-2xl border border-near-border bg-near-card p-4 flex flex-col">
+      <div className="flex items-baseline gap-2 mb-0.5">
+        <p className="text-xs font-medium text-near-muted uppercase tracking-wider">Capture Rate Trend</p>
+        {dimmed && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium text-near-subtle border border-near-border">Showing 90D</span>}
+      </div>
       <p className="text-xs text-near-subtle mb-2 leading-relaxed">
         Net revenue as % of gross fees — the protocol&apos;s share of gross fees, and whether that share is growing, month by month.
       </p>
       {/* Full-width: taller chart to take advantage of the extra space */}
+      <div className="mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.55 : 1 }}>
       <ResponsiveContainer key={`capture-${range}`} width="100%" height={200}>
-        <LineChart data={visible} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+        <AreaChart data={visible} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+          <defs>
+            <linearGradient id="captureGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--near-green)" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="var(--near-green)" stopOpacity={0.02} />
+            </linearGradient>
+          </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--near-border)" vertical={false} />
           <XAxis
             dataKey="label"
@@ -291,9 +311,10 @@ function CaptureRateTrendChart({ revenueSeries, totalFeesSeries }: {
             }}
             cursor={{ stroke: "var(--near-border)" }}
           />
-          <Line
+          <Area
             type="monotone"
             dataKey="value"
+            fill="url(#captureGrad)"
             stroke="var(--near-green)"
             strokeWidth={2}
             dot={{ r: 4, fill: "var(--near-green)", stroke: "var(--near-card)", strokeWidth: 2 }}
@@ -302,8 +323,9 @@ function CaptureRateTrendChart({ revenueSeries, totalFeesSeries }: {
             animationDuration={700}
             animationEasing="ease-out"
           />
-        </LineChart>
+        </AreaChart>
       </ResponsiveContainer>
+      </div>
     </div>
   )
 }
@@ -339,8 +361,7 @@ export function EfficiencyMetrics({
         </p>
       </div>
 
-      {/* Top row: Gross Fee Rate + Net Revenue Yield */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <GrossFeeRateChart
           totalFeesSeries={totalFeesSeries}
           intentVolumeSeries={intentVolumeSeries}
@@ -349,13 +370,11 @@ export function EfficiencyMetrics({
           revenueSeries={revenueSeries}
           intentVolumeSeries={intentVolumeSeries}
         />
+        <CaptureRateTrendChart
+          revenueSeries={revenueSeries}
+          totalFeesSeries={totalFeesSeries}
+        />
       </div>
-
-      {/* Bottom full-width: Capture Rate Trend */}
-      <CaptureRateTrendChart
-        revenueSeries={revenueSeries}
-        totalFeesSeries={totalFeesSeries}
-      />
     </div>
   )
 }

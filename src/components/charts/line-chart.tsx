@@ -2,6 +2,7 @@
 
 import {
   LineChart,
+  AreaChart,
   ComposedChart,
   Area,
   Line,
@@ -201,7 +202,13 @@ export function EmissionsLineChart({ data, mode = "monthly", showYear }: Emissio
 
   return (
     <ResponsiveContainer width="100%" height={240}>
-      <LineChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+      <AreaChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+        <defs>
+          <linearGradient id="emissionsLineGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--near-green)" stopOpacity={0.35} />
+            <stop offset="100%" stopColor="var(--near-green)" stopOpacity={0.03} />
+          </linearGradient>
+        </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--near-border)" vertical={false} />
         <XAxis
           dataKey="date"
@@ -234,9 +241,10 @@ export function EmissionsLineChart({ data, mode = "monthly", showYear }: Emissio
           content={isDaily ? <DailyTooltip /> : <MonthlyTooltip />}
           cursor={{ stroke: "var(--near-border)" }}
         />
-        <Line
+        <Area
           type="monotone"
           dataKey="value"
+          fill="url(#emissionsLineGrad)"
           stroke="var(--near-green)"
           strokeWidth={1.5}
           dot={false}
@@ -245,7 +253,7 @@ export function EmissionsLineChart({ data, mode = "monthly", showYear }: Emissio
           animationDuration={1000}
           animationEasing="ease-out"
         />
-      </LineChart>
+      </AreaChart>
     </ResponsiveContainer>
   )
 }

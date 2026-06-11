@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { useGlobalRange, type GlobalRange } from "@/providers/global-range-provider"
 import { debugGlow } from "@/lib/utils"
 import {
@@ -34,7 +34,7 @@ const PROTOCOL_COLOR = "#2e5c47"
 const INTENTS_COLOR  = "#c2721f"
 const LINE_COLOR     = "#00ec97"
 
-type Range = GlobalRange
+type Range = GlobalRange | "ALL"
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -138,7 +138,11 @@ function pickXTicks(data: CumulativeFeesPoint[], range: Range): string[] {
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] }) {
-  const { range } = useGlobalRange()
+  const { range: globalRange } = useGlobalRange()
+  const [showAll, setShowAll] = useState(false)
+  const range = showAll ? "ALL" : globalRange
+
+  useEffect(() => { setShowAll(false) }, [globalRange])
 
   const view = useMemo(() => {
     if (data.length === 0) return data
@@ -200,7 +204,19 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
           <h2 className="text-base font-semibold text-near-text mb-1">NEAR Cumulative Fees</h2>
           <p className="text-xs text-near-muted max-w-xl">Protocol fees and Intents revenue, compounding over time, in USD</p>
         </div>
-        <p className="text-3xl font-bold text-white tracking-tight shrink-0">{fmtTooltipUSD(headerTotal)}</p>
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={() => setShowAll(v => !v)}
+            className="px-3 py-1 rounded text-xs font-medium transition-colors"
+            style={showAll
+              ? { background: "#00ec97", color: "#0e0f0f" }
+              : { background: "transparent", color: "#9ca3af", border: "1px solid #374151" }
+            }
+          >
+            View Full History
+          </button>
+          <p className="text-3xl font-bold text-white tracking-tight">{fmtTooltipUSD(headerTotal)}</p>
+        </div>
 
       </div>
 

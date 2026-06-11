@@ -51,7 +51,7 @@ export function RevenueCharts({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Monthly Revenue */}
-      <Card padding="none" className="overflow-hidden" style={debugGlow("api")}>
+      <Card padding="none" className="overflow-hidden flex flex-col" style={debugGlow("api")}>
         <div className="p-6 pb-2">
           <div className="flex items-center gap-2 mb-1">
             <h2 className="text-base font-semibold text-near-text">Monthly Revenue</h2>
@@ -63,13 +63,13 @@ export function RevenueCharts({
           </div>
           <p className="text-xs text-near-muted">Monthly revenue after partner payouts.</p>
         </div>
-        <div className="px-2 pb-4 transition-opacity duration-300" style={{ opacity: dimmed ? 0.55 : 1 }}>
+        <div className="px-2 pb-4 mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.55 : 1 }}>
           <RevenueBarChart data={visibleRevenue} />
         </div>
       </Card>
 
       {/* Revenue vs Emissions */}
-      <Card padding="none" className="overflow-hidden" style={debugGlow("api")}>
+      <Card padding="none" className="overflow-hidden flex flex-col" style={debugGlow("api")}>
         <div className="p-6 pb-2 flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -123,7 +123,7 @@ export function RevenueCharts({
           )}
         </div>
 
-        <div className="px-2 pb-4 transition-opacity duration-300" style={{ opacity: dimmed ? 0.55 : 1 }}>
+        <div className="px-2 pb-4 mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.55 : 1 }}>
           {view === "pct" ? (
             <EmissionsLineChart data={visiblePct} mode="monthly" showYear={false} />
           ) : (
