@@ -33,7 +33,12 @@ export function Accordion({ items, defaultOpenId }: AccordionProps) {
             </button>
             {isOpen && (
               <div className="pb-5 pl-9 pr-4">
-                <p className="text-sm text-near-muted leading-relaxed">{item.answer}</p>
+                <p className="text-sm text-near-muted leading-relaxed">
+                  {item.answer}
+                  {item.link && (
+                    <> <a href={item.link.href} target="_blank" rel="noopener noreferrer" className="text-near-green underline underline-offset-2 hover:text-near-green/80 transition-colors">{item.link.label}</a></>
+                  )}
+                </p>
               </div>
             )}
           </div>

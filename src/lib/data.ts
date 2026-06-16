@@ -68,39 +68,40 @@ export const STATS: StatCard[] = [
 export const FAQ_ITEMS: FaqItem[] = [
   {
     id: "01",
-    question: "What's the difference between Total Fees and Revenue?",
+    question: "What is the difference between total fees and revenue?",
     answer:
-      "Total Fees is the gross amount collected across NEAR Protocol and NEAR Intents activity. Revenue is the portion captured by NEAR after payouts to integration partners, solvers, and dApps. The gap is fees distributed to ecosystem participants under NEAR's revenue-sharing model.",
+      "Total Fees is the gross amount of fees collected across NEAR Protocol and NEAR Intents activity. Revenue is the portion captured by NEAR Protocol after payouts to integration partners, solvers, and dApps. The gap between the two figures represents fees distributed to ecosystem participants under NEAR's revenue-sharing model. All fees are denominated in $NEAR; fees collected in other assets may be converted to $NEAR prior to distribution.",
   },
   {
     id: "02",
-    question: "How are fee splits determined?",
+    question: "How does the fee split work?",
     answer:
-      "Fee splits are defined in protocol governance and partner agreements. Each integration partner negotiates a share of fees routed through their interface, with the remainder captured as protocol revenue.",
+      "Fee splits depend on where the transaction originates. Swaps executed through NEAR's native frontend (near.com) direct 100% of fees to a NEAR revenue wallet. Swaps executed through third-party integration partners are split 50/50 between NEAR and the partner. NEAR Intents charges a protocol fee of 0.0001% per swap, plus distribution fees set by integration partners.",
   },
   {
     id: "03",
-    question: "What fees does NEAR Intents charge?",
+    question: "How do protocol-level transaction fees work?",
     answer:
-      "NEAR Intents charges a small fee on every swap settled through the protocol. The fee is taken from the output amount and distributed across solvers, integration partners, and NEAR Protocol.",
+      "Every transaction on NEAR Protocol incurs a small base fee. Of that fee, 70% is permanently burned—removed from $NEAR circulating supply—and 30% is paid to the developer of the smart contract being called. These protocol-level fees are separate from NEAR Intents product fees.",
   },
   {
     id: "04",
-    question: "What about NEAR Protocol base fees?",
+    question: "What happens to revenue after it is collected?",
     answer:
-      "NEAR Protocol base fees are transaction fees paid by users for onchain activity. A portion of these fees is burned and a portion is allocated as protocol revenue, depending on the transaction type.",
+      "Protocol fees are split at collection: 70% is permanently burned and 30% is paid to the developer of the smart contract being called. Product revenue—fees captured by NEAR Intents and other products—can be deployed for $NEAR buybacks, buyback-and-earn (through locking or staking), and other supply-management approaches.",
   },
   {
     id: "05",
-    question: "Where does the data come from?",
+    question: "What is the data source and how often does the dashboard update?",
     answer:
-      "Data is pulled directly from onchain sources, including the NEAR Intents smart contract, and updated in real time as transactions are recorded. All fees are denominated in NEAR. Figures shown are illustrative.",
+      "The dashboard pulls data directly from onchain sources, including the NEAR Intents smart contract. Data is updated in real time as transactions are executed and recorded onchain.",
   },
   {
     id: "06",
     question: "Where can I learn more about NEAR's tokenomics?",
     answer:
-      "You can learn more about NEAR's tokenomics at near.org/tokenomics or in the official NEAR whitepaper. The NEAR Foundation publishes quarterly treasury reports with detailed breakdowns.",
+      "For a full breakdown of how NEAR's economic model is evolving—including the fee switch and the relationship between protocol revenue and NEAR value capture—read the tokenomics blog post:",
+    link: { href: "http://near.org/blog/evolving-near-tokenomics", label: "near.org/blog/evolving-near-tokenomics" },
   },
 ]
 

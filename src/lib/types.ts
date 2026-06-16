@@ -20,6 +20,7 @@ export interface FaqItem {
   id: string
   question: string
   answer: string
+  link?: { href: string; label: string }
 }
 
 export interface StatCard {
