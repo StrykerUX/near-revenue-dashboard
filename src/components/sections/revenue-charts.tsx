@@ -58,7 +58,7 @@ export function RevenueCharts({
       <Card padding="none" className="overflow-hidden flex flex-col" style={debugGlow("api")}>
         <div className="p-6 pb-2">
           <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-base font-semibold text-near-text">Monthly Revenue</h2>
+            <h2 className="text-base font-semibold text-near-text">Monthly Net Revenue</h2>
             {dimmed && (
               <span className="px-1.5 py-0.5 rounded text-[10px] font-medium text-near-subtle border border-near-border">
                 Showing 90D

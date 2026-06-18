@@ -61,7 +61,7 @@ export function Hero({
         </div>
 
         <p className="text-near-muted text-sm leading-relaxed max-w-lg text-pretty">
-          Gross fees across NEAR — the raw economic activity NEAR settles. NEAR captures a growing share of fees as revenue, feeding buybacks that push the protocol toward deflation.
+          NEAR captures a growing share of fees as gross revenue, feeding buybacks that permanently remove NEAR from circulation.
         </p>
 
         <div>
