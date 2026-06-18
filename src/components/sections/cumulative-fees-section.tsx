@@ -97,7 +97,7 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
         </div>
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: INTENTS_COLOR }} />
-          <span className="text-gray-400">Intents revenue</span>
+          <span className="text-gray-400">Intents fees</span>
           <span className="ml-auto text-white font-medium">{fmtTooltipUSD(row.intentsUsd)}</span>
         </div>
         <div className="border-t border-white/10 pt-1 flex items-center gap-2">
@@ -188,9 +188,11 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
     return { leftTicks: lTicks, leftDomain: lDomain, rightMax: rMax, rightTicks: makeTicks(rMax) }
   }, [view, range])
 
+  // Use the last point's server-computed cumulative so the header matches the
+  // green line endpoint exactly (summing daily values misses 0-fee filtered days).
   const headerTotal = useMemo(() => {
     if (view.length === 0) return 0
-    return view.reduce((sum, d) => sum + d.protocolUsd + d.intentsUsd, 0)
+    return view[view.length - 1].cumulativeUsd
   }, [view])
 
   return (
@@ -202,7 +204,7 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
       <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4">
         <div>
           <h2 className="text-base font-semibold text-near-text mb-1">NEAR Cumulative Fees</h2>
-          <p className="text-xs text-near-muted max-w-xl">Protocol fees and Intents revenue, compounding over time, in USD</p>
+          <p className="text-xs text-near-muted max-w-xl">Protocol fees and Intents fees, compounding over time, in USD</p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
           <button
@@ -303,7 +305,7 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-sm shrink-0" style={{ background: INTENTS_COLOR }} />
-          <span className="text-xs text-gray-500">Intents revenue</span>
+          <span className="text-xs text-gray-500">Intents fees</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-6 h-0.5 shrink-0" style={{ background: LINE_COLOR }} />
