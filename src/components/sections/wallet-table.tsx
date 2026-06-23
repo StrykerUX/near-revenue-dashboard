@@ -41,6 +41,7 @@ export function WalletTable({ rows }: WalletTableProps) {
         <h2 className="text-base font-semibold text-near-text">
           Wallet <span className="text-near-green">Breakdown (All-time)</span>
         </h2>
+        <p className="text-xs text-near-muted mt-1">Traceable flow of revenue</p>
       </div>
 
       <div className="overflow-x-auto">

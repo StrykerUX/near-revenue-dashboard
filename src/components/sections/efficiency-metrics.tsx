@@ -131,7 +131,7 @@ function MetricLine({ data, chartKey, xTicks, tickFmt, valueFmt = fmtPct, yAxisT
   )
 }
 
-// ── Chart 1: Net Revenue Yield (monthly only — revenue is monthly-grained) ────
+// ── Chart 1: Net Revenue (monthly only — revenue is monthly-grained) ────
 
 function NetRevYieldChart({ revenueSeries, intentVolumeSeries }: {
   revenueSeries: RevenueSeriesPoint[]
@@ -165,7 +165,7 @@ function NetRevYieldChart({ revenueSeries, intentVolumeSeries }: {
   return (
     <div className="rounded-2xl border border-near-border bg-near-card p-4 flex flex-col">
       <div className="flex items-baseline gap-2 mb-0.5">
-        <p className="text-xs font-semibold text-near-text uppercase tracking-wider">Net Revenue Yield</p>
+        <p className="text-xs font-semibold text-near-text uppercase tracking-wider">Net Revenue</p>
         <span className="text-xs text-near-subtle">(bps)</span>
         {dimmed && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium text-near-subtle border border-near-border">Showing 90D</span>}
       </div>
@@ -187,7 +187,7 @@ function GrossFeeRateChart({ totalFeesSeries, intentVolumeSeries }: {
 }) {
   const { range } = useGlobalRange()
 
-  // Always aggregate to monthly — consistent with Net Revenue Yield and Capture Rate Trend
+  // Always aggregate to monthly — consistent with Net Revenue and Capture Rate Trend
   const allPoints = useMemo((): ChartPoint[] => {
     const volByMonth: Record<string, number> = {}
     for (const p of intentVolumeSeries) {

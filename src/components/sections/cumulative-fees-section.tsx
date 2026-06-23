@@ -92,12 +92,12 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
       <div className="space-y-1">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: PROTOCOL_COLOR }} />
-          <span className="text-gray-400">Protocol fee</span>
+          <span className="text-gray-400">Protocol Burn</span>
           <span className="ml-auto text-white font-medium">{fmtTooltipUSD(row.protocolUsd)}</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: INTENTS_COLOR }} />
-          <span className="text-gray-400">Intents fees</span>
+          <span className="text-gray-400">Gross Revenue</span>
           <span className="ml-auto text-white font-medium">{fmtTooltipUSD(row.intentsUsd)}</span>
         </div>
         <div className="border-t border-white/10 pt-1 flex items-center gap-2">
@@ -203,8 +203,8 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
       {/* Header */}
       <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4">
         <div>
-          <h2 className="text-base font-semibold text-near-text mb-1">NEAR Cumulative Fees</h2>
-          <p className="text-xs text-near-muted max-w-xl">Protocol fees and Intents fees, compounding over time, in USD</p>
+          <h2 className="text-base font-semibold text-near-text mb-1">NEAR Cumulative Revenue</h2>
+          <p className="text-xs text-near-muted max-w-xl">Protocol burn and gross revenue, compounding over time, in USD</p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
           <button
@@ -301,11 +301,11 @@ export function CumulativeFeesSection({ data }: { data: CumulativeFeesPoint[] })
       <div className="flex items-center gap-4 px-6 pb-5 flex-wrap">
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-sm shrink-0" style={{ background: PROTOCOL_COLOR }} />
-          <span className="text-xs text-gray-500">Protocol fee</span>
+          <span className="text-xs text-gray-500">Protocol Burn <span className="text-gray-600">(daily total)</span></span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-sm shrink-0" style={{ background: INTENTS_COLOR }} />
-          <span className="text-xs text-gray-500">Intents fees</span>
+          <span className="text-xs text-gray-500">Gross Revenue <span className="text-gray-600">(daily total)</span></span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-6 h-0.5 shrink-0" style={{ background: LINE_COLOR }} />
