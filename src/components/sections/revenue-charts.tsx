@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useGlobalRange } from "@/providers/global-range-provider"
 import { Card } from "@/components/ui/card"
 import { RevenueBarChart } from "@/components/charts/bar-chart"
@@ -23,20 +23,23 @@ export function RevenueCharts({
   absoluteRevEmissions,
 }: RevenueChartsProps) {
   const [view, setView] = useState<"pct" | "absolute">("pct")
+  const [showAllRevenue, setShowAllRevenue] = useState(false)
   const { range } = useGlobalRange()
+
+  useEffect(() => { setShowAllRevenue(false) }, [range])
 
   // These charts only respond to 90D and YTD — 7D/30D show 90D data dimmed, ALL shows YTD
   const ytdMonths = new Date().getMonth() + 1
   const nMonths = (range === "90D" || range === "7D" || range === "30D") ? 3 : ytdMonths
-  const dimmed = range === "7D" || range === "30D"
+  const dimmed = !showAllRevenue && (range === "7D" || range === "30D")
   const visibleRevenue = useMemo(() => {
-    const sliced = revenueSeries.slice(-nMonths)
+    const sliced = showAllRevenue ? revenueSeries : revenueSeries.slice(-nMonths)
     let running = 0
     return sliced.map(p => {
       running += p.value
       return { ...p, cumulative: running }
     })
-  }, [revenueSeries, nMonths])
+  }, [revenueSeries, nMonths, showAllRevenue])
   const visiblePct = useMemo(
     () => emissionsMonthly.slice(-nMonths),
     [emissionsMonthly, nMonths]
@@ -56,16 +59,28 @@ export function RevenueCharts({
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Monthly Revenue */}
       <Card padding="none" className="overflow-hidden flex flex-col" style={debugGlow("api")}>
-        <div className="p-6 pb-2">
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-base font-semibold text-near-text">Monthly Net Revenue</h2>
-            {dimmed && (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-medium text-near-subtle border border-near-border">
-                Showing 90D
-              </span>
-            )}
+        <div className="p-6 pb-2 flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <h2 className="text-base font-semibold text-near-text">Monthly Net Revenue</h2>
+              {dimmed && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium text-near-subtle border border-near-border">
+                  Showing 90D
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-near-muted">Monthly revenue after partner payouts.</p>
           </div>
-          <p className="text-xs text-near-muted">Monthly revenue after partner payouts.</p>
+          <button
+            onClick={() => setShowAllRevenue(v => !v)}
+            className="px-3 py-1 rounded text-xs font-medium transition-colors shrink-0"
+            style={showAllRevenue
+              ? { background: "#00ec97", color: "#0e0f0f" }
+              : { background: "transparent", color: "#9ca3af", border: "1px solid #374151" }
+            }
+          >
+            All time
+          </button>
         </div>
         <div className="px-2 pb-4 mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.40 : 1 }}>
           <RevenueBarChart data={visibleRevenue} />
