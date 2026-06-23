@@ -52,9 +52,10 @@ export const SPARKLINE_DATA: number[] = Array.from({ length: 40 }, (_, i) => {
 })
 
 export const WALLET_ROWS: WalletRow[] = [
-  { name: "fefundsadmin.sputnik-dao.near", share: 56, totalRevenue: "1.83M", pct: 56.0 },
-  { name: "1csfundsadmin.sputnik-dao.near", share: 29, totalRevenue: "948.3K", pct: 29.0 },
-  { name: "buybacks.multisignature.near", share: 15, totalRevenue: "490.5K", pct: 15.0 },
+  { name: "fefundsadmin.sputnik-dao.near",  nearAmount: 1405868, share: 56, pct: 55.9 },
+  { name: "1csfundsadmin.sputnik-dao.near", nearAmount: 555082,  share: 22, pct: 22.1 },
+  { name: "buybacks.multisignature.near",   nearAmount: 338830,  share: 13, pct: 13.5 },
+  { name: "Protocol Fees (70% Burned)",     nearAmount: 212724,  share:  8, pct:  8.5 },
 ]
 
 export const STATS: StatCard[] = [

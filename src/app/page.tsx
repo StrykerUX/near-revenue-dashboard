@@ -10,11 +10,12 @@ import { RevenueCharts } from "@/components/sections/revenue-charts"
 import { RevenueStreams } from "@/components/sections/revenue-streams"
 import { CaptureSplit } from "@/components/sections/capture-split"
 import { EfficiencyMetrics } from "@/components/sections/efficiency-metrics"
+import { WalletTable } from "@/components/sections/wallet-table"
 import { Faq } from "@/components/sections/faq"
 import { fetchDashboardData, type RevenueStreamItem, type SnapshotCaptureSplit, type RevenueSeriesPoint, type IntentVolumePoint, type TotalFeesSeriesPoint } from "@/lib/api"
 import { formatUSD, formatNear, formatMonthLabel, formatDayLabel, formatUpdatedAt, aggregateEmissionsByMonth, buildPriceByMonth, computeRevenueVsEmissions, computeAbsoluteRevVsEmissions, debugGlow, type AbsoluteRevEmissionsPoint } from "@/lib/utils"
-import { STATS, REVENUE_MONTHLY, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES } from "@/lib/data"
-import type { StatCard, TimeSeriesPoint, RevenueBarPoint } from "@/lib/types"
+import { STATS, REVENUE_MONTHLY, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES, WALLET_ROWS } from "@/lib/data"
+import type { StatCard, TimeSeriesPoint, RevenueBarPoint, WalletRow } from "@/lib/types"
 
 export default async function Page() {
   // ── Fallback values (static data) ─────────────────────────────────────────
@@ -42,9 +43,10 @@ export default async function Page() {
   let uniqueUsersD1 = 0
   let uniqueUsersD7 = 0
   let uniqueUsersD30 = 0
+  let walletRows: WalletRow[] = WALLET_ROWS
 
   try {
-    const { snapshot, revenueSeries, emissionsDaily: emissionsDailyRaw, totalFeesSeries: totalFeesRaw, intentVolumeSeries, uniqueUsers, confidentialTvlUsd, tvlSeries: tvlRaw, revenueStreams: streamsRaw, captureSplit: captureSplitRaw, priceSeries } = await fetchDashboardData()
+    const { snapshot, revenueSeries, emissionsDaily: emissionsDailyRaw, totalFeesSeries: totalFeesRaw, intentVolumeSeries, uniqueUsers, confidentialTvlUsd, tvlSeries: tvlRaw, revenueStreams: streamsRaw, captureSplit: captureSplitRaw, priceSeries, walletBreakdown } = await fetchDashboardData()
     const snap = snapshot.data
 
     // Build price map for NEAR conversions using the API price feed
@@ -147,6 +149,16 @@ export default async function Page() {
           volumeUsd: volumeByDate.get(p.date_at) ?? 0,
         }
       })
+    // Wallet breakdown — sum burn_revenue_near from the fees series as "Protocol Fees (70% Burned)"
+    if (walletBreakdown.length > 0) {
+      const walletTotal = walletBreakdown.reduce((sum, w) => sum + w.inflow_near_all_time, 0)
+      if (walletTotal > 0) {
+        walletRows = walletBreakdown.map((w) => {
+          const pct = parseFloat(((w.inflow_near_all_time / walletTotal) * 100).toFixed(1))
+          return { name: w.wallet, nearAmount: w.inflow_near_all_time, share: pct, pct }
+        })
+      }
+    }
   } catch {
     // API unavailable — render with static fallback data
   }
@@ -217,6 +229,8 @@ export default async function Page() {
           intentVolumeSeries={effVolumeSeries}
           totalFeesSeries={effFeesSeries}
         />
+
+        <WalletTable rows={walletRows} />
 
         <Faq />
       </div>

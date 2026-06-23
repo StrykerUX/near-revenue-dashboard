@@ -11,8 +11,8 @@ export interface RevenueBarPoint {
 
 export interface WalletRow {
   name: string
+  nearAmount: number
   share: number
-  totalRevenue: string
   pct: number
 }
 

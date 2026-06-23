@@ -40,7 +40,7 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
           <span className="text-near-text font-medium ml-auto">{formatY(monthly as number)}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: "#f97316" }} />
+          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: "var(--near-green)" }} />
           <span className="text-near-subtle text-xs">Cumulative</span>
           <span className="text-near-text font-medium ml-auto">{formatY(cumulative as number)}</span>
         </div>
@@ -86,7 +86,7 @@ export function RevenueBarChart({ data }: RevenueBarChartProps) {
           orientation="right"
           ticks={cumTicks}
           tickFormatter={formatY}
-          tick={{ fill: "#f97316", fontSize: 10, fillOpacity: 0.55 }}
+          tick={{ fill: "var(--near-green)", fontSize: 10, fillOpacity: 0.7 }}
           axisLine={false}
           tickLine={false}
           width={52}
@@ -95,17 +95,17 @@ export function RevenueBarChart({ data }: RevenueBarChartProps) {
         <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
         <Bar dataKey="value" radius={[3, 3, 0, 0]} isAnimationActive animationDuration={800} animationEasing="ease-out">
           {data.map((_, index) => (
-            <Cell key={index} fill="var(--near-green)" fillOpacity={1} />
+            <Cell key={index} fill="rgba(255,255,255,0.07)" />
           ))}
         </Bar>
         <Line
           yAxisId="right"
           type="monotone"
           dataKey="cumulative"
-          stroke="#f97316"
+          stroke="var(--near-green)"
           strokeWidth={2}
           dot={false}
-          activeDot={{ r: 4, fill: "#f97316", stroke: "var(--near-card)", strokeWidth: 2 }}
+          activeDot={{ r: 4, fill: "var(--near-green)", stroke: "var(--near-card)", strokeWidth: 2 }}
           isAnimationActive
           animationDuration={900}
           animationEasing="ease-out"

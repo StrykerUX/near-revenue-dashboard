@@ -343,6 +343,8 @@ export interface DashboardData {
   revenueStreams: RevenueStreamItem[]
   captureSplit: SnapshotCaptureSplit | null
   priceSeries: PricePoint[]
+  walletBreakdown: WalletBreakdownItem[]
+  buyback: BuybackData | null
 }
 
 // Unwraps the envelope data and returns a fallback if the call fails.
@@ -373,6 +375,8 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     revenueStreams,
     captureSplit,
     priceSeries,
+    walletBreakdown,
+    buyback,
   ] = await Promise.all([
     fetchSnapshot().catch((): Envelope<SnapshotData> => ({ metric: "snapshot", as_of: null, data: NULL_SNAPSHOT, denomination: null, is_stale: false, updated_at: new Date().toISOString() })),
     safe(fetchRevenueSeries(),           []),
@@ -384,6 +388,8 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     safe(fetchRevenueByStream(),         []),
     fetchCaptureSplit().then(r => r.data).catch(() => null),
     safe(apiFetch<PricePoint[]>("/v1/series/price", { from: "2025-01-01", to: new Date().toISOString().slice(0, 10), grain: "day" }), []),
+    safe(fetchWalletBreakdown(),         []),
+    fetchBuyback().then(r => r.data).catch(() => null),
   ])
 
   const latestTvl = (tvlSeries as ConfidentialTvlPoint[])
@@ -401,5 +407,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     revenueStreams:      revenueStreams      as RevenueStreamItem[],
     captureSplit:        captureSplit       as SnapshotCaptureSplit | null,
     priceSeries:         priceSeries        as PricePoint[],
+    walletBreakdown:     walletBreakdown    as WalletBreakdownItem[],
+    buyback:             buyback            as BuybackData | null,
   }
 }
