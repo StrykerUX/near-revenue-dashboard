@@ -61,6 +61,11 @@ function StatCardItem({
           <span className="text-sm text-near-muted font-medium">{stat.unit}</span>
         )}
       </div>
+      {stat.change && (
+        <p className={cn("relative text-xs font-medium", stat.change.positive ? "text-near-green" : "text-near-red")}>
+          {stat.change.positive ? "▲" : "▼"} {stat.change.label}
+        </p>
+      )}
       <p className="relative text-sm text-near-muted">{stat.sub}</p>
     </button>
   )

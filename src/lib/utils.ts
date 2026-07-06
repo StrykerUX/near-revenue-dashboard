@@ -75,6 +75,39 @@ export function buildPriceByMonth(priceSeries: PricePoint[]): Record<string, num
   return result
 }
 
+/**
+ * Multiple between the latest point in a series and the closest point ~`days`
+ * earlier (e.g. 2.5 = grew 2.5x). Returns null if the series doesn't have
+ * enough history to make a meaningful comparison (avoids comparing against
+ * the series' first point and calling it a "30d change" when only a few days
+ * of data exist). Expressed as a multiple rather than a percentage because
+ * young, fast-growing series (a product's first months) routinely produce
+ * percentage changes in the thousands, which read as broken rather than real.
+ */
+export function computeTrailingChange(
+  series: TimeSeriesPoint[],
+  days: number
+): { multiple: number; positive: boolean } | null {
+  if (series.length < 2) return null
+  const sorted = [...series].sort((a, b) => a.date.localeCompare(b.date))
+  const latest = sorted[sorted.length - 1]
+  const latestMs = new Date(latest.date + "T12:00:00Z").getTime()
+  const targetMs = latestMs - days * 86_400_000
+
+  let closest = sorted[0]
+  for (const p of sorted) {
+    if (new Date(p.date + "T12:00:00Z").getTime() <= targetMs) closest = p
+    else break
+  }
+  if (closest === latest || closest.value <= 0) return null
+
+  const gapDays = (latestMs - new Date(closest.date + "T12:00:00Z").getTime()) / 86_400_000
+  if (gapDays < days * 0.5) return null
+
+  const multiple = latest.value / closest.value
+  return { multiple, positive: multiple >= 1 }
+}
+
 /** Sum daily emissions_near by month key "YYYY-MM". */
 export function aggregateEmissionsByMonth(
   points: EmissionsSeriesPoint[]

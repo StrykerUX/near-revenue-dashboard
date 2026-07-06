@@ -23,10 +23,24 @@ export interface FaqItem {
   link?: { href: string; label: string }
 }
 
+export interface EcosystemInterface {
+  name: string
+  logo: string
+  url: string
+}
+
+export interface EcosystemChain {
+  name: string
+  logo: string
+  color: string
+}
+
 export interface StatCard {
   label: string
   value: string
   unit: string
   sub: string
   source?: "api" | "static"
+  /** Trailing period-over-period change (e.g. "18.4% MoM"), independent of the global range filter. */
+  change?: { label: string; positive: boolean }
 }

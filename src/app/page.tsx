@@ -11,9 +11,10 @@ import { RevenueStreams } from "@/components/sections/revenue-streams"
 import { CaptureSplit } from "@/components/sections/capture-split"
 import { EfficiencyMetrics } from "@/components/sections/efficiency-metrics"
 import { WalletTable } from "@/components/sections/wallet-table"
+import { EcosystemMap } from "@/components/sections/ecosystem-map"
 import { Faq } from "@/components/sections/faq"
 import { fetchDashboardData, type RevenueStreamItem, type SnapshotCaptureSplit, type RevenueSeriesPoint, type IntentVolumePoint, type TotalFeesSeriesPoint } from "@/lib/api"
-import { formatUSD, formatNear, formatMonthLabel, formatDayLabel, formatUpdatedAt, aggregateEmissionsByMonth, buildPriceByMonth, computeRevenueVsEmissions, computeAbsoluteRevVsEmissions, debugGlow, type AbsoluteRevEmissionsPoint } from "@/lib/utils"
+import { formatUSD, formatNear, formatMonthLabel, formatDayLabel, formatUpdatedAt, aggregateEmissionsByMonth, buildPriceByMonth, computeRevenueVsEmissions, computeAbsoluteRevVsEmissions, computeTrailingChange, debugGlow, type AbsoluteRevEmissionsPoint } from "@/lib/utils"
 import { STATS, REVENUE_MONTHLY, GAUGE_VALUE, FEES_LAST_30D, TOTAL_FEES_DISPLAY, FEES_CHANGE, SPARKLINE_DATA, EMISSIONS_SERIES, WALLET_ROWS } from "@/lib/data"
 import type { StatCard, TimeSeriesPoint, RevenueBarPoint, WalletRow } from "@/lib/types"
 
@@ -79,17 +80,38 @@ export default async function Page() {
     const intentVolumeTotal = intentVolumeSeries.length > 0
       ? intentVolumeSeries[intentVolumeSeries.length - 1].cumulative_volume_usd
       : 0
+    const intentVolumeYoY = computeTrailingChange(
+      intentVolumeSeries.map((p) => ({ date: p.date_at, value: p.cumulative_volume_usd })),
+      365
+    )
+
+    // Confidential TVL chart series — computed early so its real MoM change
+    // can feed the "Confidential TVL" stat card below.
+    const validTvl = tvlRaw.filter(p => p.tvl_usd > 0)
+    if (validTvl.length > 0) {
+      tvlChartSeries = validTvl.map(p => ({ date: p.date_at, value: p.tvl_usd }))
+      tvlCurrentUsd = validTvl[validTvl.length - 1].tvl_usd
+      const launchTvl = validTvl[0].tvl_usd
+      if (launchTvl > 0) tvlGrowthX = Math.round(tvlCurrentUsd / launchTvl).toLocaleString()
+    }
+    const tvlMoM = computeTrailingChange(tvlChartSeries, 30)
 
     stats = [
       {
         ...STATS[1],
         value:  intentVolumeTotal > 0 ? formatUSD(intentVolumeTotal) : STATS[1].value,
         source: intentVolumeTotal > 0 ? "api" : "static",
+        change: intentVolumeYoY
+          ? { label: `${intentVolumeYoY.multiple.toFixed(1)}× YoY`, positive: intentVolumeYoY.positive }
+          : undefined,
       },
       {
         ...STATS[2],
         value:  confidentialTvlUsd > 0 ? formatUSD(confidentialTvlUsd) : STATS[2].value,
         source: confidentialTvlUsd > 0 ? "api" : "static",
+        change: tvlMoM
+          ? { label: `${tvlMoM.multiple.toFixed(1)}× MoM`, positive: tvlMoM.positive }
+          : undefined,
       },
       {
         ...STATS[3],
@@ -125,15 +147,6 @@ export default async function Page() {
       uniqueUsersD1  = uniqueUsers.d1
       uniqueUsersD7  = uniqueUsers.d7
       uniqueUsersD30 = uniqueUsers.d30
-    }
-
-    // Confidential TVL chart
-    const validTvl = tvlRaw.filter(p => p.tvl_usd > 0)
-    if (validTvl.length > 0) {
-      tvlChartSeries = validTvl.map(p => ({ date: p.date_at, value: p.tvl_usd }))
-      tvlCurrentUsd = validTvl[validTvl.length - 1].tvl_usd
-      const launchTvl = validTvl[0].tvl_usd
-      if (launchTvl > 0) tvlGrowthX = Math.round(tvlCurrentUsd / launchTvl).toLocaleString()
     }
 
     // Cumulative Fees section — real daily fees split by fee type, cumulative line,
@@ -239,6 +252,8 @@ export default async function Page() {
         />
 
         <WalletTable rows={walletRows} />
+
+        <EcosystemMap />
 
         <Faq />
       </div>
