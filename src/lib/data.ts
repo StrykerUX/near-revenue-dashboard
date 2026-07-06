@@ -1,4 +1,4 @@
-import type { TimeSeriesPoint, RevenueBarPoint, WalletRow, FaqItem, StatCard } from "./types"
+import type { TimeSeriesPoint, RevenueBarPoint, WalletRow, FaqItem, StatCard, EcosystemInterface, EcosystemChain } from "./types"
 import type { SwapDataPoint } from "@/components/charts/stacked-bar-chart"
 
 // Cumulative fees — hockey-stick power curve (flat early, accelerates from Oct 2025)
@@ -136,6 +136,55 @@ export const SWAP_BREAKDOWN: SwapDataPoint[] = [
   { date: "Feb '26", confidential: 255000, normal: 105000 },
   { date: "Mar '26", confidential: 240000, normal: 95000 },
   { date: "Apr '26", confidential: 200000, normal: 90000 },
+]
+
+// Curated "Top Interfaces" — sourced from the NEAR Intents partners directory (verified + featured).
+export const ECOSYSTEM_INTERFACES: EcosystemInterface[] = [
+  { name: "Brave Wallet", logo: "/images/ecosystem/interfaces/brave-wallet.svg", url: "https://brave.com/wallet/" },
+  { name: "Rabby Wallet",  logo: "/images/ecosystem/interfaces/rabby-wallet.svg", url: "https://rabby.io/" },
+  { name: "ZODL",          logo: "/images/ecosystem/interfaces/zodl.svg",         url: "https://zodl.com/" },
+  { name: "Trust Wallet",  logo: "/images/ecosystem/interfaces/trust-wallet.svg", url: "https://trustwallet.com/" },
+  { name: "SafePal",       logo: "/images/ecosystem/interfaces/safepal.png",      url: "https://www.safepal.com/" },
+  { name: "LiFi",          logo: "/images/ecosystem/interfaces/lifi.svg",         url: "https://li.fi/" },
+  { name: "SwapKit",       logo: "/images/ecosystem/interfaces/swapkit.png",      url: "https://swapkit.dev/" },
+  { name: "Ledger",        logo: "/images/ecosystem/interfaces/ledger.svg",       url: "https://www.ledger.com/" },
+]
+
+// Supported chains — decorative grid, no outbound link (source has no per-chain URL).
+export const ECOSYSTEM_CHAINS: EcosystemChain[] = [
+  { name: "Ethereum",     logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_ETH.svg",        color: "#627EEA" },
+  { name: "Arbitrum",     logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_ARBITRUM.svg",   color: "#28A0F0" },
+  { name: "Base",         logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_BASE.svg",       color: "#0052FF" },
+  { name: "Optimism",     logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_OPTIMISM.svg",   color: "#FF0420" },
+  { name: "Polygon",      logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_POLYGON.svg",    color: "#8247E5" },
+  { name: "BNB Chain",    logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_BNB CHAIN.svg",  color: "#F3BA2F" },
+  { name: "Avalanche",    logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_AVALANCHE.svg",  color: "#E84142" },
+  { name: "Berachain",    logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_BERACHAIN.svg",  color: "#964B00" },
+  { name: "Scroll",       logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_SCROLL.svg",     color: "#F5C55E" },
+  { name: "Gnosis",       logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_GNOSIS.svg",     color: "#3E6957" },
+  { name: "Aurora",       logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_AURORA.svg",     color: "#70D44B" },
+  { name: "Tron",         logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_TRX.svg",        color: "#FF0013" },
+  { name: "Bitcoin",      logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_BTC.svg",        color: "#F7931A" },
+  { name: "Dogecoin",     logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_DOGECOIN.svg",   color: "#C2A633" },
+  { name: "Litecoin",     logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_LITECOIN.svg",   color: "#345D9D" },
+  { name: "Zcash",        logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_ZEC.svg",        color: "#ECB244" },
+  { name: "Dash",         logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_DASH.svg",       color: "#008CE7" },
+  { name: "Bitcoin Cash", logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_BTC CASH.svg",   color: "#0AC18E" },
+  { name: "Aptos",        logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_APTOS.svg",      color: "#00BCD4" },
+  { name: "Movement",     logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_MOVEMENT.svg",   color: "#2B5CE6" },
+  { name: "NEAR",         logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_NEAR.svg",       color: "#00EC97" },
+  { name: "Solana",       logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_SOL.svg",        color: "#9945FF" },
+  { name: "Starknet",     logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_STARKNET.svg",   color: "#29296E" },
+  { name: "Sui",          logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_SUI.svg",        color: "#4DA2FF" },
+  { name: "TON",          logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_TON.svg",        color: "#0088CC" },
+  { name: "Cardano",      logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_CARDANO.svg",    color: "#0033AD" },
+  { name: "Stellar",      logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_STELLAR.svg",    color: "#7D00FF" },
+  { name: "XRP",          logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_XRP.svg",        color: "#23292F" },
+  { name: "Monad",        logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_MONAD.svg",      color: "#836EF9" },
+  { name: "Plasma",       logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_PLASMA.svg",     color: "#00D4AA" },
+  { name: "XLayer",       logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_XLAYER.svg",     color: "#333333" },
+  { name: "Aleo",         logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_ALEO.svg",       color: "#00C0F9" },
+  { name: "ADI",          logo: "/images/ecosystem/chains/Allcoins_fullcolor_V02_ADI.svg",        color: "#C4A962" },
 ]
 
 export const GAUGE_VALUE = 30.9
