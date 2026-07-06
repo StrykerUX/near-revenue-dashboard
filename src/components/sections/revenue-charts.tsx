@@ -82,6 +82,19 @@ export function RevenueCharts({
             All time
           </button>
         </div>
+
+        {/* Legend */}
+        <div className="px-6 pb-2 flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-1.5 text-xs text-near-muted">
+            <span className="w-3 h-3 rounded-sm shrink-0" style={{ background: "rgba(255,255,255,0.25)" }} />
+            Monthly Revenue
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-near-muted">
+            <span className="w-3 h-0.5 shrink-0 bg-near-green" />
+            Cumulative Revenue
+          </div>
+        </div>
+
         <div className="px-2 pb-4 mt-auto transition-opacity duration-300" style={{ opacity: dimmed ? 0.40 : 1 }}>
           <RevenueBarChart data={visibleRevenue} />
         </div>
