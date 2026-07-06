@@ -26,8 +26,18 @@ project — it requires **zero configuration**.
    | Build Command | `next build` |
    | Output Directory | `.next` |
 
-3. **Environment variables** — none. The dashboard renders entirely from static mock
-   data (`src/lib/data.ts`), so leave this section empty.
+3. **Environment variables** — optional. The dashboard renders from static mock data
+   (`src/lib/data.ts`) if left empty, or from a live API if you set:
+
+   | Variable | Value |
+   |---|---|
+   | `NEAR_API_KEY` | Your revenue API key. **Do not commit this** — set it in Vercel's Environment Variables UI only. |
+   | `NEAR_API_BASE_URL` | Optional override; defaults to the production Railway URL if unset. |
+   | `NEXT_PUBLIC_SITE_URL` | Your deployed URL, e.g. `https://your-project.vercel.app`, for correct Open Graph metadata. |
+   | `NEXT_PUBLIC_DEBUG_SOURCES` | Leave unset/`false` in production. |
+
+   See [ARCHITECTURE.md § Environment variables](../ARCHITECTURE.md#8-environment-variables)
+   for what each one does.
 
 4. **Deploy** — click **Deploy**. The first build takes ~1–2 minutes.
 

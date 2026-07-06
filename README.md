@@ -1,22 +1,25 @@
 # NEAR Revenue Dashboard
 
-Internal revenue analytics dashboard for the NEAR Foundation — a single-page, dark-themed view of protocol and product revenue, fee capture, and on-chain wallet distribution.
+Internal revenue analytics dashboard for the NEAR Foundation — a dark-themed view of protocol and product revenue, fee capture, and on-chain wallet distribution, backed by a live API with a static-mock-data fallback.
 
-> All figures shown are **illustrative mock data**. See [Data layer](#data-layer).
+> Numbers render from a live API when available and fall back to illustrative mock data otherwise. See [Data layer](#data-layer) and [ARCHITECTURE.md](ARCHITECTURE.md) for the full picture, including every API endpoint.
 
 ---
 
 ## Features
 
-- **Header** — NEAR branding and a live "last updated" indicator.
+- **Header** — NEAR branding, a live "last updated" indicator, and global date-range controls (7D/30D/90D/YTD).
 - **Hero** — Animated headline metric (total fees generated), a custom SVG **capture-rate gauge**, and a 30-day fees **sparkline**.
-- **Stats grid** — Three selectable revenue cards (all-time / YTD / 30D) with a highlighted active state.
+- **Stats grid** — Selectable revenue cards (revenue, intent volume, confidential TVL, unique users) with a highlighted active state.
 - **Total fees chart** — Full-width cumulative area chart over the trailing year.
-- **Revenue charts** — Side-by-side monthly revenue **bar chart** and revenue-vs-emissions **line chart**, each with a dropdown control.
-- **Wallet table** — On-chain revenue distribution with scroll-triggered progress bars.
+- **Revenue charts** — Monthly revenue **bar chart** and revenue-vs-emissions **line chart**, each with a dropdown control.
+- **TVL & efficiency sections** — Confidential TVL chart, revenue-by-stream breakdown, fee-capture-mechanics split, and derived efficiency metrics.
+- **Wallet table** — On-chain revenue distribution with scroll-triggered progress bars and links out to `nearblocks.io`.
 - **FAQ** — Accessible accordion (single-open).
 - **Footer** — Data-source attribution and NEAR wordmark.
 - **Motion** — Scroll-triggered counter animations (GSAP) and Lenis smooth scrolling throughout.
+- **`/analytics`** — "Deep Dive" page: intent volume, revenue by stream, capture split, NEAR token price.
+- **`/data`** — "Data Guide" page documenting every API endpoint the dashboard can consume.
 
 ---
 
@@ -55,6 +58,8 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+The dashboard renders correctly with zero configuration — without a `NEAR_API_KEY` it falls back to static mock data. To see live numbers, copy `.env.example` to `.env.local` and fill in `NEAR_API_KEY`. See [Environment variables](#environment-variables).
+
 ---
 
 ## Scripts
@@ -73,21 +78,29 @@ Open [http://localhost:3000](http://localhost:3000).
 ```
 src/
 ├── app/
-│   ├── layout.tsx          # Root layout: Geist fonts + LenisProvider
-│   ├── page.tsx            # Composes all dashboard sections
+│   ├── layout.tsx          # Root layout: FK Grotesk + Inter fonts, LenisProvider, GlobalRangeProvider
+│   ├── page.tsx            # Main dashboard route (force-dynamic) — fetches live API, falls back to lib/data.ts
+│   ├── analytics/page.tsx  # "Deep Dive" route (force-dynamic)
+│   ├── data/page.tsx       # "Data Guide" — catalog of every API endpoint
+│   ├── maintenance/page.tsx# Static placeholder page
 │   └── globals.css         # Tailwind v4 import + NEAR theme tokens
 ├── lib/
-│   ├── data.ts             # Mock data — single source of truth
+│   ├── api.ts              # Live API client — fetch(), types, per-endpoint + composite fetchers
+│   ├── data.ts             # Static fallback data, used when the API is unavailable
 │   ├── types.ts            # TimeSeriesPoint, WalletRow, FaqItem, StatCard
-│   └── utils.ts            # cn() class-merge helper
+│   └── utils.ts            # cn(), formatters, debugGlow(), revenue/emissions derivations
 ├── providers/
-│   └── lenis-provider.tsx  # Smooth-scroll context ("use client")
+│   ├── lenis-provider.tsx        # Smooth-scroll context ("use client")
+│   └── global-range-provider.tsx # Shared 7D/30D/90D/YTD range context ("use client")
 └── components/
     ├── ui/                 # card, badge, separator, dropdown, accordion, animated-number
-    ├── charts/             # gauge, sparkline, area-chart, bar-chart, line-chart
-    └── sections/           # header, hero, stats-grid, fees-chart,
-                            #   revenue-charts, wallet-table, faq, footer
+    ├── charts/             # gauge, sparkline, area/bar/line/price/stacked/tvl charts
+    └── sections/           # header, hero, stats-grid, fees-chart, revenue-charts,
+                            #   tvl-chart-section, revenue-streams, capture-split,
+                            #   efficiency-metrics, wallet-table, faq, footer
 ```
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for a one-line responsibility per file and the full data flow.
 
 ---
 
@@ -110,22 +123,34 @@ Always-dark theme. Colors are defined as CSS custom properties in `src/app/globa
 | `--near-muted` | `#b4b9b9` | Secondary text |
 | `--near-subtle` | `#6b7070` | Tertiary text / axis labels |
 
-**Fonts:** Geist Sans (`--font-geist-sans`) and Geist Mono (`--font-geist-mono`), loaded via `next/font`.
+**Fonts:** FK Grotesk / FK Grotesk Mono (local files via `next/font/local`) for body and mono text, and Inter (`next/font/google`) — not Geist.
 
 ---
 
 ## Data layer
 
-There is no backend. Every number, series, and table row is static mock data exported from **`src/lib/data.ts`**, typed by `src/lib/types.ts`:
+The dashboard is **API-first with a static fallback**, not purely static:
 
-- `TOTAL_FEES_SERIES` — cumulative fees (hockey-stick curve), 53 weekly points.
-- `REVENUE_MONTHLY` — 13 monthly revenue bars.
-- `EMISSIONS_SERIES` — revenue-as-%-of-emissions, 53 weekly points.
-- `SPARKLINE_DATA` — 30-day fees mini-trend.
-- `WALLET_ROWS`, `STATS`, `FAQ_ITEMS` — table, cards, and FAQ content.
-- Headline constants: `GAUGE_VALUE`, `FEES_LAST_30D`, `TOTAL_FEES_DISPLAY`, `FEES_CHANGE`.
+1. `src/app/page.tsx` and `src/app/analytics/page.tsx` are `force-dynamic` Server Components that call `fetchDashboardData()` / `fetchAnalyticsData()` from **`src/lib/api.ts`** — a typed `fetch()` client hitting a live revenue API.
+2. Each individual endpoint call is fault-tolerant on its own (a failed field falls back to an empty/neutral value without breaking the rest of the page).
+3. If the whole composite fetch throws, the page's `try/catch` falls back to the static mock constants in **`src/lib/data.ts`**, typed by `src/lib/types.ts` — `STATS`, `REVENUE_MONTHLY`, `WALLET_ROWS`, `FAQ_ITEMS`, `GAUGE_VALUE`, `FEES_LAST_30D`, `TOTAL_FEES_DISPLAY`, `FEES_CHANGE`, and more.
 
-To change any displayed figure, edit `src/lib/data.ts` — no component changes needed.
+The app never crashes or shows a blank screen: without a working `NEAR_API_KEY` it simply renders the static mock dataset. See **[ARCHITECTURE.md](ARCHITECTURE.md)** for the full data-flow diagram and a reference table of every API endpoint.
+
+To change a *static fallback* figure, edit `src/lib/data.ts` directly — no component changes needed.
+
+---
+
+## Environment variables
+
+None are required — the app renders from static mock data if they're unset. Copy `.env.example` to `.env.local` to configure:
+
+| Variable | Purpose |
+|---|---|
+| `NEAR_API_KEY` | Auth key for the live revenue API. Without it, all API calls fail and the dashboard falls back to static mock data. |
+| `NEAR_API_BASE_URL` | Overrides the API host (defaults to the production Railway URL). |
+| `NEXT_PUBLIC_SITE_URL` | Base URL used for Open Graph / Twitter card metadata. |
+| `NEXT_PUBLIC_DEBUG_SOURCES` | Set to `"true"` to show extra nav links and a green/red glow indicating whether each stat is API- or fallback-sourced. Keep `false` in production. |
 
 ---
 
@@ -136,7 +161,7 @@ Two step-by-step guides are provided:
 - **[Deploy to Vercel](docs/deploy-vercel.md)** — recommended, zero-config.
 - **[Deploy to Railway](docs/deploy-railway.md)** — container-based self-hosting.
 
-No environment variables are required for either target.
+Both work with no environment variables set (static mock data), or with the variables above set for live data. See each guide for how to configure them on that platform.
 
 ---
 

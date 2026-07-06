@@ -3,13 +3,16 @@
 # Working in this repo
 
 Guidance for AI agents and developers contributing to the NEAR Revenue Dashboard.
-For a feature/stack overview see [README.md](README.md).
+For a feature/stack overview see [README.md](README.md). For the full data-flow
+diagram and API endpoint reference, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Overview
 
-A single-page Next.js 16 (App Router) dashboard rendering NEAR protocol revenue
-analytics from **static mock data**. There is no backend, database, or API — every
-figure comes from `src/lib/data.ts`.
+A Next.js 16 (App Router) dashboard rendering NEAR protocol revenue analytics.
+It is **API-first with a static fallback**: `src/lib/api.ts` fetches live data from
+a revenue API at request time; `src/lib/data.ts` supplies the mock data used only
+when the API is unreachable or unconfigured. Never assume a figure is static —
+check whether the consuming page fetches from `lib/api.ts` first.
 
 ## Architecture
 
@@ -22,13 +25,15 @@ figure comes from `src/lib/data.ts`.
 ## Directory map
 
 ```
-src/app/          layout.tsx · page.tsx · globals.css
-src/lib/          data.ts (mock data) · types.ts · utils.ts (cn)
-src/providers/    lenis-provider.tsx
+src/app/          layout.tsx · page.tsx (/, force-dynamic) · analytics/page.tsx (force-dynamic) ·
+                  data/page.tsx (/data, API catalog) · maintenance/page.tsx · globals.css
+src/lib/          api.ts (live API client) · data.ts (static fallback) · types.ts · utils.ts (cn, formatters, debugGlow)
+src/providers/    lenis-provider.tsx · global-range-provider.tsx (shared 7D/30D/90D/YTD range)
 src/components/ui/        card · badge · separator · dropdown · accordion · animated-number
-src/components/charts/    gauge · sparkline · area-chart · bar-chart · line-chart
+src/components/charts/    gauge · sparkline · area/bar/line/price/stacked/tvl charts
 src/components/sections/  header · hero · stats-grid · fees-chart · revenue-charts ·
-                          wallet-table · faq · footer
+                          tvl-chart-section · revenue-streams · capture-split ·
+                          efficiency-metrics · wallet-table · faq · footer
 ```
 
 ## Conventions
@@ -50,10 +55,24 @@ src/components/sections/  header · hero · stats-grid · fees-chart · revenue-
   and `components/ui/badge.tsx`.
 - Theme is **always dark**; there is no light mode (the `prefers-color-scheme` block was removed).
 
-### Data
-- `src/lib/data.ts` is the **single source of truth**, typed by `src/lib/types.ts`.
+### Data & API
+- `src/lib/api.ts` is a typed `fetch()` client against a live revenue API (base URL +
+  `X-API-Key` from `NEAR_API_BASE_URL` / `NEAR_API_KEY`). `page.tsx` and
+  `analytics/page.tsx` call its composite fetchers (`fetchDashboardData()`,
+  `fetchAnalyticsData()`) inside a `try/catch`, falling back to the static constants
+  in `src/lib/data.ts` (typed by `src/lib/types.ts`) if the fetch fails.
+- Individual endpoint calls inside `fetchDashboardData()` are wrapped in the `safe()`
+  helper (or their own `.catch()`), so one failing endpoint doesn't take down the rest
+  of the page — see [ARCHITECTURE.md](ARCHITECTURE.md#2-request--data-flow).
+- `StatCard.source?: "api" | "static"` and `debugGlow()` (`src/lib/utils.ts`) mark
+  whether a value came from the API or the fallback; the glow only renders when
+  `NEXT_PUBLIC_DEBUG_SOURCES=true`.
 - Components receive data as props or import the constants directly; do not hardcode
   figures inside components.
+- Adding a new metric: add a fetcher + type to `src/lib/api.ts`, a static fallback
+  constant to `src/lib/data.ts`, wire it into `fetchDashboardData()` /
+  `fetchAnalyticsData()`, then consume it in `page.tsx` / `analytics/page.tsx` with a
+  fallback value already in scope before the `try` block.
 
 ### Animations
 - `AnimatedNumber` (`components/ui/animated-number.tsx`) counts from 0 to the target
@@ -76,10 +95,12 @@ src/components/sections/  header · hero · stats-grid · fees-chart · revenue-
 
 | Goal | Where |
 |------|-------|
-| Change the hero number / capture rate / 30d change | constants at the bottom of `src/lib/data.ts` |
-| Edit a stat card | `STATS` array in `data.ts` |
+| Change a *fallback* hero number / capture rate / 30d change | constants at the bottom of `src/lib/data.ts` |
+| Edit a stat card fallback | `STATS` array in `data.ts` |
 | Add / edit an FAQ | `FAQ_ITEMS` array in `data.ts` (first item is open by default via `defaultOpenId="01"`) |
-| Reshape a chart's data | the series builders / arrays in `data.ts` (`TOTAL_FEES_SERIES`, `REVENUE_MONTHLY`, `EMISSIONS_SERIES`) |
+| Reshape a chart's fallback data | the series builders / arrays in `data.ts` (`TOTAL_FEES_SERIES`, `REVENUE_MONTHLY`, `EMISSIONS_SERIES`) |
+| Add a new live metric | `src/lib/api.ts` (fetcher + type) → wire into `fetchDashboardData()`/`fetchAnalyticsData()` → consume in `page.tsx`/`analytics/page.tsx` |
+| Document a new API endpoint for humans | `GROUPS` catalog in `src/app/data/page.tsx` |
 | Adjust a color | the `--near-*` tokens in `src/app/globals.css` |
 
 ## Gotchas

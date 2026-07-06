@@ -32,7 +32,18 @@ option for self-hosted Next.js.
    `next start` automatically binds to the `PORT` environment variable that Railway
    injects — no extra flags or config needed.
 
-4. **Environment variables** — none required (static mock data).
+4. **Environment variables** — optional. Without them the dashboard renders static
+   mock data; set these under Service → **Variables** for live data:
+
+   | Variable | Value |
+   |---|---|
+   | `NEAR_API_KEY` | Your revenue API key. **Do not commit this** — set it in Railway's Variables UI only. |
+   | `NEAR_API_BASE_URL` | Optional override; defaults to the production Railway URL if unset. |
+   | `NEXT_PUBLIC_SITE_URL` | Your deployed `*.up.railway.app` domain (or custom domain), for correct Open Graph metadata. |
+   | `NEXT_PUBLIC_DEBUG_SOURCES` | Leave unset/`false` in production. |
+
+   See [ARCHITECTURE.md § Environment variables](../ARCHITECTURE.md#8-environment-variables)
+   for what each one does.
 
 5. **Deploy** — Railway builds and starts the service, then exposes it on a generated
    `*.up.railway.app` domain (Service → **Settings → Networking → Generate Domain**).
