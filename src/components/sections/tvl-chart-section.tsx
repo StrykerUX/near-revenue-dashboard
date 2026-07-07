@@ -194,7 +194,9 @@ export function TvlChartSection({ data, currentTvl, growthX }: TvlChartSectionPr
     if (filtered.length < 2) return null
     const first = filtered[0].value
     const last  = filtered[filtered.length - 1].value
-    if (first <= 0) return null
+    // Guard against near-zero launch-day values (e.g. TVL's first day was a
+    // few dollars) blowing up into a meaningless multi-million-percent change.
+    if (first <= 0 || first < last * 0.01) return `N/A over ${range}`
     const pct  = ((last - first) / first) * 100
     const sign = pct >= 0 ? "+" : ""
     return `${sign}${pct.toFixed(1)}% over ${range}`
