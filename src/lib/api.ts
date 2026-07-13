@@ -299,6 +299,100 @@ export function fetchCaptureSplit() {
   return apiFetch<SnapshotCaptureSplit>("/v1/metrics/capture-split")
 }
 
+// ─── Health check ─────────────────────────────────────────────────────────────
+// Pings every endpoint the dashboard depends on directly (bypassing the safe()
+// fallback and the 5-minute revalidate cache) so /health always reflects the
+// current, live reachability of the upstream API — not a cached/fallback view.
+
+export interface EndpointHealth {
+  name: string
+  path: string
+  ok: boolean
+  httpStatus: number | null
+  latencyMs: number
+  isStale: boolean | null
+  updatedAt: string | null
+  asOf: string | null
+  error: string | null
+}
+
+export interface HealthReport {
+  checkedAt: string
+  baseUrl: string
+  endpoints: EndpointHealth[]
+}
+
+async function checkEndpointHealth(
+  name: string,
+  path: string,
+  params?: Record<string, string>
+): Promise<EndpointHealth> {
+  const url = new URL(path, BASE_URL)
+  if (params) for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v)
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 10_000)
+  const start = Date.now()
+  try {
+    const res = await fetch(url.toString(), {
+      headers: { "X-API-Key": API_KEY },
+      cache: "no-store",
+      signal: controller.signal,
+    })
+    const latencyMs = Date.now() - start
+    if (!res.ok) {
+      return { name, path, ok: false, httpStatus: res.status, latencyMs, isStale: null, updatedAt: null, asOf: null, error: `HTTP ${res.status}` }
+    }
+    const body = (await res.json()) as Envelope<unknown>
+    return {
+      name,
+      path,
+      ok: true,
+      httpStatus: res.status,
+      latencyMs,
+      isStale: body.is_stale ?? null,
+      updatedAt: body.updated_at ?? null,
+      asOf: body.as_of ?? null,
+      error: null,
+    }
+  } catch (err) {
+    return {
+      name,
+      path,
+      ok: false,
+      httpStatus: null,
+      latencyMs: Date.now() - start,
+      isStale: null,
+      updatedAt: null,
+      asOf: null,
+      error: err instanceof Error ? err.message : "Unknown error",
+    }
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+export async function fetchHealthReport(): Promise<HealthReport> {
+  const today = new Date().toISOString().slice(0, 10)
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+
+  const endpoints = await Promise.all([
+    checkEndpointHealth("Snapshot", "/v1/snapshot", { denomination: "usd" }),
+    checkEndpointHealth("Revenue series", "/v1/series/revenue", { from: "2025-01-01", to: today, grain: "month" }),
+    checkEndpointHealth("Wallet breakdown", "/v1/wallets/breakdown"),
+    checkEndpointHealth("Buyback", "/v1/wallets/buyback"),
+    checkEndpointHealth("Emissions series", "/v1/series/emissions", { from: "2025-01-01", to: today }),
+    checkEndpointHealth("Total fees series", "/v1/series/total-fees", { from: "2025-01-01", to: today, grain: "day" }),
+    checkEndpointHealth("Intent volume series", "/v1/series/intent-volume", { from: "2025-01-01", to: today, grain: "day" }),
+    checkEndpointHealth("Unique users", "/v1/metrics/unique-users"),
+    checkEndpointHealth("Price series", "/v1/series/price", { from: ninetyDaysAgo, to: today, grain: "day" }),
+    checkEndpointHealth("Confidential TVL", "/v1/series/confidential-tvl", { from: "2026-01-01", to: today, grain: "day" }),
+    checkEndpointHealth("Revenue by stream", "/v1/metrics/revenue-by-stream"),
+    checkEndpointHealth("Capture split", "/v1/metrics/capture-split"),
+  ])
+
+  return { checkedAt: new Date().toISOString(), baseUrl: BASE_URL, endpoints }
+}
+
 // ─── Analytics composite fetch ────────────────────────────────────────────────
 
 export interface AnalyticsData {

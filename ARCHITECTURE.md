@@ -188,6 +188,7 @@ directly by URL.
 | `NEAR_API_BASE_URL` | No | `https://revenue-dashboard-api-production.up.railway.app` | Overrides the API host — useful for pointing at a staging/local backend. |
 | `NEXT_PUBLIC_SITE_URL` | No | `https://revenue.near.org` | Used as `metadataBase` for Open Graph / Twitter card URLs in `layout.tsx`. |
 | `NEXT_PUBLIC_DEBUG_SOURCES` | No | `false`/unset | When `"true"`, shows extra nav links and the green/red API-vs-static glow described in §7. Never enable in production screenshots/demos. |
+| `MAINTENANCE_MODE` | No | `false`/unset | When `"true"`, `src/proxy.ts` rewrites every route except `/health` and `/data` to `/maintenance`, so the public dashboard shows a maintenance screen while the team can still check API status. Server-only — read at request time, so flipping it in Railway only needs a restart, not a rebuild. |
 
 **The app has no strictly required environment variables** — it always
 renders. `NEAR_API_KEY` is what determines whether you see live numbers or

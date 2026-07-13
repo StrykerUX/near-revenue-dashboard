@@ -6,6 +6,7 @@ const NAV = process.env.NEXT_PUBLIC_DEBUG_SOURCES === "true"
       { href: "/",          label: "Dashboard"  },
       { href: "/analytics", label: "Analytics"  },
       { href: "/data",      label: "Data Guide" },
+      { href: "/health",    label: "Health"     },
     ]
   : undefined
 
