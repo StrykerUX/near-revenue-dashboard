@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import Link from "next/link"
 
 export const metadata: Metadata = {
   title: "Maintenance — NEAR Revenue",
@@ -55,13 +54,6 @@ export default function MaintenancePage() {
         </p>
 
         <div className="w-px h-6 bg-near-border" />
-
-        <Link
-          href="/health"
-          className="text-xs text-near-subtle hover:text-near-green transition-colors"
-        >
-          Check API status →
-        </Link>
 
         <NearWordmark />
       </div>
