@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { SiteLayout } from "@/components/sections/site-layout"
 import { fetchHealthReport, type EndpointHealth } from "@/lib/api"
+import { fetchTickHistory, type EndpointTick } from "@/lib/db"
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -13,6 +14,15 @@ function formatDate(iso: string): string {
     hour: "numeric",
     minute: "2-digit",
   })
+}
+
+function formatRelative(iso: string): string {
+  const minutes = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000)
+  if (minutes < 1) return "just now"
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  return `${Math.floor(hours / 24)}d ago`
 }
 
 function StatusDot({ ok }: { ok: boolean }) {
@@ -57,10 +67,35 @@ function EndpointRow({ endpoint }: { endpoint: EndpointHealth }) {
   )
 }
 
+function TickHistoryRow({ tick }: { tick: EndpointTick }) {
+  return (
+    <tr className="border-b border-near-border/60 last:border-0">
+      <td className="py-3 pr-4 align-top">
+        <p className="text-sm text-near-text font-medium">{tick.endpointName}</p>
+        <code className="text-xs text-near-subtle font-mono">{tick.path}</code>
+      </td>
+      <td className="py-3 pr-4 align-top"><StatusDot ok={tick.ok} /></td>
+      <td className="py-3 pr-4 align-top text-sm text-near-subtle font-mono">
+        {tick.httpStatus ?? "—"}
+      </td>
+      <td className="py-3 pr-4 align-top text-xs text-near-subtle">
+        {formatRelative(tick.checkedAt)}
+        <span className="block text-near-subtle/60">{formatDate(tick.checkedAt)}</span>
+      </td>
+      <td className="py-3 align-top text-xs text-red-400/80">
+        {tick.error ?? ""}
+      </td>
+    </tr>
+  )
+}
+
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default async function HealthPage() {
-  const report = await fetchHealthReport()
+  const [report, tickHistory] = await Promise.all([
+    fetchHealthReport(),
+    fetchTickHistory(),
+  ])
 
   const okCount = report.endpoints.filter((e) => e.ok).length
   const total = report.endpoints.length
@@ -120,6 +155,35 @@ export default async function HealthPage() {
             </tbody>
           </table>
         </section>
+
+        {/* ── Persisted history (only if DATABASE_URL is configured) ───────── */}
+        {tickHistory && tickHistory.length > 0 && (
+          <section className="bg-near-card rounded-xl border border-near-border overflow-x-auto">
+            <div className="px-4 pt-4 pb-1">
+              <h2 className="text-sm font-semibold text-near-text mb-1">Persisted history</h2>
+              <p className="text-xs text-near-muted">
+                Last confirmed tick per endpoint, written by the standalone tick-worker —
+                catches an outage that happened while nobody had this page open.
+              </p>
+            </div>
+            <table className="w-full min-w-[560px] border-collapse">
+              <thead>
+                <tr className="border-b border-near-border text-left">
+                  <th className="py-3 px-4 text-xs font-medium text-near-muted uppercase tracking-wider">Endpoint</th>
+                  <th className="py-3 px-4 text-xs font-medium text-near-muted uppercase tracking-wider">Status</th>
+                  <th className="py-3 px-4 text-xs font-medium text-near-muted uppercase tracking-wider">HTTP</th>
+                  <th className="py-3 px-4 text-xs font-medium text-near-muted uppercase tracking-wider">Last tick</th>
+                  <th className="py-3 px-4 text-xs font-medium text-near-muted uppercase tracking-wider">Error</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tickHistory.map((tick) => (
+                  <TickHistoryRow key={tick.path} tick={tick} />
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
 
         {/* ── Base URL note ───────────────────────────────────────────────── */}
         <section className="rounded-xl border border-near-border bg-near-card/50 px-6 py-5">

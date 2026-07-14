@@ -1,0 +1,14 @@
+{
+  "name": "near-revenue-tick-worker",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Standalone script that pings the NEAR Revenue API and logs a health snapshot to Postgres. Deployed as its own Railway service (Cron Job) — has no dependency on the dashboard's build or runtime.",
+  "type": "module",
+  "main": "index.mjs",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  }
+}

@@ -145,10 +145,12 @@ header; see [§7](#7-environment-variables).
 | `/` | `src/app/page.tsx` | `force-dynamic` | Main dashboard — hero, stats, fees/revenue/TVL charts, wallet table, FAQ |
 | `/analytics` | `src/app/analytics/page.tsx` | `force-dynamic` | "Deep Dive" — intent volume, revenue by stream, capture split, NEAR price |
 | `/data` | `src/app/data/page.tsx` | static | "Data Guide" — human-readable catalog of every API endpoint (see §4) |
-| `/maintenance` | `src/app/maintenance/page.tsx` | static | Placeholder "work in progress" page |
+| `/health` | `src/app/health/page.tsx` | `force-dynamic` | Live per-endpoint API status (see §11) — bypassed by `MAINTENANCE_MODE` |
+| `/maintenance` | `src/app/maintenance/page.tsx` | static | Maintenance screen shown site-wide when `MAINTENANCE_MODE=true` (see §11) |
 
 No `src/app/api/**` route handlers exist — this app is a pure API *consumer*,
-not a provider.
+not a provider. (`tick-worker/` is a separate standalone service — see §11 —
+and is not part of this Next.js app.)
 
 ## 6. State & providers
 
@@ -189,6 +191,7 @@ directly by URL.
 | `NEXT_PUBLIC_SITE_URL` | No | `https://revenue.near.org` | Used as `metadataBase` for Open Graph / Twitter card URLs in `layout.tsx`. |
 | `NEXT_PUBLIC_DEBUG_SOURCES` | No | `false`/unset | When `"true"`, shows extra nav links and the green/red API-vs-static glow described in §7. Never enable in production screenshots/demos. |
 | `MAINTENANCE_MODE` | No | `false`/unset | When `"true"`, `src/proxy.ts` rewrites every route except `/health` and `/data` to `/maintenance`, so the public dashboard shows a maintenance screen while the team can still check API status. Server-only — read at request time, so flipping it in Railway only needs a restart, not a rebuild. |
+| `DATABASE_URL` | No | unset | Optional Postgres connection string, consumed by `src/lib/db.ts`. When set, `/health` renders an extra "Persisted history" section sourced from the `api_ticks` table (see §11). Without it, `/health` behaves exactly as if this variable didn't exist — no error, no missing-section warning. |
 
 **The app has no strictly required environment variables** — it always
 renders. `NEAR_API_KEY` is what determines whether you see live numbers or
@@ -224,3 +227,39 @@ and **Inter** (`next/font/google`) — not Geist.
   `WALLET_ROWS` (static fallback) is not a real wallet — it represents the
   burned portion of protocol fees, included for narrative completeness. The
   live `/v1/wallets/breakdown` response replaces the whole table when available.
+
+## 11. Health monitoring, maintenance mode, and the tick-worker
+
+Three pieces work together to catch and communicate an upstream API outage —
+all optional, all additive, none of them change `/`, `/analytics`, or the
+existing fetchers in `src/lib/api.ts` if left unconfigured.
+
+- **`/health`** (`src/app/health/page.tsx`) — pings all 12 endpoints the
+  dashboard depends on directly via `fetchHealthReport()` in `src/lib/api.ts`
+  (bypassing the `safe()` fallback and the 5-minute fetch cache, `cache:
+  "no-store"`, 10s timeout), and shows per-endpoint HTTP status, latency, and
+  staleness. This is a **live ping** — it only reflects the moment the page is
+  loaded.
+- **`MAINTENANCE_MODE`** (`src/proxy.ts`) — when `"true"`, rewrites every route
+  to `/maintenance` except `/health`, `/data`, and static assets, so the
+  public dashboard shows a maintenance screen while the team can still check
+  API status. See §8.
+- **`tick-worker/`** — a standalone Node script, deployed as its **own**
+  Railway service (Cron Job, e.g. every 5 minutes), that duplicates the same
+  12-endpoint check and writes one row per endpoint per run to a Postgres
+  `api_ticks` table it creates on first run (`CREATE TABLE IF NOT EXISTS`).
+  It intentionally has no import from `src/` and its own `package.json` — a
+  failure or misconfiguration here cannot affect the dashboard's build or
+  runtime, it can only mean no new rows get written.
+- **`src/lib/db.ts`** — the dashboard's *read* side of that table. Exposes
+  `fetchTickHistory()`, which returns the latest tick per endpoint, or `null`
+  on any failure (`DATABASE_URL` unset, table missing, connection error).
+  `/health` renders a "Persisted history" section only when this returns
+  data — this is what lets the team see "last confirmed tick: 3 days ago"
+  even if nobody had `/health` open when the outage started.
+
+To provision: add a PostgreSQL service to the same Railway project as the
+dashboard (Railway injects `DATABASE_URL` automatically to services in the
+project that reference it), then deploy `tick-worker/` as a second service
+with its own copy of `DATABASE_URL`, `NEAR_API_KEY`, `NEAR_API_BASE_URL`, and
+a Cron Schedule. Nothing about the dashboard's own deploy changes.
