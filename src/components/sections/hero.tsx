@@ -68,7 +68,7 @@ export function Hero({
           NEAR captures a growing share of fees as gross revenue, feeding buybacks that permanently remove NEAR from circulation.
         </p>
 
-        <div>
+        <div className="hidden">
           <Badge variant={isUp ? "green" : "red"}>
             <span>{isUp ? "▲" : "▼"} <AnimatedNumber value={changeLabel} duration={1.2} />%</span>
             <span className={isUp ? "text-near-green/60" : "text-near-red/60"}>·</span>
