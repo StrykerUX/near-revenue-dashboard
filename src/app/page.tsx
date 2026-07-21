@@ -202,7 +202,9 @@ export default async function Page() {
           emissionsDaily={emissionsDaily}
           absoluteRevEmissions={absoluteRevEmissions}
         />
-        <CumulativeFeesSection data={cumulativeFeesData} />
+        <div className="hidden">
+          <CumulativeFeesSection data={cumulativeFeesData} />
+        </div>
         <TvlChartSection data={tvlChartSeries} currentTvl={tvlCurrentUsd} growthX={tvlGrowthX} />
 
         {/* Revenue by Stream */}
